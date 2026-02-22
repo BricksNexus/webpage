@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create \"Open to Work\" Profile · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="open-to-work.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <a href="index.html">BricksNexus</a>
+        </div>
+
+        <div>
+            <div class="sidebar-section-title">Profile Picture &amp; Portfolio</div>
+            <div class="avatar-upload">
+                <div class="avatar-circle">📷</div>
+                <p>Drag &amp; drop portfolio</p>
+                <span>Or click to upload</span>
+            </div>
+        </div>
+
+        <div>
+            <div class="sidebar-section-title">Steps</div>
+            <nav class="sidebar-nav">
+                <button class="active">
+                    <span class="icon">1</span>
+                    Profile &amp; Portfolio
+                </button>
+                <button>
+                    <span class="icon">2</span>
+                    Opportunities
+                </button>
+                <button>
+                    <span class="icon">3</span>
+                    Tokenization
+                </button>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="progress-steps">
+            <span class="step-active">Core details</span>
+            <span>›</span>
+            <span>Picture &amp; portfolio</span>
+            <span>›</span>
+            <span>Review &amp; publish</span>
+        </div>
+
+        <header>
+            <h1 class="page-title">Create your “Open to Work” profile</h1>
+            <p class="page-subtitle">Share your experience so developers and partners can discover you for the right opportunities.</p>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                <div class="card-header-title">2. Experience &amp; skills</div>
+                <span class="badge-step">Step 2 of 3</span>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Role / trade</span>
+                            <small>How do you introduce yourself?</small>
+                        </div>
+                        <input type="text" placeholder="e.g. General contractor, site supervisor, framing crew lead">
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Years of experience</span>
+                        </div>
+                        <div class="pill-input-row">
+                            <input type="number" min="0" max="60" placeholder="e.g. 8">
+                            <span class="helper-text">years</span>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Specialties / skills</span>
+                            <small>Add your tags</small>
+                        </div>
+                        <div class="pill-input-row">
+                            <input type="text" placeholder="Add a specialty (e.g. multi-family, commercial, TI)">
+                            <span class="pill">Residential <button type="button">×</button></span>
+                            <span class="pill">Commercial <button type="button">×</button></span>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Certifications</span>
+                        </div>
+                        <input type="text" placeholder="e.g. OSHA 30, PMP, PE, licensed GC">
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>About you</span>
+                            <small>Visible on your public card</small>
+                        </div>
+                        <textarea placeholder="Short professional summary. What kinds of projects are you looking for? What makes you a great partner?"></textarea>
+                        <p class="helper-text">250 characters recommended.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="upload-card">
+                        <h4>Portfolio &amp; documents</h4>
+                        <p>Upload drawings, photos or case studies that showcase your work.</p>
+                        <div class="upload-drop">
+                            Drag &amp; drop files here, or browse from your computer.
+                        </div>
+                    </div>
+
+                    <div class="map-card">
+                        <div>Service area</div>
+                        <p>Pin the main region where you’re available for work.</p>
+                        <div class="map-placeholder"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">
+                    <span>Availability</span>
+                </div>
+                <div class="pill-input-row">
+                    <select>
+                        <option>Immediately</option>
+                        <option>In 30 days</option>
+                        <option>In 60 days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">
+                    <span>Preferred project size</span>
+                </div>
+                <div class="pill-input-row">
+                    <input type="text" placeholder="e.g. $250k – $2M construction value">
+                </div>
+            </div>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="show-profile" checked>
+                <label for="show-profile">Show this profile in the BricksNexus “Open to Work” marketplace</label>
+            </div>
+
+            <footer class="form-footer">
+                <div class="form-footer-left">
+                    <button type="button">Save as draft</button>
+                    <span>Changes are saved securely.</span>
+                </div>
+                <div class="primary-actions">
+                    <button type="button" class="btn-secondary">Back</button>
+                    <button type="button" class="btn-primary">Next step</button>
+                </div>
+            </footer>
+        </section>
+    </main>
+</body>
+</html>
+
