@@ -71,7 +71,7 @@
             <span class="pill">Phase: Permitting</span>
         </div>
 
-        <section class="feed">
+        <section class="feed" aria-label="Marketplace feed">
             <!-- Opportunity card -->
             <article class="feed-card">
                 <div class="card-type">Opportunity</div>
@@ -134,6 +134,28 @@
                 </div>
             </article>
         </section>
+
+        <section class="map-view" aria-label="Opportunities map">
+            <div class="map-card">
+                <div class="map-card-header">
+                    <span><strong>Opportunities near Austin, TX</strong></span>
+                    <div class="map-legend">
+                        <span><span class="map-dot"></span> Opportunities</span>
+                        <span><span class="map-dot alt"></span> Open to work</span>
+                    </div>
+                </div>
+                <div class="map-canvas">
+                    <div class="map-pin map-pin-1">1</div>
+                    <div class="map-pin secondary map-pin-2">2</div>
+                    <div class="map-pin map-pin-3">3</div>
+                    <div class="map-pin label map-pin-label">Urban infill project</div>
+                    <div class="map-toolbar">
+                        <button type="button">+</button>
+                        <button type="button">−</button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Right sidebar: industry intelligence -->
@@ -182,11 +204,21 @@
                 this.classList.add('active');
             });
         });
-        document.querySelectorAll('.view-toggle button').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
+        const main = document.querySelector('.main-content');
+        const viewButtons = document.querySelectorAll('.view-toggle button');
+        const listButton = viewButtons[0];
+        const mapButton = viewButtons[1];
+
+        listButton.addEventListener('click', () => {
+            listButton.classList.add('active');
+            mapButton.classList.remove('active');
+            main.classList.remove('map-mode');
+        });
+
+        mapButton.addEventListener('click', () => {
+            mapButton.classList.add('active');
+            listButton.classList.remove('active');
+            main.classList.add('map-mode');
         });
     </script>
 </body>

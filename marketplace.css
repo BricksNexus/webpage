@@ -331,6 +331,141 @@ body {
     border-bottom: none;
 }
 
+/* Map view */
+.map-view {
+    display: none;
+    margin-top: 0.5rem;
+}
+
+.map-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.map-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.map-card-header strong {
+    color: var(--text-primary);
+}
+
+.map-legend {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+}
+
+.map-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.map-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--accent);
+}
+
+.map-dot.alt {
+    background: #f97316;
+}
+
+.map-canvas {
+    height: 360px;
+    background: linear-gradient(135deg, #dbeafe, #e5e7eb);
+    position: relative;
+}
+
+.map-pin {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.5);
+}
+
+.map-pin.secondary {
+    background: #f97316;
+    box-shadow: 0 6px 12px rgba(248, 113, 113, 0.4);
+}
+
+.map-pin.label {
+    padding: 0 0.6rem;
+    border-radius: 999px;
+    height: 26px;
+    font-size: 0.75rem;
+}
+
+.map-pin-1 {
+    top: 26%;
+    left: 32%;
+}
+
+.map-pin-2 {
+    top: 48%;
+    left: 60%;
+}
+
+.map-pin-3 {
+    bottom: 18%;
+    left: 42%;
+}
+
+.map-pin-label {
+    bottom: 20%;
+    right: 10%;
+}
+
+.map-toolbar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.map-toolbar button {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.map-toolbar button:hover {
+    background: var(--main-bg);
+}
+
+/* Toggle states */
+.main-content.map-mode .feed {
+    display: none;
+}
+
+.main-content.map-mode .map-view {
+    display: block;
+}
+
 /* ========== Right Sidebar - Industry Intelligence ========== */
 .sidebar-right {
     width: var(--right-width);
