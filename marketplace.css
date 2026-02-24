@@ -47,6 +47,9 @@ body {
     padding: 0 1.25rem 1.25rem;
     margin-bottom: 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
 .sidebar-left .logo a {
@@ -55,6 +58,12 @@ body {
     color: #fff;
     text-decoration: none;
     letter-spacing: -0.02em;
+}
+
+.sidebar-left .logo img {
+    height: 32px;
+    width: auto;
+    display: block;
 }
 
 .filter-btn {
