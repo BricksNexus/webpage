@@ -92,6 +92,21 @@ body {
     background: rgba(15, 23, 42, 0.8);
 }
 
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
 /* ========== Left Sidebar - Filters ========== */
 .sidebar-left {
     width: var(--sidebar-width);
