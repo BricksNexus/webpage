@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a New Opportunity · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="post-opportunity.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <a href="index.html">BricksNexus</a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button>
+                <span class="icon">1</span>
+                Open to Work
+            </button>
+            <button>
+                <span class="icon">2</span>
+                Services
+            </button>
+            <button class="active">
+                <span class="icon">3</span>
+                Opportunities
+            </button>
+            <button>
+                <span class="icon">4</span>
+                Tokenization
+            </button>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="progress-steps">
+            <span class="step-active">Core details</span>
+            <span>›</span>
+            <span>Review &amp; publish</span>
+        </div>
+
+        <header>
+            <h1 class="page-title">Post a New Opportunity</h1>
+            <p class="page-subtitle">Describe the project, location and budget so the right builders can express interest.</p>
+        </header>
+
+        <section class="layout">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-title">1. Core details &amp; location</div>
+                    <span class="badge-step">Step 1 of 2</span>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Opportunity title</span>
+                        <small>What is this project?</small>
+                    </div>
+                    <input type="text" placeholder="e.g. Foundation work for 12‑unit apartment">
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Type of opportunity</span>
+                        <small>Select the best match</small>
+                    </div>
+                    <div class="pill-row">
+                        <span class="pill-option active">RFP</span>
+                        <span class="pill-option">Land sale</span>
+                        <span class="pill-option">Sub‑contracting</span>
+                        <span class="pill-option">Joint venture</span>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Short description</span>
+                        <small>Visible on the marketplace card</small>
+                    </div>
+                    <textarea placeholder="Briefly describe the work scope, timeline and any key requirements."></textarea>
+                </div>
+
+                <div class="section-title">Location</div>
+                <p class="section-subtitle">Where is the project based?</p>
+
+                <div class="inline-grid">
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>City</span>
+                        </div>
+                        <input type="text" placeholder="e.g. Austin">
+                    </div>
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>State / region</span>
+                        </div>
+                        <input type="text" placeholder="e.g. TX">
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Project address (optional)</span>
+                    </div>
+                    <input type="text" placeholder="Street address or nearest intersection">
+                </div>
+
+                <div class="section-title">2. Financial budget</div>
+                <p class="section-subtitle">Share a high‑level budget range and funding details.</p>
+
+                <div class="inline-grid">
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Estimated budget</span>
+                        </div>
+                        <input type="text" placeholder="$350k – $800k">
+                    </div>
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Payment terms</span>
+                        </div>
+                        <input type="text" placeholder="e.g. Progress draws, milestone‑based">
+                    </div>
+                </div>
+
+                <div class="inline-grid">
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Equity offered (if any)</span>
+                        </div>
+                        <input type="text" placeholder="e.g. Up to 10%">
+                    </div>
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span>Target ROI</span>
+                        </div>
+                        <input type="text" placeholder="e.g. 12–15% over 3 years">
+                    </div>
+                </div>
+
+                <div class="toggle-row">
+                    <span>Looking for fractional funding?</span>
+                    <div class="switch"></div>
+                </div>
+
+                <div class="section-title">Trade skills needed</div>
+                <p class="section-subtitle">Tag the disciplines you’re looking for.</p>
+
+                <div class="tags-row">
+                    <span class="tag">#Masonry</span>
+                    <span class="tag">#Electrical</span>
+                    <span class="tag">#ProjectManagement</span>
+                </div>
+                <div class="tag-input-row">
+                    <input type="text" placeholder="Add another skill tag">
+                    <button type="button">Add</button>
+                </div>
+
+                <div class="toggle-row">
+                    <span>Requires verified &amp; bonded builders only</span>
+                    <div class="switch"></div>
+                </div>
+
+                <div class="footer-actions">
+                    <div class="footer-left">
+                        <button type="button">Save as draft</button>
+                        <span>Changes are saved securely.</span>
+                    </div>
+                    <div class="footer-right">
+                        <button type="button" class="btn-secondary" onclick="history.back()">Back</button>
+                        <button type="button" class="btn-primary">Review &amp; publish</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="map-panel">
+                <h2>Project location</h2>
+                <p class="section-subtitle">Pin the approximate site to help builders understand travel and logistics.</p>
+                <div class="map-wrapper">
+                    <iframe
+                        title="Opportunity project map"
+                        src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&q=Austin,TX"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Project phase</span>
+                    </div>
+                    <select>
+                        <option>Concept / feasibility</option>
+                        <option>Design / permitting</option>
+                        <option selected>Ready for bid</option>
+                        <option>Under construction</option>
+                    </select>
+                </div>
+            </aside>
+        </section>
+    </main>
+</body>
+</html>
+
