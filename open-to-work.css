@@ -406,6 +406,9 @@ select:focus {
     font-weight: 500;
     border: 1px solid transparent;
     cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-family: inherit;
 }
 
 .btn-secondary {
