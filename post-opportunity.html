@@ -59,7 +59,7 @@
                         <span>Opportunity title</span>
                         <small>What is this project?</small>
                     </div>
-                    <input type="text" placeholder="e.g. Foundation work for 12‑unit apartment">
+                    <input type="text" id="opp-title" placeholder="e.g. Foundation work for 12‑unit apartment">
                 </div>
 
                 <div class="field-group">
@@ -80,7 +80,7 @@
                         <span>Short description</span>
                         <small>Visible on the marketplace card</small>
                     </div>
-                    <textarea placeholder="Briefly describe the work scope, timeline and any key requirements."></textarea>
+                    <textarea id="opp-summary" placeholder="Briefly describe the work scope, timeline and any key requirements."></textarea>
                 </div>
 
                 <div class="section-title">Location</div>
@@ -91,13 +91,13 @@
                         <div class="field-label">
                             <span>City</span>
                         </div>
-                        <input type="text" placeholder="e.g. Austin">
+                        <input type="text" id="opp-city" placeholder="e.g. Austin">
                     </div>
                     <div class="field-group">
                         <div class="field-label">
                             <span>State / region</span>
                         </div>
-                        <input type="text" placeholder="e.g. TX">
+                        <input type="text" id="opp-region" placeholder="e.g. TX">
                     </div>
                 </div>
 
@@ -105,7 +105,7 @@
                     <div class="field-label">
                         <span>Project address (optional)</span>
                     </div>
-                    <input type="text" placeholder="Street address or nearest intersection">
+                    <input type="text" id="opp-address" placeholder="Street address or nearest intersection">
                 </div>
 
                 <div class="section-title">2. Financial budget</div>
@@ -116,13 +116,13 @@
                         <div class="field-label">
                             <span>Estimated budget</span>
                         </div>
-                        <input type="text" placeholder="$350k – $800k">
+                        <input type="text" id="opp-budget" placeholder="$350k – $800k">
                     </div>
                     <div class="field-group">
                         <div class="field-label">
                             <span>Payment terms</span>
                         </div>
-                        <input type="text" placeholder="e.g. Progress draws, milestone‑based">
+                        <input type="text" id="opp-terms" placeholder="e.g. Progress draws, milestone‑based">
                     </div>
                 </div>
 
@@ -131,13 +131,13 @@
                         <div class="field-label">
                             <span>Equity offered (if any)</span>
                         </div>
-                        <input type="text" placeholder="e.g. Up to 10%">
+                        <input type="text" id="opp-equity" placeholder="e.g. Up to 10%">
                     </div>
                     <div class="field-group">
                         <div class="field-label">
                             <span>Target ROI</span>
                         </div>
-                        <input type="text" placeholder="e.g. 12–15% over 3 years">
+                        <input type="text" id="opp-roi" placeholder="e.g. 12–15% over 3 years">
                     </div>
                 </div>
 
@@ -171,19 +171,19 @@
                     <label class="attachments-drop">
                         <strong>Drag &amp; drop files</strong>
                         <span>or click to browse from your computer</span>
-                        <input type="file" name="attachments" multiple>
+                        <input type="file" id="opp-attachments" name="attachments" multiple>
                     </label>
                     <p class="attachments-hint">Accepted formats: PDF, JPG, PNG, DOCX · Up to 25MB total (example limits).</p>
                 </div>
 
                 <div class="footer-actions">
                     <div class="footer-left">
-                        <button type="button">Save as draft</button>
+                        <button type="button" id="opp-save-draft">Save as draft</button>
                         <span>Changes are saved securely.</span>
                     </div>
                     <div class="footer-right">
                         <button type="button" class="btn-secondary" onclick="history.back()">Back</button>
-                        <button type="button" class="btn-primary">Review &amp; publish</button>
+                        <button type="button" id="opp-submit" class="btn-primary">Review &amp; publish</button>
                     </div>
                 </div>
             </div>
@@ -236,6 +236,7 @@
         </button>
     </div>
 
+    <script src="post-opportunity.js"></script>
     <script src="post-opportunity-chatbot.js"></script>
 </body>
 </html>

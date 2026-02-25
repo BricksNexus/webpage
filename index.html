@@ -314,6 +314,72 @@
             main.classList.add('map-mode');
         });
 
+        (function renderSavedOpportunities() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem('bricksnexus_opportunities') || '[]');
+            } catch (e) {
+                console.error('Failed to read opportunities from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category=\"opportunities\"]');
+
+            data.forEach(opp => {
+                const card = document.createElement('article');
+                card.className = 'feed-card';
+                card.dataset.category = 'opportunities';
+
+                const title = opp.title || 'New opportunity';
+                const summary = opp.summary || 'Details added by the owner.';
+                const city = opp.city || '';
+                const region = opp.region || '';
+                const budget = opp.budget || '';
+
+                const hasImage = !!opp.imageDataUrl;
+                card.innerHTML = `
+                    <div class=\"card-type\">Opportunity</div>
+                    ${hasImage
+                        ? `<img class=\"card-image\" src=\"${opp.imageDataUrl}\" alt=\"Opportunity image\">`
+                        : `<div class=\"card-image-placeholder\">New opportunity</div>`}
+                    <div class=\"card-body\">
+                        <h3 class=\"card-title\"></h3>
+                        <div class=\"card-meta\"></div>
+                        <div class=\"card-details\"></div>
+                        <div class=\"card-actions\">
+                            <button type=\"button\">Express interest</button>
+                            <button type=\"button\">Save</button>
+                            <button type=\"button\" class=\"primary\">Message</button>
+                        </div>
+                    </div>
+                `;
+
+                const titleEl = card.querySelector('.card-title');
+                const metaEl = card.querySelector('.card-meta');
+                const detailsEl = card.querySelector('.card-details');
+                if (titleEl) titleEl.textContent = title;
+                if (metaEl) {
+                    const parts = [];
+                    if (city) parts.push(city);
+                    if (region) parts.push(region);
+                    if (budget) parts.push(`Budget: ${budget}`);
+                    metaEl.textContent = parts.join(' · ');
+                }
+                if (detailsEl) detailsEl.textContent = summary;
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor.nextSibling);
+                } else {
+                    feed.insertBefore(card, feed.firstChild);
+                }
+            });
+        })();
+
         (function renderSavedServices() {
             const feed = document.querySelector('.feed');
             if (!feed) return;
@@ -374,12 +440,19 @@
             const btn = document.getElementById('clear-local-services');
             if (!btn) return;
             btn.addEventListener('click', () => {
-                if (!confirm('This will clear locally saved services and drafts in this browser. Continue?')) {
+                if (!confirm('This will clear locally saved services, opportunities and drafts in this browser. Continue?')) {
                     return;
                 }
+                localStorage.removeItem('bricksnexus_opportunities');
+                localStorage.removeItem('bricksnexus_opportunity_drafts');
                 localStorage.removeItem('bricksnexus_services');
                 localStorage.removeItem('bricksnexus_service_drafts');
-                // Remove dynamically added service cards and re-apply filters
+                // Remove dynamically added cards and re-apply filters
+                document.querySelectorAll('.feed-card[data-category=\"opportunities\"]').forEach((card, index) => {
+                    if (index > 0) {
+                        card.remove();
+                    }
+                });
                 document.querySelectorAll('.feed-card[data-category=\"services\"]').forEach((card, index) => {
                     if (index > 0) {
                         card.remove();
