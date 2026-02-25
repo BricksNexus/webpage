@@ -109,6 +109,7 @@
             <div class="utility-btns">
                 <button type="button">Smart Filters</button>
                 <button type="button">AI Recommended</button>
+                <button type="button" id="clear-local-services" style="font-size: 0.75rem;">Clear local services</button>
             </div>
         </div>
         <div class="active-filters">
@@ -245,11 +246,11 @@
     <script>
         const filterButtons = document.querySelectorAll('.filter-btn');
         const clearFiltersBtn = document.getElementById('clear-filters-btn');
-        const feedCards = document.querySelectorAll('.feed-card');
         const addMenuToggle = document.getElementById('add-menu-toggle');
         const addMenu = document.getElementById('add-menu');
 
         function applyCategoryFilters() {
+            const feedCards = document.querySelectorAll('.feed-card');
             const activeFilters = Array.from(filterButtons)
                 .filter(btn => btn.classList.contains('active'))
                 .map(btn => btn.dataset.filter);
@@ -312,6 +313,81 @@
             listButton.classList.remove('active');
             main.classList.add('map-mode');
         });
+
+        (function renderSavedServices() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem('bricksnexus_services') || '[]');
+            } catch (e) {
+                console.error('Failed to read services from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category=\"services\"]');
+
+            data.forEach(service => {
+                const card = document.createElement('article');
+                card.className = 'feed-card compact';
+                card.dataset.category = 'services';
+
+                const title = service.title || 'New service';
+                const category = service.category || 'Service';
+                const description = service.description || 'Service details added by the provider.';
+                const radius = service.radius || '';
+
+                card.innerHTML = `
+                    <div class=\"card-type\">Service</div>
+                    <div class=\"card-body\">
+                        <h3 class=\"card-title\"></h3>
+                        <div class=\"card-meta\">
+                            <span>${category}</span>
+                            ${service.consultationOffered ? '<span class=\"badge badge-sponsored\">Consultation available</span>' : ''}
+                            ${radius ? `<span>${radius}</span>` : ''}
+                        </div>
+                        <div class=\"card-details\"></div>
+                        <div class=\"card-actions\">
+                            <button type=\"button\">View details</button>
+                            <button type=\"button\" class=\"primary\">Message</button>
+                        </div>
+                    </div>
+                `;
+
+                const titleEl = card.querySelector('.card-title');
+                const detailsEl = card.querySelector('.card-details');
+                if (titleEl) titleEl.textContent = title;
+                if (detailsEl) detailsEl.textContent = description;
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor.nextSibling);
+                } else {
+                    feed.appendChild(card);
+                }
+            });
+        })();
+
+        (function attachClearLocalServices() {
+            const btn = document.getElementById('clear-local-services');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (!confirm('This will clear locally saved services and drafts in this browser. Continue?')) {
+                    return;
+                }
+                localStorage.removeItem('bricksnexus_services');
+                localStorage.removeItem('bricksnexus_service_drafts');
+                // Remove dynamically added service cards and re-apply filters
+                document.querySelectorAll('.feed-card[data-category=\"services\"]').forEach((card, index) => {
+                    if (index > 0) {
+                        card.remove();
+                    }
+                });
+                applyCategoryFilters();
+            });
+        })();
 
         (function() {
             var initials = sessionStorage.getItem('bricksnexus_initials');
