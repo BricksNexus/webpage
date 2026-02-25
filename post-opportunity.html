@@ -203,6 +203,28 @@
             </aside>
         </section>
     </main>
+
+    <!-- AI Opportunity Chatbot -->
+    <div class="chatbot-wrapper" id="chatbot-wrapper">
+        <div class="chatbot-panel" id="chatbot-panel">
+            <div class="chatbot-header">
+                <h3>Discover opportunities</h3>
+                <p>AI can help you find options you might not have considered (e.g. ADUs, zoning).</p>
+                <button type="button" class="chatbot-close" id="chatbot-close" aria-label="Close chat">×</button>
+            </div>
+            <div class="chatbot-messages" id="chatbot-messages"></div>
+            <div class="chatbot-input-wrap">
+                <input type="text" class="chatbot-input" id="chatbot-input" placeholder="Type your answer..." autocomplete="off">
+                <button type="button" class="chatbot-send" id="chatbot-send" aria-label="Send">Send</button>
+            </div>
+        </div>
+        <button type="button" class="chatbot-toggle" id="chatbot-toggle" aria-label="Open opportunity assistant">
+            <span class="chatbot-toggle-icon">💬</span>
+            <span class="chatbot-toggle-label">Find opportunities</span>
+        </button>
+    </div>
+
+    <script src="post-opportunity-chatbot.js"></script>
 </body>
 </html>
 
