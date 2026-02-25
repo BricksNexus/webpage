@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a New Service · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="post-service.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <a href="index.html">BricksNexus</a>
+        </div>
+
+        <div>
+            <div class="sidebar-section-title">Profile Picture &amp; Portfolio</div>
+            <div class="avatar-upload">
+                <div class="avatar-circle">📷</div>
+                <p>Drag &amp; drop portfolio</p>
+                <span>Or click to upload</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button>
+                <span class="icon">1</span>
+                Opportunities
+            </button>
+            <button class="active">
+                <span class="icon">2</span>
+                Services
+            </button>
+            <button>
+                <span class="icon">3</span>
+                Tokenization
+            </button>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="progress-steps">
+            <span class="step-done">✔ Service details</span>
+            <span>›</span>
+            <span class="step-active">2. Pricing &amp; availability</span>
+            <span>›</span>
+            <span>Review &amp; publish</span>
+        </div>
+
+        <header>
+            <h1 class="page-title">Post a New Service</h1>
+            <p class="page-subtitle">Describe what you offer so developers and builders can find you in the marketplace.</p>
+        </header>
+
+        <section class="layout">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-title">1. Service details</div>
+                    <span class="badge-step">Step 1 of 3</span>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Service title</span>
+                        <small>Clear name for your offering</small>
+                    </div>
+                    <div class="input-with-add">
+                        <input type="text" placeholder="e.g. Concrete slab installation">
+                        <button type="button" class="btn-add" aria-label="Add another">+</button>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Category</span>
+                        <small>Primary trade or discipline</small>
+                    </div>
+                    <input type="text" placeholder="e.g. Foundation work">
+                </div>
+
+                <div class="field-group">
+                    <div class="field-label">
+                        <span>Service description</span>
+                        <small>Scope, process and what clients can expect</small>
+                    </div>
+                    <textarea placeholder="Describe the service in detail: typical scope, materials, timeline, and any certifications or guarantees you provide."></textarea>
+                </div>
+
+                <div class="toggle-row">
+                    <span>On-site consultation offered</span>
+                    <div class="switch on" id="consultation-toggle" role="button" tabindex="0" aria-label="Toggle on-site consultation"></div>
+                </div>
+
+                <div class="section-title">Service area</div>
+                <p class="section-subtitle">Where do you typically provide this service?</p>
+                <div class="service-area-block">
+                    <div class="service-area-image">Image</div>
+                    <p class="service-area-text">Add a photo or sketch of the type of work (e.g. finished slab, formwork). You can also describe your typical service radius or preferred locations below.</p>
+                </div>
+
+                <div class="footer-actions">
+                    <div class="footer-left">
+                        <button type="button">Save as draft</button>
+                        <span>Changes are saved securely.</span>
+                    </div>
+                    <div class="footer-right">
+                        <button type="button" class="btn-secondary" onclick="history.back()">Back</button>
+                        <button type="button" class="btn-primary">Next step</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="map-panel">
+                <h2>Service location</h2>
+                <p class="section-subtitle">Pin your primary service area so clients can find you.</p>
+                <div class="map-wrapper">
+                    <iframe
+                        title="Service area map"
+                        src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&q=Austin,TX"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <div class="upload-zone">
+                    <strong>Drag &amp; drop files</strong>
+                    Upload drawings, specs or photos (e.g. PDF, images). Optional.
+                </div>
+
+                <h2 style="margin-top: 1.25rem;">Service radius</h2>
+                <p class="section-subtitle">Approximate area you cover (e.g. county, metro).</p>
+                <div class="field-group" style="margin-bottom: 0;">
+                    <input type="text" placeholder="e.g. Greater Austin, TX">
+                </div>
+
+                <div class="map-wrapper" style="margin-top: 1rem;">
+                    <iframe
+                        title="Service radius map"
+                        src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&q=Austin,TX"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('consultation-toggle').addEventListener('click', function() {
+            this.classList.toggle('on');
+        });
+        document.getElementById('consultation-toggle').addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                this.classList.toggle('on');
+            }
+        });
+    </script>
+</body>
+</html>

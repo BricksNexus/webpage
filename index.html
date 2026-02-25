@@ -16,6 +16,20 @@
             <span>BricksNexus</span>
         </div>
         <div class="top-bar-right">
+            <div class="top-bar-add">
+                <button class="icon-button" id="add-menu-toggle" aria-label="Add item" title="Add Open to Work, Service, Opportunity or Tokenization">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M12 5v14"/>
+                        <path d="M5 12h14"/>
+                    </svg>
+                </button>
+                <div class="add-menu" id="add-menu">
+                    <a href="open-to-work.html">Open to Work</a>
+                    <a href="post-service.html">Service</a>
+                    <a href="post-opportunity.html">Opportunity</a>
+                    <a href="#">Tokenization</a>
+                </div>
+            </div>
             <a href="login.html" class="icon-button top-bar-login" id="top-bar-login" aria-label="Login">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
@@ -43,7 +57,7 @@
                 BricksNexus
             </a>
         </div>
-        <button class="filter-btn active" data-filter="open-to-work">
+        <button class="filter-btn" data-filter="open-to-work">
             <span class="icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0z"/>
@@ -79,6 +93,10 @@
             </span>
             Tokenization
         </button>
+
+        <button class="clear-filters-btn" id="clear-filters-btn" type="button">
+            Clean filters
+        </button>
     </aside>
 
     <!-- Central area: feed -->
@@ -101,7 +119,7 @@
 
         <section class="feed" aria-label="Marketplace feed">
             <!-- Opportunity card -->
-            <article class="feed-card">
+            <article class="feed-card" data-category="opportunities">
                 <div class="card-type">Opportunity</div>
                 <div class="card-image-placeholder">Urban infill · Downtown</div>
                 <div class="card-body">
@@ -124,7 +142,7 @@
             </article>
 
             <!-- Open to Work card -->
-            <article class="feed-card compact">
+            <article class="feed-card compact" data-category="open-to-work">
                 <div class="card-type">Open to Work</div>
                 <div class="card-body">
                     <h3 class="card-title">General contractor available – residential & light commercial</h3>
@@ -144,7 +162,7 @@
             </article>
 
             <!-- Sponsored service card -->
-            <article class="feed-card compact">
+            <article class="feed-card compact" data-category="services">
                 <div class="card-type">Service</div>
                 <div class="card-body">
                     <h3 class="card-title">Structural engineering & permit drawings</h3>
@@ -225,12 +243,59 @@
     </aside>
 
     <script>
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+        const feedCards = document.querySelectorAll('.feed-card');
+        const addMenuToggle = document.getElementById('add-menu-toggle');
+        const addMenu = document.getElementById('add-menu');
+
+        function applyCategoryFilters() {
+            const activeFilters = Array.from(filterButtons)
+                .filter(btn => btn.classList.contains('active'))
+                .map(btn => btn.dataset.filter);
+
+            if (!activeFilters.length) {
+                feedCards.forEach(card => {
+                    card.style.display = '';
+                });
+                return;
+            }
+
+            feedCards.forEach(card => {
+                const category = card.dataset.category;
+                if (!category || activeFilters.includes(category)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                applyCategoryFilters();
             });
         });
+
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                applyCategoryFilters();
+            });
+        }
+
+        if (addMenuToggle && addMenu) {
+            addMenuToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                addMenu.classList.toggle('open');
+            });
+
+            document.addEventListener('click', () => {
+                addMenu.classList.remove('open');
+            });
+        }
+
         const main = document.querySelector('.main-content');
         const viewButtons = document.querySelectorAll('.view-toggle button');
         const listButton = viewButtons[0];
