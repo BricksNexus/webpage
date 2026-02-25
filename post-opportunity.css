@@ -354,6 +354,43 @@ select:focus {
     margin-top: 0.9rem;
 }
 
+.attachments-card {
+    margin-top: 0.75rem;
+}
+
+.attachments-drop {
+    border-radius: 14px;
+    border: 1px dashed var(--border-subtle);
+    background: #f8fafc;
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+}
+
+.attachments-drop strong {
+    color: var(--text-primary);
+}
+
+.attachments-drop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.attachments-hint {
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
 .footer-actions {
     display: flex;
     justify-content: space-between;
