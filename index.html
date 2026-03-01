@@ -37,7 +37,7 @@
                     <path d="M15 12H3"/>
                 </svg>
             </a>
-            <div class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="Logged in" title="You are signed in" style="display: none;"></div>
+            <a href="profile.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My profile" title="My profile" style="display: none;"></a>
             <button class="icon-button" aria-label="Open menu">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <path d="M4 7h16"/>
@@ -348,6 +348,8 @@
                 const card = document.createElement('article');
                 card.className = 'feed-card';
                 card.dataset.category = 'opportunities';
+                card.dataset.cardId = String(opp.id);
+                card.dataset.cardType = 'opportunity';
 
                 const title = opp.title || 'New opportunity';
                 const summary = opp.summary || 'Details added by the owner.';
@@ -414,6 +416,8 @@
                 const card = document.createElement('article');
                 card.className = 'feed-card compact';
                 card.dataset.category = 'services';
+                card.dataset.cardId = String(service.id);
+                card.dataset.cardType = 'service';
 
                 const title = service.title || 'New service';
                 const category = service.category || 'Service';
@@ -446,6 +450,44 @@
                     anchor.parentNode.insertBefore(card, anchor.nextSibling);
                 } else {
                     feed.appendChild(card);
+                }
+            });
+        })();
+
+        (function attachExpressInterestHandlers() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+            feed.addEventListener('click', function(e) {
+                var btn = e.target.closest('.card-actions button');
+                if (!btn) return;
+                var label = (btn.textContent || '').trim();
+                if (label !== 'Express interest' && label !== 'Message') return;
+                var card = btn.closest('.feed-card');
+                if (!card || !card.dataset.cardId) return;
+                var initials = sessionStorage.getItem('bricksnexus_initials');
+                var name = sessionStorage.getItem('bricksnexus_name') || '';
+                var email = sessionStorage.getItem('bricksnexus_email') || '';
+                if (!initials) {
+                    var returnTo = encodeURIComponent('index.html');
+                    window.location.href = 'login.html?return=' + returnTo;
+                    return;
+                }
+                try {
+                    var raw = localStorage.getItem('bricksnexus_interests') || '[]';
+                    var list = JSON.parse(raw);
+                    list.push({
+                        cardId: card.dataset.cardId,
+                        cardType: card.dataset.cardType || 'opportunity',
+                        interestedBy: initials,
+                        interestedByName: name || initials,
+                        interestedByEmail: email,
+                        date: new Date().toISOString()
+                    });
+                    localStorage.setItem('bricksnexus_interests', JSON.stringify(list));
+                    btn.textContent = 'Interest sent';
+                    btn.disabled = true;
+                } catch (err) {
+                    console.error('Failed to save interest', err);
                 }
             });
         })();

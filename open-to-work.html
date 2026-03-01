@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="open-to-work.css">
 </head>
 <body>
+    <script>
+        (function() {
+            if (!sessionStorage.getItem('bricksnexus_initials')) {
+                var returnTo = encodeURIComponent(window.location.pathname.split('/').pop() || 'open-to-work.html');
+                window.location.replace('login.html?return=' + returnTo);
+            }
+        })();
+    </script>
     <aside class="sidebar">
         <div class="logo">
             <a href="index.html">BricksNexus</a>

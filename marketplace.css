@@ -142,6 +142,11 @@ body {
     flex-shrink: 0;
 }
 
+a.user-avatar {
+    text-decoration: none;
+    color: inherit;
+}
+
 /* ========== Left Sidebar - Filters ========== */
 .sidebar-left {
     width: var(--sidebar-width);

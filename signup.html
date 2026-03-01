@@ -45,15 +45,26 @@
         </div>
     </main>
     <script>
-        document.getElementById('signup-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var name = (document.getElementById('name').value || '').trim().split(/\s+/);
-            var initials = name.length >= 2
-                ? (name[0][0] + name[name.length - 1][0])
-                : (name[0] ? name[0].slice(0, 2) : '');
-            if (initials) sessionStorage.setItem('bricksnexus_initials', initials);
-            window.location.href = 'index.html';
-        });
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var returnUrl = params.get('return') || 'index.html';
+            if (returnUrl.indexOf('://') !== -1) returnUrl = 'index.html';
+
+            document.getElementById('signup-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var fullName = (document.getElementById('name').value || '').trim();
+                var name = fullName.split(/\s+/).filter(Boolean);
+                var initials = name.length >= 2
+                    ? (name[0][0] + name[name.length - 1][0])
+                    : (name[0] ? name[0].slice(0, 2) : '');
+                initials = (initials || 'U').toUpperCase();
+                var email = (document.getElementById('email').value || '').trim();
+                sessionStorage.setItem('bricksnexus_initials', initials);
+                sessionStorage.setItem('bricksnexus_name', fullName);
+                sessionStorage.setItem('bricksnexus_email', email);
+                window.location.href = returnUrl;
+            });
+        })();
     </script>
 </body>
 </html>

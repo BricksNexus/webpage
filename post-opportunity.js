@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const roi = (roiEl?.value || '').trim();
         const address = (radiusEl?.value || '').trim();
 
+        const creatorId = sessionStorage.getItem('bricksnexus_initials') || '';
+        const creatorName = sessionStorage.getItem('bricksnexus_name') || '';
+        const creatorEmail = sessionStorage.getItem('bricksnexus_email') || '';
+
         const opp = {
             id: Date.now(),
             title,
@@ -36,7 +40,10 @@ document.addEventListener('DOMContentLoaded', function() {
             roi,
             address,
             createdAt: new Date().toISOString(),
-            imageDataUrl: null
+            imageDataUrl: null,
+            creatorId,
+            creatorName,
+            creatorEmail
         };
 
         const files = attachmentsEl?.files || [];

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="marketplace.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <script>
+        (function() {
+            if (!sessionStorage.getItem('bricksnexus_initials')) {
+                window.location.replace('login.html?return=profile.html');
+            }
+        })();
+    </script>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <a href="index.html" class="top-bar-logo">
+                <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
+                <span>BricksNexus</span>
+            </a>
+        </div>
+        <div class="top-bar-right">
+            <a href="index.html" class="icon-button" aria-label="Back to marketplace">← Marketplace</a>
+            <a href="profile.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My profile"></a>
+        </div>
+    </header>
+
+    <main class="profile-main">
+        <div class="profile-header">
+            <div class="profile-photo-wrap">
+                <img id="profile-photo" src="" alt="Profile" class="profile-photo">
+                <div id="profile-photo-placeholder" class="profile-photo-placeholder"></div>
+            </div>
+            <div class="profile-info">
+                <h1 id="profile-name" class="profile-name"></h1>
+                <p id="profile-email" class="profile-email"></p>
+                <p id="profile-initials-hint" class="profile-meta"></p>
+            </div>
+        </div>
+
+        <section class="profile-section">
+            <h2>My cards</h2>
+            <p class="section-desc">Opportunities and services you’ve posted. See who has expressed interest.</p>
+            <div id="my-cards-list" class="my-cards-list"></div>
+            <p id="no-cards-message" class="no-cards-message" style="display: none;">You haven’t posted any opportunities or services yet. <a href="post-opportunity.html">Post an opportunity</a> or <a href="post-service.html">post a service</a>.</p>
+        </section>
+    </main>
+
+    <script src="profile.js"></script>
+</body>
+</html>

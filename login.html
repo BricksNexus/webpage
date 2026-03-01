@@ -42,14 +42,22 @@
         </div>
     </main>
     <script>
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var email = (document.getElementById('email').value || '').trim();
-            var part = email.split('@')[0] || '';
-            var initials = part.slice(0, 2);
-            if (initials) sessionStorage.setItem('bricksnexus_initials', initials);
-            window.location.href = 'index.html';
-        });
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var returnUrl = params.get('return') || 'index.html';
+            if (returnUrl.indexOf('://') !== -1) returnUrl = 'index.html';
+
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var email = (document.getElementById('email').value || '').trim();
+                var part = email.split('@')[0] || '';
+                var initials = (part.slice(0, 2) || 'U').toUpperCase();
+                sessionStorage.setItem('bricksnexus_initials', initials);
+                sessionStorage.setItem('bricksnexus_email', email);
+                sessionStorage.setItem('bricksnexus_name', ''); // login has no name
+                window.location.href = returnUrl;
+            });
+        })();
     </script>
 </body>
 </html>

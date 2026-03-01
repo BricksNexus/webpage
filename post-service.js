@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const radius = (radiusEl?.value || '').trim();
         const consultationOffered = consultationToggle?.classList.contains('on') || false;
 
+        const creatorId = sessionStorage.getItem('bricksnexus_initials') || '';
+        const creatorName = sessionStorage.getItem('bricksnexus_name') || '';
+        const creatorEmail = sessionStorage.getItem('bricksnexus_email') || '';
+
         const service = {
             id: Date.now(),
             title,
@@ -33,7 +37,10 @@ document.addEventListener('DOMContentLoaded', function() {
             description,
             radius,
             consultationOffered,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            creatorId,
+            creatorName,
+            creatorEmail
         };
 
         return { service, titleEl };
