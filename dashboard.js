@@ -65,6 +65,61 @@
         });
     });
 
+    function getUserTokenizationItems() {
+        var published = app.readJson(app.KEYS.tokenizationSubmissions, []);
+        var draft = app.readJson(app.KEYS.tokenizationDraft, null);
+        var items = [];
+
+        if (Array.isArray(published)) {
+            published.forEach(function(entry) {
+                var submission = entry && entry.submissionData ? entry.submissionData : null;
+                if (!submission) return;
+                if (String(submission.creatorUserId || '') !== String(currentUser.id)) return;
+                items.push({
+                    id: entry.id,
+                    title: submission.property && submission.property.propertyName,
+                    summary: submission.property && submission.property.description,
+                    address: submission.property && submission.property.address,
+                    assetType: submission.property && submission.property.assetType,
+                    budget: submission.financials && submission.financials.totalCapitalRaise
+                        ? '$' + Number(submission.financials.totalCapitalRaise).toLocaleString()
+                        : '',
+                    yieldValue: submission.financials && submission.financials.estimatedAnnualYield,
+                    status: submission.status || 'published',
+                    creatorUserId: submission.creatorUserId,
+                    createdAt: entry.publishedAt || new Date().toISOString(),
+                    updatedAt: entry.updatedAt || entry.publishedAt || new Date().toISOString(),
+                    __sourceKey: app.KEYS.tokenizationSubmissions,
+                    __typeLabel: 'Tokenization',
+                    __editHref: 'post-tokenization.html?edit=' + encodeURIComponent(entry.id),
+                    __cardType: 'tokenization'
+                });
+            });
+        }
+
+        if (draft && draft.formValues && draft.submissionData && String(draft.submissionData.creatorUserId || '') === String(currentUser.id)) {
+            items.push({
+                id: draft.id || 'tokenization-draft',
+                title: draft.formValues.propertyName,
+                summary: draft.formValues.description,
+                address: draft.formValues.address,
+                assetType: draft.formValues.assetType,
+                budget: draft.formValues.totalCapitalRaise ? '$' + Number(draft.formValues.totalCapitalRaise).toLocaleString() : '',
+                yieldValue: draft.formValues.estimatedAnnualYield,
+                status: 'draft',
+                creatorUserId: draft.submissionData.creatorUserId,
+                createdAt: draft.savedAt || new Date().toISOString(),
+                updatedAt: draft.savedAt || new Date().toISOString(),
+                __sourceKey: app.KEYS.tokenizationDraft,
+                __typeLabel: 'Tokenization Draft',
+                __editHref: 'post-tokenization.html?draft=1',
+                __cardType: 'tokenization'
+            });
+        }
+
+        return items;
+    }
+
     function getAllItems() {
         return []
             .concat(app.getUserItems(app.KEYS.opportunities).map(function(item) {
@@ -109,6 +164,7 @@
                 item.__cardType = 'open-to-work';
                 return item;
             }))
+            .concat(getUserTokenizationItems())
             .sort(function(a, b) {
                 return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
             });
@@ -143,16 +199,23 @@
         if (item.budget) metaBits.push('Budget: ' + item.budget);
         if (item.radius) metaBits.push(item.radius);
         if (item.roleTitle) metaBits.push(item.roleTitle);
+        if (item.address) metaBits.push(item.address);
+        if (item.assetType) metaBits.push(item.assetType);
+        if (item.yieldValue) metaBits.push('Yield: ' + item.yieldValue + '%');
 
         var article = document.createElement('article');
-        article.className = item.__typeLabel.indexOf('Opportunity') === 0 ? 'feed-card' : 'feed-card compact';
+        article.className = item.__typeLabel.indexOf('Opportunity') === 0 || item.__cardType === 'tokenization'
+            ? 'feed-card'
+            : 'feed-card compact';
         article.setAttribute('data-item-id', item.id);
         article.setAttribute('data-source-key', item.__sourceKey);
         article.setAttribute('data-card-type', item.__cardType);
 
         var body = ''
             + '<div class="card-type">' + escapeHtml(item.__typeLabel) + '</div>'
-            + (item.imageDataUrl ? '<img class="card-image" src="' + escapeHtml(item.imageDataUrl) + '" alt="">' : '')
+            + (item.imageDataUrl
+                ? '<img class="card-image" src="' + escapeHtml(item.imageDataUrl) + '" alt="">'
+                : (item.__cardType === 'tokenization' ? '<div class="card-image-placeholder">Tokenization</div>' : ''))
             + '<div class="card-body">'
             + '<div class="card-meta"><span class="' + statusClass + '">' + escapeHtml(item.status || 'published') + '</span>' + (metaBits.length ? '<span>' + metaBits.map(escapeHtml).join(' · ') + '</span>' : '') + '</div>'
             + '<h3 class="card-title">' + escapeHtml(title) + '</h3>'
@@ -216,6 +279,46 @@
 
     renderItems();
 
+    function updateTokenizationStatus(sourceKey, itemId, nextStatus) {
+        if (sourceKey === app.KEYS.tokenizationDraft) {
+            var draft = app.readJson(app.KEYS.tokenizationDraft, null);
+            if (!draft || !draft.submissionData) return;
+            draft.submissionData.status = nextStatus;
+            draft.savedAt = new Date().toISOString();
+            app.writeJson(app.KEYS.tokenizationDraft, draft);
+            return;
+        }
+
+        var entries = app.readJson(app.KEYS.tokenizationSubmissions, []);
+        if (!Array.isArray(entries)) return;
+        entries = entries.map(function(entry) {
+            if (String(entry.id) !== String(itemId)) return entry;
+            if (!entry.submissionData) entry.submissionData = {};
+            entry.submissionData.status = nextStatus;
+            entry.updatedAt = new Date().toISOString();
+            return entry;
+        });
+        app.writeJson(app.KEYS.tokenizationSubmissions, entries);
+    }
+
+    function removeDashboardItem(sourceKey, itemId) {
+        if (sourceKey === app.KEYS.tokenizationDraft) {
+            localStorage.removeItem(app.KEYS.tokenizationDraft);
+            return;
+        }
+
+        if (sourceKey === app.KEYS.tokenizationSubmissions) {
+            var entries = app.readJson(app.KEYS.tokenizationSubmissions, []);
+            if (!Array.isArray(entries)) return;
+            app.writeJson(app.KEYS.tokenizationSubmissions, entries.filter(function(entry) {
+                return String(entry.id) !== String(itemId);
+            }));
+            return;
+        }
+
+        app.removeItem(sourceKey, itemId);
+    }
+
     if (itemList) {
         itemList.addEventListener('change', function(event) {
             var select = event.target.closest('.dashboard-status-select');
@@ -224,11 +327,15 @@
             if (!card) return;
             var sourceKey = card.getAttribute('data-source-key');
             var itemId = select.getAttribute('data-status-id');
-            app.updateItem(sourceKey, itemId, function(item) {
-                item.status = select.value;
-                item.updatedAt = new Date().toISOString();
-                return item;
-            });
+            if (sourceKey === app.KEYS.tokenizationSubmissions || sourceKey === app.KEYS.tokenizationDraft) {
+                updateTokenizationStatus(sourceKey, itemId, select.value);
+            } else {
+                app.updateItem(sourceKey, itemId, function(item) {
+                    item.status = select.value;
+                    item.updatedAt = new Date().toISOString();
+                    return item;
+                });
+            }
             renderItems();
             renderThreads();
             renderActiveThread();
@@ -240,7 +347,7 @@
                 var itemId = deleteBtn.getAttribute('data-delete-id');
                 var card = deleteBtn.closest('[data-source-key]');
                 if (!card) return;
-                app.removeItem(card.getAttribute('data-source-key'), itemId);
+                removeDashboardItem(card.getAttribute('data-source-key'), itemId);
                 renderItems();
                 return;
             }
@@ -570,7 +677,7 @@
     }
 
     window.addEventListener('storage', function(event) {
-        if ([app.KEYS.messages, app.KEYS.opportunities, app.KEYS.services, app.KEYS.openToWork, app.KEYS.interests].indexOf(event.key) === -1) return;
+        if ([app.KEYS.messages, app.KEYS.opportunities, app.KEYS.services, app.KEYS.openToWork, app.KEYS.interests, app.KEYS.tokenizationDraft, app.KEYS.tokenizationSubmissions].indexOf(event.key) === -1) return;
         currentUser = app.getCurrentUser() || currentUser;
         renderItems();
         renderThreads();

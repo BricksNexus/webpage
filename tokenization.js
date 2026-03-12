@@ -1,7 +1,8 @@
 (function() {
     'use strict';
 
-    var tokenData = {
+    var app = window.BricksNexusApp;
+    var defaultTokenData = {
         propertyName: 'Miami Harbor Residences',
         location: 'Wynwood, Miami, Florida',
         tokenPrice: 50,
@@ -58,12 +59,203 @@
         ]
     };
 
+    var tokenData = resolveTokenData();
+
     function byId(id) {
         return document.getElementById(id);
     }
 
     function formatCurrency(value) {
         return '$' + Number(value || 0).toLocaleString();
+    }
+
+    function truncateAddress(value) {
+        if (!value) return 'Pending deployment';
+        if (value === 'Pending deployment') return value;
+        if (value.length <= 16) return value;
+        return value.slice(0, 8) + '...' + value.slice(-6);
+    }
+
+    function getQueryId() {
+        try {
+            return new URLSearchParams(window.location.search).get('id') || '';
+        } catch (error) {
+            return '';
+        }
+    }
+
+    function resolveTokenData() {
+        var selectedId = getQueryId();
+        var submissions;
+
+        try {
+            submissions = JSON.parse(localStorage.getItem('bricksnexus_tokenization_submissions') || '[]');
+        } catch (error) {
+            console.error('Failed to parse tokenization submissions', error);
+            submissions = [];
+        }
+
+        if (!Array.isArray(submissions) || !submissions.length) {
+            return defaultTokenData;
+        }
+
+        var entry = submissions.find(function(item) {
+            return String(item.id || '') === String(selectedId || '');
+        }) || submissions[0];
+
+        if (!entry || !entry.submissionData) {
+            return defaultTokenData;
+        }
+
+        return normalizeSubmission(entry);
+    }
+
+    function normalizeSubmission(entry) {
+        var submission = entry.submissionData || {};
+        var property = submission.property || {};
+        var financials = submission.financials || {};
+        var legalCompliance = submission.legalCompliance || {};
+        var mediaDocuments = submission.mediaDocuments || {};
+        var tokenPrice = Number(financials.tokenPrice || 0);
+        var annualYield = Number(financials.estimatedAnnualYield || 0);
+        var fundingGoal = Number(financials.totalCapitalRaise || 0);
+        var contractAddress = legalCompliance.smartContractAddress || '';
+
+        return {
+            propertyName: property.propertyName || defaultTokenData.propertyName,
+            location: property.address || defaultTokenData.location,
+            tokenPrice: tokenPrice || defaultTokenData.tokenPrice,
+            estimatedAnnualYield: annualYield || defaultTokenData.estimatedAnnualYield,
+            minimumInvestment: Math.max(1000, tokenPrice ? tokenPrice * 20 : 1000),
+            fundingGoal: fundingGoal || defaultTokenData.fundingGoal,
+            raisedAmount: 0,
+            smartContractAddress: contractAddress || 'Pending deployment',
+            network: 'Polygon',
+            explorerUrl: contractAddress ? 'https://polygonscan.com/address/' + contractAddress : '#',
+            description: property.description || 'A new tokenization opportunity submitted through the BricksNexus issuance workflow.',
+            investmentThesis: buildInvestmentThesis(property, financials, legalCompliance),
+            gallery: buildGallery(property, mediaDocuments),
+            capitalStack: buildCapitalStack(property),
+            projectedCashFlow: buildCashFlow(fundingGoal || defaultTokenData.fundingGoal, annualYield || defaultTokenData.estimatedAnnualYield),
+            documents: buildDocuments(mediaDocuments, legalCompliance),
+            sourceId: entry.id || '',
+            ownerUserId: submission.creatorUserId || '',
+            ownerName: submission.creatorName || 'Issuer'
+        };
+    }
+
+    function buildInvestmentThesis(property, financials, legalCompliance) {
+        return [
+            (property.assetType || 'Real estate asset') + ' positioned for marketplace distribution and investor diligence.',
+            'Target annual yield of ' + (financials.estimatedAnnualYield || defaultTokenData.estimatedAnnualYield) + '% with ' + ((financials.dividendFrequency || 'Quarterly').toLowerCase()) + ' distributions.',
+            'Structured under ' + (legalCompliance.regulationType || 'verified regulation pathway') + ' via ' + (legalCompliance.spvName || 'a dedicated SPV') + '.'
+        ];
+    }
+
+    function buildGallery(property, mediaDocuments) {
+        var files = Array.isArray(mediaDocuments.propertyImages) ? mediaDocuments.propertyImages : [];
+        var titles = files.length ? files.map(function(file, index) {
+            return {
+                id: file.id || ('gallery-' + index),
+                title: file.name || ('Image ' + (index + 1)),
+                caption: 'Uploaded asset media for ' + (property.propertyName || 'this tokenization opportunity') + '.'
+            };
+        }) : [
+            { id: 'gallery-1', title: 'Hero View', caption: 'Primary branded preview for the tokenized asset.' },
+            { id: 'gallery-2', title: 'Asset Overview', caption: 'High-level overview frame for marketplace presentation.' },
+            { id: 'gallery-3', title: 'Investor Snapshot', caption: 'Detail-oriented slide for diligence and fundraising.' }
+        ];
+
+        return titles.slice(0, 3).map(function(item, index) {
+            var backgrounds = [
+                "linear-gradient(135deg, rgba(26,43,60,0.92), rgba(45,156,219,0.54))",
+                "linear-gradient(135deg, rgba(16,32,47,0.88), rgba(39,174,96,0.38))",
+                "linear-gradient(135deg, rgba(26,43,60,0.88), rgba(99,194,246,0.42))"
+            ];
+
+            return {
+                id: item.id,
+                title: item.title,
+                caption: item.caption,
+                image: backgrounds[index % backgrounds.length]
+            };
+        });
+    }
+
+    function buildCapitalStack(property) {
+        if ((property.assetType || '').toLowerCase() === 'industrial') {
+            return [
+                { label: 'Senior Debt', value: 58, color: '#1A2B3C' },
+                { label: 'Sponsor Equity', value: 22, color: '#2D9CDB' },
+                { label: 'Tokenized Equity', value: 20, color: '#6FCF97' }
+            ];
+        }
+
+        if ((property.assetType || '').toLowerCase() === 'commercial') {
+            return [
+                { label: 'Senior Debt', value: 60, color: '#1A2B3C' },
+                { label: 'Sponsor Equity', value: 20, color: '#2D9CDB' },
+                { label: 'Tokenized Equity', value: 20, color: '#6FCF97' }
+            ];
+        }
+
+        return [
+            { label: 'Senior Debt', value: 55, color: '#1A2B3C' },
+            { label: 'Sponsor Equity', value: 20, color: '#2D9CDB' },
+            { label: 'Tokenized Equity', value: 25, color: '#6FCF97' }
+        ];
+    }
+
+    function buildCashFlow(fundingGoal, annualYield) {
+        var rows = [];
+        var baseRevenue = Math.round(fundingGoal * 0.14);
+        var yieldValue = Number(annualYield || 0);
+
+        for (var year = 1; year <= 5; year += 1) {
+            var growthMultiplier = 1 + ((year - 1) * 0.05);
+            var revenue = Math.round(baseRevenue * growthMultiplier);
+            var distributions = Math.round(fundingGoal * ((yieldValue / 100) * (0.78 + ((year - 1) * 0.04))));
+            rows.push({
+                year: 'Year ' + year,
+                revenue: formatCurrency(revenue),
+                distributions: formatCurrency(distributions),
+                totalReturn: (yieldValue + ((year - 1) * 1.1)).toFixed(1) + '%'
+            });
+        }
+
+        return rows;
+    }
+
+    function buildDocuments(mediaDocuments, legalCompliance) {
+        var files = Array.isArray(mediaDocuments.legalDocuments) ? mediaDocuments.legalDocuments : [];
+        if (!files.length) {
+            return [
+                { id: 'doc-ppm', name: 'Private Placement Memorandum', type: 'PDF', size: 'Pending upload' },
+                { id: 'doc-title', name: 'Title & Entity Structure', type: legalCompliance.regulationType || 'Legal', size: 'Pending upload' }
+            ];
+        }
+
+        return files.map(function(file, index) {
+            return {
+                id: file.id || ('doc-' + index),
+                name: file.name || ('Document ' + (index + 1)),
+                type: inferFileType(file),
+                size: formatFileSize(file.size)
+            };
+        });
+    }
+
+    function inferFileType(file) {
+        var source = (file.type || file.name || '').toLowerCase();
+        if (source.indexOf('pdf') !== -1) return 'PDF';
+        if (source.indexOf('png') !== -1 || source.indexOf('jpg') !== -1 || source.indexOf('jpeg') !== -1) return 'Image';
+        return 'Document';
+    }
+
+    function formatFileSize(size) {
+        if (!size) return 'Uploaded';
+        if (size >= 1024 * 1024) return (size / (1024 * 1024)).toFixed(1) + ' MB';
+        return Math.max(1, Math.round(size / 1024)) + ' KB';
     }
 
     function renderHeaderData() {
@@ -78,8 +270,10 @@
         byId('token-raised-amount').textContent = formatCurrency(tokenData.raisedAmount) + ' raised';
         byId('token-target-amount').textContent = formatCurrency(tokenData.fundingGoal) + ' target';
         byId('token-network').textContent = tokenData.network;
-        byId('token-contract-address').textContent = tokenData.smartContractAddress.slice(0, 8) + '...' + tokenData.smartContractAddress.slice(-6);
-        byId('token-explorer-link').href = tokenData.explorerUrl;
+        byId('token-contract-address').textContent = truncateAddress(tokenData.smartContractAddress);
+        byId('token-explorer-link').href = tokenData.explorerUrl || '#';
+        byId('token-explorer-link').setAttribute('aria-disabled', tokenData.explorerUrl === '#' ? 'true' : 'false');
+        document.title = tokenData.propertyName + ' · Tokenization Opportunity · BricksNexus';
     }
 
     function renderGallery() {
@@ -89,6 +283,7 @@
 
         function setActive(index) {
             var item = tokenData.gallery[index];
+            if (!item) return;
             main.style.backgroundImage = item.image;
             byId('token-gallery-caption-text').textContent = item.caption;
             Array.prototype.forEach.call(thumbs.querySelectorAll('.token-thumb'), function(thumb, thumbIndex) {
@@ -114,7 +309,9 @@
     }
 
     function renderProgress() {
-        var percent = Math.min(100, Math.round((tokenData.raisedAmount / tokenData.fundingGoal) * 100));
+        var percent = tokenData.fundingGoal > 0
+            ? Math.min(100, Math.round((tokenData.raisedAmount / tokenData.fundingGoal) * 100))
+            : 0;
         byId('token-progress-percent').textContent = percent + '% sold';
         requestAnimationFrame(function() {
             byId('token-progress-fill').style.width = percent + '%';
@@ -180,10 +377,10 @@
             row.className = 'token-doc-row';
             row.innerHTML =
                 '<div class="token-doc-meta">' +
-                '<div class="token-doc-icon">PDF</div>' +
+                '<div class="token-doc-icon">' + doc.type + '</div>' +
                 '<div><strong>' + doc.name + '</strong><p>' + doc.type + ' · ' + doc.size + '</p></div>' +
                 '</div>' +
-                '<button type="button" class="token-doc-download">Download</button>';
+                '<button type="button" class="token-doc-download">View metadata</button>';
             list.appendChild(row);
         });
     }
@@ -225,6 +422,47 @@
         update();
     }
 
+    function setupInvestorInquiry() {
+        var investBtn = byId('token-invest-btn');
+        var messageBtn = byId('token-message-btn');
+        if (!investBtn || !messageBtn || !app) return;
+
+        function openThread(actionType) {
+            if (!tokenData.sourceId) return;
+            if (!app.isAuthenticated()) {
+                app.requireAuth('tokenization.html?id=' + encodeURIComponent(tokenData.sourceId));
+                return;
+            }
+
+            var thread = app.openCardThread({
+                cardId: tokenData.sourceId,
+                cardType: 'tokenization',
+                cardTitle: tokenData.propertyName || 'Tokenization opportunity',
+                cardLabel: 'Tokenization',
+                ownerUserId: tokenData.ownerUserId || '',
+                ownerName: tokenData.ownerName || 'Issuer',
+                actionType: actionType || 'message'
+            });
+            if (!thread) return;
+            window.location.href = 'dashboard.html?panel=messages&thread=' + encodeURIComponent(thread.id);
+        }
+
+        if (!tokenData.sourceId) {
+            investBtn.disabled = true;
+            messageBtn.disabled = true;
+            investBtn.title = 'Messaging is available for published tokenization submissions.';
+            messageBtn.title = 'Messaging is available for published tokenization submissions.';
+            return;
+        }
+
+        investBtn.addEventListener('click', function() {
+            openThread('invest');
+        });
+        messageBtn.addEventListener('click', function() {
+            openThread('message');
+        });
+    }
+
     renderHeaderData();
     renderGallery();
     renderProgress();
@@ -234,4 +472,5 @@
     renderDocuments();
     setupTabs();
     setupCalculator();
+    setupInvestorInquiry();
 })();

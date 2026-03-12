@@ -27,7 +27,7 @@
                     <a href="open-to-work.html">Open to Work</a>
                     <a href="post-service.html">Service</a>
                     <a href="post-opportunity.html">Opportunity</a>
-                    <a href="tokenization.html">Tokenization</a>
+                    <a href="post-tokenization.html">Tokenization</a>
                 </div>
             </div>
             <a href="login.html" class="icon-button top-bar-login" id="top-bar-login" aria-label="Login">
@@ -410,6 +410,78 @@
             });
         })();
 
+        (function renderSavedTokenization() {
+            const feed = document.querySelector('.feed');
+            if (!feed || !app) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem(app.KEYS.tokenizationSubmissions) || '[]');
+            } catch (e) {
+                console.error('Failed to read tokenization submissions from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category="opportunities"]');
+
+            data.forEach(entry => {
+                const submission = entry && entry.submissionData ? entry.submissionData : {};
+                if ((submission.status || 'published') !== 'published') return;
+                const property = submission.property || {};
+                const financials = submission.financials || {};
+                const legalCompliance = submission.legalCompliance || {};
+
+                const card = document.createElement('article');
+                card.className = 'feed-card';
+                card.dataset.category = 'tokenization';
+                card.dataset.cardId = String(entry.id || '');
+                card.dataset.cardType = 'tokenization';
+                card.dataset.ownerName = submission.creatorName || '';
+                card.dataset.ownerUserId = submission.creatorUserId || '';
+
+                const title = property.propertyName || 'New tokenization opportunity';
+                const assetType = property.assetType || 'Tokenized asset';
+                const address = property.address || '';
+                const yieldValue = financials.estimatedAnnualYield ? financials.estimatedAnnualYield + '%' : 'Yield pending';
+                const tokenPrice = financials.tokenPrice ? '$' + Number(financials.tokenPrice).toLocaleString() : 'TBD';
+                const capitalRaise = financials.totalCapitalRaise ? '$' + Number(financials.totalCapitalRaise).toLocaleString() : 'TBD';
+
+                card.innerHTML = `
+                    <div class="card-type">Tokenization</div>
+                    <div class="card-image-placeholder">${assetType}</div>
+                    <div class="card-body">
+                        <h3 class="card-title"></h3>
+                        <div class="card-meta">
+                            <span>${address}</span>
+                            <span class="badge badge-verified">${legalCompliance.regulationType || 'Verified structure'}</span>
+                            <span>${yieldValue}</span>
+                        </div>
+                        <div class="card-details"></div>
+                        <div class="card-actions">
+                            <button type="button" data-view-tokenization="true">View details</button>
+                            <button type="button">Save</button>
+                            <button type="button" class="primary" data-requires-auth="message">Message issuer</button>
+                        </div>
+                    </div>
+                `;
+
+                const titleEl = card.querySelector('.card-title');
+                const detailsEl = card.querySelector('.card-details');
+                if (titleEl) titleEl.textContent = title;
+                if (detailsEl) {
+                    detailsEl.textContent = 'Token price: ' + tokenPrice + ' · Capital raise: ' + capitalRaise;
+                }
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor.nextSibling);
+                } else {
+                    feed.insertBefore(card, feed.firstChild);
+                }
+            });
+        })();
+
         (function renderSavedServices() {
             const feed = document.querySelector('.feed');
             if (!feed) return;
@@ -532,8 +604,13 @@
             feed.addEventListener('click', function(e) {
                 var btn = e.target.closest('.card-actions button');
                 if (!btn) return;
-                var actionType = btn.getAttribute('data-requires-auth') || '';
                 var card = btn.closest('.feed-card');
+                if (btn.hasAttribute('data-view-tokenization') && card && card.dataset.cardId) {
+                    window.location.href = 'tokenization.html?id=' + encodeURIComponent(card.dataset.cardId);
+                    return;
+                }
+
+                var actionType = btn.getAttribute('data-requires-auth') || '';
                 var currentUser = app.getCurrentUser();
 
                 if (actionType && !currentUser) {
@@ -548,6 +625,7 @@
                         cardType: card.dataset.cardType || 'opportunity',
                         cardTitle: (card.querySelector('.card-title') || {}).textContent || 'Card discussion',
                         cardLabel: (card.querySelector('.card-type') || {}).textContent || 'Opportunity',
+                        ownerUserId: card.dataset.ownerUserId || '',
                         ownerName: card.dataset.ownerName || '',
                         actionType: actionType
                     });
@@ -591,6 +669,8 @@
                 localStorage.removeItem('bricksnexus_opportunity_drafts');
                 localStorage.removeItem('bricksnexus_services');
                 localStorage.removeItem('bricksnexus_service_drafts');
+                localStorage.removeItem(app.KEYS.tokenizationDraft);
+                localStorage.removeItem(app.KEYS.tokenizationSubmissions);
                 // Remove dynamically added cards and re-apply filters
                 document.querySelectorAll('.feed-card[data-category=\"opportunities\"]').forEach((card, index) => {
                     if (index > 0) {
@@ -601,6 +681,9 @@
                     if (index > 0) {
                         card.remove();
                     }
+                });
+                document.querySelectorAll('.feed-card[data-category=\"tokenization\"]').forEach(card => {
+                    card.remove();
                 });
                 applyCategoryFilters();
             });

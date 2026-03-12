@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Tokenization Opportunity · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="post-tokenization.css">
+</head>
+<body>
+    <script src="app-state.js"></script>
+    <script>
+        if (!window.BricksNexusApp.isAuthenticated()) {
+            var returnTo = encodeURIComponent(window.location.pathname.split('/').pop() + window.location.search);
+            window.location.replace('login.html?return=' + returnTo);
+        }
+    </script>
+
+    <div class="token-builder-shell">
+        <aside class="token-builder-sidebar">
+            <a href="index.html" class="token-builder-brand">BricksNexus</a>
+            <p class="token-builder-sidebar-copy">Tokenization issuer flow</p>
+
+            <div class="token-sidebar-card">
+                <p class="token-sidebar-eyebrow">Progress</p>
+                <nav class="token-stepper" aria-label="Tokenization builder steps">
+                    <button type="button" class="token-step active" data-target-step="property">
+                        <span class="token-step-index">1</span>
+                        <span>Property DNA</span>
+                    </button>
+                    <button type="button" class="token-step" data-target-step="financials">
+                        <span class="token-step-index">2</span>
+                        <span>Financial Engineering</span>
+                    </button>
+                    <button type="button" class="token-step" data-target-step="legal">
+                        <span class="token-step-index">3</span>
+                        <span>Legal &amp; Compliance</span>
+                    </button>
+                    <button type="button" class="token-step" data-target-step="media">
+                        <span class="token-step-index">4</span>
+                        <span>Media &amp; Docs</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="token-sidebar-card">
+                <p class="token-sidebar-eyebrow">Publishing Notes</p>
+                <ul class="token-sidebar-list">
+                    <li>Publishing creates a marketplace card and a dynamic detail page entry.</li>
+                    <li>Save as draft to return later in this browser without losing progress.</li>
+                    <li>Required fields must be complete before the marketplace publish action unlocks.</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="token-builder-main">
+            <header class="token-builder-header">
+                <div>
+                    <p class="token-header-eyebrow">Marketplace Submission</p>
+                    <h1>Submit a property for tokenization</h1>
+                    <p class="token-header-copy">Define the asset, engineer the economics, attach the compliance structure, and preview how the listing will appear on BricksNexus before publishing.</p>
+                </div>
+                <div class="token-header-actions">
+                    <a href="dashboard.html" class="token-header-link">Dashboard</a>
+                    <a href="index.html" class="token-header-link">Marketplace</a>
+                </div>
+            </header>
+
+            <section class="token-builder-layout">
+                <form id="tokenization-builder-form" class="token-builder-form">
+                    <section class="token-section active" data-step="property" data-step-index="0">
+                        <button type="button" class="token-section-toggle">
+                            <span class="token-section-number">1</span>
+                            <span class="token-section-title">Property DNA</span>
+                        </button>
+                        <div class="token-section-panel">
+                            <p class="token-section-copy">Capture the identity and narrative that will anchor the tokenization listing.</p>
+
+                            <div class="token-grid-two">
+                                <label class="token-field">
+                                    <span>Property Name</span>
+                                    <input type="text" id="token-property-name-input" placeholder="Miami Harbor Residences">
+                                </label>
+                                <label class="token-field">
+                                    <span>Asset Type</span>
+                                    <select id="token-asset-type">
+                                        <option value="">Select asset type</option>
+                                        <option value="Residential">Residential</option>
+                                        <option value="Commercial">Commercial</option>
+                                        <option value="Industrial">Industrial</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <label class="token-field">
+                                <span>Address</span>
+                                <input type="text" id="token-address-input" placeholder="Wynwood, Miami, Florida">
+                            </label>
+
+                            <label class="token-field">
+                                <span>Bio / Description</span>
+                                <textarea id="token-description-input" rows="5" placeholder="Describe the property, the value creation story, and why this asset belongs on the BricksNexus marketplace."></textarea>
+                            </label>
+
+                            <div class="token-section-actions">
+                                <button type="button" class="token-btn token-btn-secondary" data-save-draft-step="property">Save as Draft</button>
+                                <button type="button" class="token-btn token-btn-primary" data-continue-step="property">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="token-section" data-step="financials" data-step-index="1">
+                        <button type="button" class="token-section-toggle">
+                            <span class="token-section-number">2</span>
+                            <span class="token-section-title">Financial Engineering</span>
+                        </button>
+                        <div class="token-section-panel">
+                            <p class="token-section-copy">Set the raise mechanics and investor-facing financial metrics.</p>
+
+                            <div class="token-grid-two">
+                                <label class="token-field">
+                                    <span>Total Capital Raise</span>
+                                    <input type="number" min="0" step="1000" id="token-capital-raise" placeholder="2500000">
+                                </label>
+                                <label class="token-field">
+                                    <span>Token Price</span>
+                                    <input type="number" min="0" step="1" id="token-price-input" placeholder="50">
+                                </label>
+                            </div>
+
+                            <div class="token-grid-two">
+                                <label class="token-field">
+                                    <span>Estimated Annual Yield (%)</span>
+                                    <input type="number" min="0" step="0.1" id="token-yield-input" placeholder="12.5">
+                                </label>
+                                <label class="token-field">
+                                    <span>Dividend Frequency</span>
+                                    <select id="token-dividend-frequency">
+                                        <option value="">Select frequency</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Quarterly">Quarterly</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div class="token-section-actions">
+                                <button type="button" class="token-btn token-btn-secondary" data-open-step="property">Back</button>
+                                <button type="button" class="token-btn token-btn-secondary" data-save-draft-step="financials">Save as Draft</button>
+                                <button type="button" class="token-btn token-btn-primary" data-continue-step="financials">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="token-section" data-step="legal" data-step-index="2">
+                        <button type="button" class="token-section-toggle">
+                            <span class="token-section-number">3</span>
+                            <span class="token-section-title">Legal &amp; Compliance</span>
+                        </button>
+                        <div class="token-section-panel">
+                            <p class="token-section-copy">Define the issuance structure and regulatory framing.</p>
+
+                            <div class="token-grid-two">
+                                <label class="token-field">
+                                    <span>Regulation Type</span>
+                                    <select id="token-regulation-type">
+                                        <option value="">Select regulation</option>
+                                        <option value="Reg D">Reg D</option>
+                                        <option value="Reg S">Reg S</option>
+                                        <option value="Reg A+">Reg A+</option>
+                                    </select>
+                                </label>
+                                <label class="token-field">
+                                    <span>SPV / LLC Name</span>
+                                    <input type="text" id="token-spv-name" placeholder="BNX Miami Harbor SPV LLC">
+                                </label>
+                            </div>
+
+                            <label class="token-field">
+                                <span>Smart Contract Address</span>
+                                <input type="text" id="token-smart-contract" placeholder="Optional or pre-filled 0x...">
+                            </label>
+
+                            <div class="token-section-actions">
+                                <button type="button" class="token-btn token-btn-secondary" data-open-step="financials">Back</button>
+                                <button type="button" class="token-btn token-btn-secondary" data-save-draft-step="legal">Save as Draft</button>
+                                <button type="button" class="token-btn token-btn-primary" data-continue-step="legal">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="token-section" data-step="media" data-step-index="3">
+                        <button type="button" class="token-section-toggle">
+                            <span class="token-section-number">4</span>
+                            <span class="token-section-title">Media &amp; Docs</span>
+                        </button>
+                        <div class="token-section-panel">
+                            <p class="token-section-copy">Upload the property visuals and legal files that support diligence and marketplace merchandising.</p>
+
+                            <label class="token-upload-zone" for="token-property-images" data-drop-target="propertyImages">
+                                <input type="file" id="token-property-images" multiple accept="image/*">
+                                <strong>Property Images</strong>
+                                <span>Drag and drop or click to add gallery media.</span>
+                            </label>
+                            <div id="token-property-images-list" class="token-file-list"></div>
+
+                            <label class="token-upload-zone" for="token-legal-documents" data-drop-target="legalDocuments">
+                                <input type="file" id="token-legal-documents" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                <strong>Legal Documents</strong>
+                                <span>PPM, appraisal, title, or related legal support materials.</span>
+                            </label>
+                            <div id="token-legal-documents-list" class="token-file-list"></div>
+
+                            <div class="token-section-actions">
+                                <button type="button" class="token-btn token-btn-secondary" data-open-step="legal">Back</button>
+                                <button type="button" class="token-btn token-btn-secondary" data-save-draft-step="media">Save as Draft</button>
+                            </div>
+                        </div>
+                    </section>
+                </form>
+
+                <aside class="token-preview-panel">
+                    <div class="token-preview-card">
+                        <div class="token-preview-head">
+                            <div>
+                                <p class="token-sidebar-eyebrow">Live Preview</p>
+                                <h2>Marketplace Card</h2>
+                            </div>
+                            <span class="token-preview-pill">Draft Ready</span>
+                        </div>
+
+                        <article class="token-preview-market-card">
+                            <div class="token-preview-hero">
+                                <span class="token-preview-type" id="preview-asset-type">Asset Type</span>
+                                <div class="token-preview-hero-copy">
+                                    <p>Tokenization</p>
+                                    <h3 id="preview-property-name">Untitled Tokenization Opportunity</h3>
+                                </div>
+                            </div>
+
+                            <div class="token-preview-body">
+                                <div class="token-preview-metrics">
+                                    <div class="token-preview-metric">
+                                        <span>Token Price</span>
+                                        <strong id="preview-token-price">$0</strong>
+                                    </div>
+                                    <div class="token-preview-metric success">
+                                        <span>Annual Yield</span>
+                                        <strong id="preview-yield">0%</strong>
+                                    </div>
+                                </div>
+
+                                <div class="token-preview-funding">
+                                    <div class="token-preview-funding-top">
+                                        <span id="preview-address">Property address</span>
+                                        <strong id="preview-capital-raise">$0</strong>
+                                    </div>
+                                    <div class="token-preview-bar">
+                                        <div class="token-preview-bar-fill"></div>
+                                    </div>
+                                </div>
+
+                                <div class="token-preview-actions">
+                                    <button type="button" class="token-preview-primary">Commit Capital</button>
+                                    <button type="button" class="token-preview-secondary">View Details</button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </aside>
+            </section>
+        </main>
+    </div>
+
+    <footer class="token-builder-footer">
+        <button type="button" class="token-btn token-btn-secondary" id="token-save-draft">Save as Draft</button>
+        <button type="button" class="token-btn token-btn-primary" id="token-publish" disabled>Publish to Marketplace</button>
+    </footer>
+
+    <div class="token-toast" id="token-toast" hidden></div>
+
+    <script src="post-tokenization.js"></script>
+</body>
+</html>

@@ -9,7 +9,9 @@
   "dependencies": {
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "react-hook-form": "latest",
+    "lucide-react": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",

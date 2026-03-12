@@ -10,6 +10,8 @@ window.BricksNexusApp = (function() {
         services: 'bricksnexus_services',
         serviceDrafts: 'bricksnexus_service_drafts',
         openToWorkDrafts: 'bricksnexus_open_to_work_drafts',
+        tokenizationDraft: 'bricksnexus_tokenization_draft',
+        tokenizationSubmissions: 'bricksnexus_tokenization_submissions',
         messages: 'bricksnexus_messages',
         interests: 'bricksnexus_interests'
     };
@@ -242,18 +244,28 @@ window.BricksNexusApp = (function() {
     function getCardStorageKeys(cardType) {
         if (cardType === 'service') return [KEYS.services, KEYS.serviceDrafts];
         if (cardType === 'open-to-work') return [KEYS.openToWork, KEYS.openToWorkDrafts];
+        if (cardType === 'tokenization') return [KEYS.tokenizationSubmissions];
         return [KEYS.opportunities, KEYS.opportunityDrafts];
     }
 
     function getCardTypeLabel(cardType, cardRecord) {
         if (cardType === 'service') return 'Service';
         if (cardType === 'open-to-work') return 'Job';
+        if (cardType === 'tokenization') return 'Tokenization';
         if (cardRecord && cardRecord.opportunityKind === 'hiring') return 'Job';
         return 'Opportunity';
     }
 
     function canSubmitBidForCard(cardType, cardRecord) {
+        if (cardType === 'tokenization') return false;
         return cardType === 'service' || (!!cardRecord && cardRecord.opportunityKind === 'project');
+    }
+
+    function getCardSubmission(cardType, cardRecord) {
+        if (cardType === 'tokenization' && cardRecord && cardRecord.submissionData) {
+            return cardRecord.submissionData;
+        }
+        return cardRecord || null;
     }
 
     function findCardRecord(cardId, cardType) {
@@ -321,9 +333,10 @@ window.BricksNexusApp = (function() {
         var cardType = options.cardType || 'opportunity';
         var resolvedCard = findCardRecord(options.cardId, cardType);
         var cardRecord = resolvedCard ? resolvedCard.record : null;
-        var ownerUserId = String(options.ownerUserId || (cardRecord && cardRecord.creatorUserId) || buildSampleOwnerId(options.cardId));
-        var ownerName = options.ownerName || (cardRecord && cardRecord.creatorName) || 'Card owner';
-        var cardTitle = options.cardTitle || (cardRecord && (cardRecord.title || cardRecord.roleTitle || cardRecord.category)) || 'Card';
+        var submission = getCardSubmission(cardType, cardRecord);
+        var ownerUserId = String(options.ownerUserId || (submission && submission.creatorUserId) || buildSampleOwnerId(options.cardId));
+        var ownerName = options.ownerName || (submission && submission.creatorName) || 'Card owner';
+        var cardTitle = options.cardTitle || (submission && (submission.title || submission.roleTitle || submission.category || (submission.property && submission.property.propertyName))) || 'Card';
         var cardLabel = options.cardLabel || getCardTypeLabel(cardType, cardRecord);
         if (ownerUserId === String(currentUser.id) && !options.recipientUserId) return null;
         var threads = getThreads();
@@ -651,6 +664,7 @@ window.BricksNexusApp = (function() {
             KEYS.services,
             KEYS.serviceDrafts,
             KEYS.openToWorkDrafts,
+            KEYS.tokenizationSubmissions,
             KEYS.messages
         ].forEach(function(key) {
             var list = readJson(key, []);
@@ -660,9 +674,15 @@ window.BricksNexusApp = (function() {
                         && String(item.recipientUserId || '') !== String(user.id)
                         && String(item.createdByUserId || '') !== String(user.id);
                 }
+                if (key === KEYS.tokenizationSubmissions) {
+                    var submission = item && item.submissionData ? item.submissionData : {};
+                    return String(submission.creatorUserId || '') !== String(user.id);
+                }
                 return String(item.creatorUserId || '') !== String(user.id);
             }));
         });
+
+        localStorage.removeItem(KEYS.tokenizationDraft);
 
         clearSession();
     }
