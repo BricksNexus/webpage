@@ -5,15 +5,56 @@ document.addEventListener('DOMContentLoaded', function() {
     var currentUser = app.getCurrentUser();
     if (!currentUser) return;
 
-    var SERVICE_MAP = {
-        land: ['Surveyor', 'Civil Engineer', 'Land Use Attorney', 'Environmental Consultant', 'Geotechnical Engineer'],
-        house: ['Architect', 'Structural Engineer', 'General Contractor', 'Interior Designer', 'MEP Engineer'],
-        apartment: ['Architect', 'Structural Engineer', 'Permit Expediter', 'MEP Engineer', 'Project Manager'],
-        building: ['Architect', 'Facade Consultant', 'Structural Engineer', 'Construction Manager', 'Quantity Surveyor'],
-        office: ['Architect', 'Workplace Designer', 'MEP Engineer', 'IT Infrastructure Consultant', 'GC / Fit-out Contractor']
+    var PROPERTY_SCOPE_MAP = {
+        land: [
+            'New Construction (Residential)',
+            'New Construction (Commercial)',
+            'Sub-division',
+            'Land Clearing',
+            'Rezoning'
+        ],
+        house: [
+            'Full Renovation',
+            'Kitchen/Bath Remodel',
+            'Structural Repair',
+            'Roof Replacement',
+            'Interior Design'
+        ],
+        apartment: [
+            'Full Renovation',
+            'Kitchen/Bath Remodel',
+            'Structural Repair',
+            'Roof Replacement',
+            'Interior Design'
+        ],
+        building: [
+            'Facade Restoration',
+            'HVAC System Overhaul',
+            'Structural Reinforcement',
+            'Fire Safety'
+        ],
+        office: [
+            'Open Plan Conversion',
+            'IT Infrastructure',
+            'Lighting/Electrical Upgrade'
+        ]
     };
 
+    var TEAM_OPTIONS = [
+        'Architect',
+        'Civil Engineer',
+        'General Contractor',
+        'Electrician',
+        'Plumber',
+        'Project Manager',
+        'Surveyor',
+        'Real Estate Lawyer'
+    ];
+
+    var DOCUMENT_TYPES = ['Deed', 'Permit', 'Blueprint', 'Site Photo', 'Contract', 'Other'];
+    var CHRONOGRAM_STATUSES = ['Pending', 'In Progress', 'Done'];
     var STEP_ORDER = ['type', 'details', 'needs', 'chronogram', 'financing', 'documents'];
+
     var query = new URLSearchParams(window.location.search);
     var editId = query.get('edit');
     var isDraftEdit = query.get('draft') === '1';
@@ -22,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var formState = {
         type: '',
+        projectScopes: [],
         selectedProfessions: [],
         chronogramRows: [],
         documents: [],
@@ -30,67 +72,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var progressButtons = Array.from(document.querySelectorAll('.builder-progress-step'));
     var sections = Array.from(document.querySelectorAll('.builder-section'));
+    var stepSectionToggles = Array.from(document.querySelectorAll('.builder-section-toggle'));
     var unlockedStepIndex = 0;
     var activeStepIndex = 0;
-
-    function getSection(stepName) {
-        return document.querySelector('.builder-section[data-step="' + stepName + '"]');
-    }
-
-    function getProgressButton(stepName) {
-        return document.querySelector('.builder-progress-step[data-target-step="' + stepName + '"]');
-    }
 
     function getInput(id) {
         return document.getElementById(id);
     }
 
     function getValue(id) {
-        var el = getInput(id);
-        return el ? String(el.value || '').trim() : '';
+        var element = getInput(id);
+        return element ? String(element.value || '').trim() : '';
     }
 
     function setValue(id, value) {
-        var el = getInput(id);
-        if (el) el.value = value || '';
+        var element = getInput(id);
+        if (element) element.value = value || '';
+    }
+
+    function escapeHtml(value) {
+        var div = document.createElement('div');
+        div.textContent = value == null ? '' : String(value);
+        return div.innerHTML;
     }
 
     function clearErrors() {
-        document.querySelectorAll('.builder-error').forEach(function(el) {
-            el.classList.remove('builder-error');
+        document.querySelectorAll('.builder-error').forEach(function(element) {
+            element.classList.remove('builder-error');
         });
     }
 
     function markError(id) {
-        var el = getInput(id);
-        if (el) el.classList.add('builder-error');
+        var element = getInput(id);
+        if (element) element.classList.add('builder-error');
+    }
+
+    function markContainerError(id) {
+        var element = getInput(id);
+        if (element) element.classList.add('builder-error');
     }
 
     function setSelectedType(nextType) {
         formState.type = nextType || '';
         document.querySelectorAll('.builder-type-card').forEach(function(card) {
-            var input = card.querySelector('input[type="radio"]');
-            var isSelected = !!input && input.value === formState.type;
-            if (input) input.checked = isSelected;
+            var radio = card.querySelector('input[type="radio"]');
+            var isSelected = !!radio && radio.value === formState.type;
+            if (radio) radio.checked = isSelected;
             card.classList.toggle('selected', isSelected);
         });
         toggleTypeVisibility();
+        renderPropertyChecklist();
+        renderTeamChecklist();
         updateTeamWidget();
     }
 
     function toggleTypeVisibility() {
         var isProject = formState.type === 'project';
-        document.querySelectorAll('.project-only').forEach(function(el) {
-            el.classList.toggle('hidden', !isProject);
+        document.querySelectorAll('.project-only').forEach(function(element) {
+            element.classList.toggle('hidden', !isProject);
         });
-        document.querySelectorAll('.simple-only').forEach(function(el) {
-            el.classList.toggle('hidden', isProject);
+        document.querySelectorAll('.simple-only').forEach(function(element) {
+            element.classList.toggle('hidden', isProject);
         });
     }
 
     function openStep(stepName) {
         var nextIndex = STEP_ORDER.indexOf(stepName);
         if (nextIndex === -1 || nextIndex > unlockedStepIndex) return;
+
         activeStepIndex = nextIndex;
         sections.forEach(function(section, index) {
             section.classList.toggle('active', index === nextIndex);
@@ -98,17 +147,190 @@ document.addEventListener('DOMContentLoaded', function() {
         progressButtons.forEach(function(button, index) {
             button.classList.toggle('active', index === nextIndex);
         });
+        refreshPublishState();
     }
 
-    function markStepDone(stepName, done) {
-        var section = getSection(stepName);
-        var button = getProgressButton(stepName);
-        if (section) section.classList.toggle('done', !!done);
-        if (button) button.classList.toggle('done', !!done);
+    function refreshPublishState() {
+        var publishButton = getInput('opp-submit');
+        if (!publishButton) return;
+        publishButton.disabled = STEP_ORDER[activeStepIndex] !== 'documents';
     }
 
-    function updateUnlockedStep(nextIndex) {
-        unlockedStepIndex = Math.max(unlockedStepIndex, nextIndex);
+    function markStepDone(stepName, isDone) {
+        var section = document.querySelector('.builder-section[data-step="' + stepName + '"]');
+        var button = document.querySelector('.builder-progress-step[data-target-step="' + stepName + '"]');
+        if (section) section.classList.toggle('done', !!isDone);
+        if (button) button.classList.toggle('done', !!isDone);
+    }
+
+    function updateUnlockedStep(index) {
+        unlockedStepIndex = Math.max(unlockedStepIndex, index);
+    }
+
+    function renderPropertyChecklist() {
+        var container = getInput('builder-property-checklist');
+        if (!container) return;
+
+        var propertyType = getValue('opp-property-type');
+        var options = PROPERTY_SCOPE_MAP[propertyType] || [];
+        container.innerHTML = '';
+
+        options.forEach(function(label) {
+            var item = document.createElement('label');
+            var isSelected = formState.projectScopes.indexOf(label) >= 0;
+            item.className = 'builder-check-item' + (isSelected ? ' selected' : '');
+            item.innerHTML = ''
+                + '<input type="checkbox" value="' + escapeHtml(label) + '"' + (isSelected ? ' checked' : '') + '>'
+                + '<strong>' + escapeHtml(label) + '</strong>'
+                + '<span>Scope tag for this property type.</span>';
+            container.appendChild(item);
+        });
+    }
+
+    function renderTeamChecklist() {
+        var container = getInput('builder-team-checklist');
+        if (!container) return;
+
+        container.innerHTML = '';
+        TEAM_OPTIONS.forEach(function(label) {
+            var isSelected = formState.selectedProfessions.indexOf(label) >= 0;
+            var item = document.createElement('label');
+            item.className = 'builder-check-item' + (isSelected ? ' selected' : '');
+            item.innerHTML = ''
+                + '<input type="checkbox" value="' + escapeHtml(label) + '"' + (isSelected ? ' checked' : '') + '>'
+                + '<strong>' + escapeHtml(label) + '</strong>'
+                + '<span>Add this profession to My Team.</span>';
+            container.appendChild(item);
+        });
+    }
+
+    function updateTeamWidget() {
+        var list = getInput('builder-team-list');
+        var empty = getInput('builder-team-empty');
+        if (!list || !empty) return;
+
+        list.innerHTML = '';
+        var entries = formState.type === 'project'
+            ? formState.selectedProfessions.slice()
+            : (getValue('opp-simple-need') ? [getValue('opp-simple-need')] : []);
+
+        if (!entries.length) {
+            empty.style.display = 'block';
+            return;
+        }
+
+        empty.style.display = 'none';
+        entries.forEach(function(entry) {
+            var tag = document.createElement('span');
+            tag.className = 'builder-team-tag';
+            tag.textContent = entry;
+            list.appendChild(tag);
+        });
+    }
+
+    function createChronogramRow(row) {
+        return {
+            id: row && row.id ? String(row.id) : String(Date.now() + Math.random()),
+            task_name: row && row.task_name ? row.task_name : '',
+            start_date: row && row.start_date ? row.start_date : '',
+            end_date: row && row.end_date ? row.end_date : '',
+            status: row && row.status ? row.status : 'Pending'
+        };
+    }
+
+    function addChronogramRow(row) {
+        formState.chronogramRows.push(createChronogramRow(row));
+        renderChronogramRows();
+    }
+
+    function renderChronogramRows() {
+        var tbody = getInput('chronogram-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        formState.chronogramRows.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = ''
+                + '<td><input type="text" data-chrono-field="task_name" data-row-id="' + escapeHtml(row.id) + '" value="' + escapeHtml(row.task_name) + '" placeholder="Task name"></td>'
+                + '<td><input type="date" data-chrono-field="start_date" data-row-id="' + escapeHtml(row.id) + '" value="' + escapeHtml(row.start_date) + '"></td>'
+                + '<td><input type="date" data-chrono-field="end_date" data-row-id="' + escapeHtml(row.id) + '" value="' + escapeHtml(row.end_date) + '"></td>'
+                + '<td><select data-chrono-field="status" data-row-id="' + escapeHtml(row.id) + '">'
+                + CHRONOGRAM_STATUSES.map(function(status) {
+                    return '<option value="' + escapeHtml(status) + '"' + (row.status === status ? ' selected' : '') + '>' + escapeHtml(status) + '</option>';
+                }).join('')
+                + '</select></td>'
+                + '<td><button type="button" class="builder-inline-btn" data-remove-row="' + escapeHtml(row.id) + '">Remove</button></td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderDocuments() {
+        var container = getInput('builder-documents-list');
+        if (!container) return;
+
+        container.innerHTML = '';
+        formState.documents.forEach(function(doc) {
+            var item = document.createElement('div');
+            item.className = 'builder-document-item';
+            item.innerHTML = ''
+                + '<div class="builder-document-meta">'
+                + '<input type="text" class="builder-document-input" data-document-field="file_name" data-document-id="' + escapeHtml(doc.id) + '" value="' + escapeHtml(doc.file_name) + '" placeholder="File name">'
+                + '<div class="builder-document-size">' + Math.max(1, Math.round((doc.size || 0) / 1024)) + ' KB</div>'
+                + '</div>'
+                + '<div class="builder-document-controls">'
+                + '<select data-document-field="document_type" data-document-id="' + escapeHtml(doc.id) + '">'
+                + '<option value="">Document Type</option>'
+                + DOCUMENT_TYPES.map(function(type) {
+                    var value = type.toLowerCase();
+                    return '<option value="' + escapeHtml(value) + '"' + (doc.document_type === value ? ' selected' : '') + '>' + escapeHtml(type) + '</option>';
+                }).join('')
+                + '</select>'
+                + '<button type="button" class="builder-document-delete" data-delete-document="' + escapeHtml(doc.id) + '">Delete</button>'
+                + '</div>';
+            container.appendChild(item);
+        });
+    }
+
+    function readFiles(files) {
+        var list = Array.from(files || []);
+        if (!list.length) return Promise.resolve();
+
+        var nextReaders = list.map(function(file, index) {
+            return new Promise(function(resolve) {
+                var item = {
+                    id: String(Date.now() + index + Math.random()),
+                    file_name: file.name.replace(/\.[^/.]+$/, '') || file.name,
+                    original_name: file.name,
+                    size: file.size,
+                    mime_type: file.type,
+                    document_type: '',
+                    data_url: ''
+                };
+
+                if (file.type && file.type.indexOf('image/') === 0) {
+                    var reader = new FileReader();
+                    reader.onload = function(event) {
+                        item.data_url = event.target && event.target.result ? event.target.result : '';
+                        resolve(item);
+                    };
+                    reader.onerror = function() {
+                        resolve(item);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resolve(item);
+                }
+            });
+        });
+
+        return Promise.all(nextReaders).then(function(results) {
+            formState.documents = formState.documents.concat(results);
+            var firstImage = formState.documents.find(function(item) {
+                return item.data_url;
+            });
+            if (firstImage) formState.imageDataUrl = firstImage.data_url;
+            renderDocuments();
+        });
     }
 
     function validateStep(stepName, highlight) {
@@ -116,8 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearErrors();
 
         if (stepName === 'type') {
-            if (!formState.type) return false;
-            return true;
+            return !!formState.type;
         }
 
         if (stepName === 'details') {
@@ -138,42 +359,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 valid = false;
                 if (shouldHighlight) markError('opp-budget');
             }
-            if (formState.type === 'project' && !getValue('opp-property-type')) {
-                valid = false;
-                if (shouldHighlight) markError('opp-property-type');
+            if (formState.type === 'project') {
+                if (!getValue('opp-property-type')) {
+                    valid = false;
+                    if (shouldHighlight) markError('opp-property-type');
+                }
+                if (!formState.projectScopes.length) {
+                    valid = false;
+                    if (shouldHighlight) markContainerError('builder-property-checklist');
+                }
             }
             return valid;
         }
 
         if (stepName === 'needs') {
             if (formState.type === 'project') {
+                if (!formState.selectedProfessions.length && shouldHighlight) {
+                    markContainerError('builder-team-checklist');
+                }
                 return formState.selectedProfessions.length > 0;
             }
-            var validSimpleNeed = !!getValue('opp-simple-need') || !!getValue('opp-terms');
-            if (!validSimpleNeed && shouldHighlight) {
+            var simpleValid = !!getValue('opp-simple-need') || !!getValue('opp-terms');
+            if (!simpleValid && shouldHighlight) {
                 markError('opp-simple-need');
                 markError('opp-terms');
             }
-            return validSimpleNeed;
+            return simpleValid;
         }
 
         if (stepName === 'chronogram') {
             if (formState.type !== 'project') return true;
             return formState.chronogramRows.length > 0 && formState.chronogramRows.every(function(row) {
-                return row.task && row.startDate && row.endDate;
+                return row.task_name && row.start_date && row.end_date && row.status;
             });
         }
 
         if (stepName === 'financing') {
             if (formState.type !== 'project') return true;
-            var validFinance = !!getValue('opp-financing-model');
-            if (!validFinance && shouldHighlight) markError('opp-financing-model');
-            return validFinance;
+            var financeValid = !!getValue('opp-financing-model');
+            if (!financeValid && shouldHighlight) markError('opp-financing-model');
+            return financeValid;
         }
 
         if (stepName === 'documents') {
             return formState.documents.every(function(item) {
-                return !item.name || !!item.docType;
+                return !!item.file_name && !!item.document_type;
             });
         }
 
@@ -187,150 +417,10 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please complete the required fields in this step before continuing.');
             return;
         }
+
         markStepDone(stepName, true);
         updateUnlockedStep(Math.min(currentIndex + 1, STEP_ORDER.length - 1));
         openStep(STEP_ORDER[Math.min(currentIndex + 1, STEP_ORDER.length - 1)]);
-    }
-
-    function renderServiceChecklist() {
-        var container = getInput('builder-service-checklist');
-        if (!container) return;
-        var propertyType = getValue('opp-property-type');
-        var services = SERVICE_MAP[propertyType] || [];
-        container.innerHTML = '';
-        services.forEach(function(label) {
-            var item = document.createElement('label');
-            item.className = 'builder-check-item';
-            if (formState.selectedProfessions.indexOf(label) >= 0) item.classList.add('selected');
-            item.innerHTML = ''
-                + '<input type="checkbox" value="' + label + '"' + (formState.selectedProfessions.indexOf(label) >= 0 ? ' checked' : '') + '>'
-                + '<strong>' + label + '</strong>'
-                + '<span>Add this profession to the live team widget.</span>';
-            container.appendChild(item);
-        });
-    }
-
-    function updateTeamWidget() {
-        var list = getInput('builder-team-list');
-        var empty = getInput('builder-team-empty');
-        if (!list || !empty) return;
-        list.innerHTML = '';
-
-        var entries = formState.type === 'project'
-            ? formState.selectedProfessions.slice()
-            : (getValue('opp-simple-need') ? [getValue('opp-simple-need')] : []);
-
-        if (!entries.length) {
-            empty.style.display = 'block';
-            return;
-        }
-
-        empty.style.display = 'none';
-        entries.forEach(function(entry) {
-            var li = document.createElement('li');
-            li.textContent = entry;
-            list.appendChild(li);
-        });
-    }
-
-    function addChronogramRow(row) {
-        formState.chronogramRows.push({
-            id: row && row.id ? row.id : Date.now() + Math.random(),
-            task: row && row.task ? row.task : '',
-            startDate: row && row.startDate ? row.startDate : '',
-            endDate: row && row.endDate ? row.endDate : ''
-        });
-        renderChronogramRows();
-    }
-
-    function renderChronogramRows() {
-        var tbody = getInput('chronogram-body');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        formState.chronogramRows.forEach(function(row) {
-            var tr = document.createElement('tr');
-            tr.innerHTML = ''
-                + '<td><input type="text" data-chrono-field="task" data-row-id="' + row.id + '" value="' + escapeHtml(row.task) + '" placeholder="Task name"></td>'
-                + '<td><input type="date" data-chrono-field="startDate" data-row-id="' + row.id + '" value="' + escapeHtml(row.startDate) + '"></td>'
-                + '<td><input type="date" data-chrono-field="endDate" data-row-id="' + row.id + '" value="' + escapeHtml(row.endDate) + '"></td>'
-                + '<td><button type="button" class="builder-inline-btn" data-remove-row="' + row.id + '">Remove</button></td>';
-            tbody.appendChild(tr);
-        });
-    }
-
-    function escapeHtml(value) {
-        var div = document.createElement('div');
-        div.textContent = value == null ? '' : String(value);
-        return div.innerHTML;
-    }
-
-    function readFiles(files) {
-        var list = Array.from(files || []);
-        if (!list.length) {
-            formState.documents = [];
-            renderDocuments();
-            return Promise.resolve();
-        }
-
-        var readers = list.map(function(file, index) {
-            return new Promise(function(resolve) {
-                var item = {
-                    id: Date.now() + index,
-                    name: file.name,
-                    size: file.size,
-                    mimeType: file.type,
-                    docType: '',
-                    dataUrl: ''
-                };
-
-                if (file.type && file.type.indexOf('image/') === 0) {
-                    var reader = new FileReader();
-                    reader.onload = function(event) {
-                        item.dataUrl = event.target && event.target.result ? event.target.result : '';
-                        resolve(item);
-                    };
-                    reader.onerror = function() {
-                        resolve(item);
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    resolve(item);
-                }
-            });
-        });
-
-        return Promise.all(readers).then(function(results) {
-            formState.documents = results;
-            var firstImage = results.find(function(item) { return item.dataUrl; });
-            if (firstImage) formState.imageDataUrl = firstImage.dataUrl;
-            renderDocuments();
-        });
-    }
-
-    function renderDocuments() {
-        var container = getInput('builder-documents-list');
-        if (!container) return;
-        container.innerHTML = '';
-
-        formState.documents.forEach(function(doc) {
-            var item = document.createElement('div');
-            item.className = 'builder-document-item';
-            item.innerHTML = ''
-                + '<div>'
-                + '<div class="builder-document-name">' + escapeHtml(doc.name) + '</div>'
-                + '<div class="builder-document-size">' + Math.max(1, Math.round((doc.size || 0) / 1024)) + ' KB</div>'
-                + '</div>'
-                + '<select data-document-id="' + doc.id + '">'
-                + '<option value="">Document Type</option>'
-                + '<option value="deed"' + (doc.docType === 'deed' ? ' selected' : '') + '>Deed</option>'
-                + '<option value="permit"' + (doc.docType === 'permit' ? ' selected' : '') + '>Permit</option>'
-                + '<option value="photo"' + (doc.docType === 'photo' ? ' selected' : '') + '>Photo</option>'
-                + '<option value="budget"' + (doc.docType === 'budget' ? ' selected' : '') + '>Budget</option>'
-                + '<option value="other"' + (doc.docType === 'other' ? ' selected' : '') + '>Other</option>'
-                + '</select>';
-            container.appendChild(item);
-        });
     }
 
     function collectPayload(status) {
@@ -347,12 +437,31 @@ document.addEventListener('DOMContentLoaded', function() {
             address: getValue('opp-address'),
             opportunityKind: formState.type,
             propertyType: getValue('opp-property-type'),
+            propertyChecklist: formState.projectScopes.slice(),
+            myTeam: formState.selectedProfessions.slice(),
             simpleNeed: getValue('opp-simple-need'),
             financingModel: getValue('opp-financing-model'),
             capitalGap: getValue('opp-capital-gap'),
-            serviceChecklist: formState.selectedProfessions.slice(),
-            chronogram: formState.chronogramRows.slice(),
-            documents: formState.documents.slice(),
+            chronogram: formState.chronogramRows.map(function(row) {
+                return {
+                    id: row.id,
+                    task_name: row.task_name,
+                    start_date: row.start_date,
+                    end_date: row.end_date,
+                    status: row.status
+                };
+            }),
+            documents: formState.documents.map(function(doc) {
+                return {
+                    id: doc.id,
+                    file_name: doc.file_name,
+                    original_name: doc.original_name,
+                    document_type: doc.document_type,
+                    mime_type: doc.mime_type,
+                    size: doc.size,
+                    data_url: doc.data_url
+                };
+            }),
             imageDataUrl: formState.imageDataUrl || (editingRecord && editingRecord.imageDataUrl) || '',
             createdAt: editingRecord && editingRecord.createdAt ? editingRecord.createdAt : new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -369,11 +478,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var index = list.findIndex(function(item) {
             return String(item.id) === String(payload.id);
         });
-        if (index >= 0) {
-            list[index] = payload;
-        } else {
-            list.unshift(payload);
-        }
+        if (index >= 0) list[index] = payload;
+        else list.unshift(payload);
         app.writeJson(targetKey, list);
     }
 
@@ -384,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     }
 
-    function saveOpportunity(status) {
+    function saveOpportunity(status, stayOnPage) {
         if (status === 'published') {
             var allValid = STEP_ORDER.every(function(stepName) {
                 return validateStep(stepName, stepName === STEP_ORDER[activeStepIndex]);
@@ -403,6 +509,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         upsertToStorage(targetKey, payload);
+        editingRecord = payload;
+        editingStorageKey = targetKey;
+
+        if (stayOnPage) {
+            alert('Draft saved locally.');
+            return;
+        }
+
         window.location.href = 'dashboard.html';
     }
 
@@ -427,14 +541,33 @@ document.addEventListener('DOMContentLoaded', function() {
         setValue('opp-simple-need', editingRecord.simpleNeed);
         setValue('opp-financing-model', editingRecord.financingModel);
         setValue('opp-capital-gap', editingRecord.capitalGap);
+
         formState.type = editingRecord.opportunityKind || 'project';
-        formState.selectedProfessions = Array.isArray(editingRecord.serviceChecklist) ? editingRecord.serviceChecklist.slice() : [];
-        formState.chronogramRows = Array.isArray(editingRecord.chronogram) ? editingRecord.chronogram.slice() : [];
-        formState.documents = Array.isArray(editingRecord.documents) ? editingRecord.documents.slice() : [];
+        formState.projectScopes = Array.isArray(editingRecord.propertyChecklist) ? editingRecord.propertyChecklist.slice() : [];
+        formState.selectedProfessions = Array.isArray(editingRecord.myTeam)
+            ? editingRecord.myTeam.slice()
+            : (Array.isArray(editingRecord.serviceChecklist) ? editingRecord.serviceChecklist.slice() : []);
+        formState.chronogramRows = Array.isArray(editingRecord.chronogram)
+            ? editingRecord.chronogram.map(createChronogramRow)
+            : [];
+        formState.documents = Array.isArray(editingRecord.documents)
+            ? editingRecord.documents.map(function(doc) {
+                return {
+                    id: String(doc.id || Date.now() + Math.random()),
+                    file_name: doc.file_name || doc.name || '',
+                    original_name: doc.original_name || doc.file_name || doc.name || '',
+                    document_type: doc.document_type || doc.docType || '',
+                    mime_type: doc.mime_type || doc.mimeType || '',
+                    size: doc.size || 0,
+                    data_url: doc.data_url || doc.dataUrl || ''
+                };
+            })
+            : [];
         formState.imageDataUrl = editingRecord.imageDataUrl || '';
 
         setSelectedType(formState.type);
-        renderServiceChecklist();
+        renderPropertyChecklist();
+        renderTeamChecklist();
         renderChronogramRows();
         renderDocuments();
         updateTeamWidget();
@@ -448,14 +581,20 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('click', function() {
             var radio = card.querySelector('input[type="radio"]');
             setSelectedType(radio ? radio.value : '');
-            renderServiceChecklist();
         });
     });
 
     progressButtons.forEach(function(button) {
         button.addEventListener('click', function() {
-            var target = button.getAttribute('data-target-step');
-            openStep(target);
+            openStep(button.getAttribute('data-target-step'));
+        });
+    });
+
+    stepSectionToggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function() {
+            var section = toggle.closest('.builder-section');
+            if (!section) return;
+            openStep(section.getAttribute('data-step'));
         });
     });
 
@@ -471,13 +610,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    getInput('opp-property-type').addEventListener('change', function() {
-        formState.selectedProfessions = [];
-        renderServiceChecklist();
-        updateTeamWidget();
+    document.querySelectorAll('[data-save-draft-step]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            saveOpportunity('draft', true);
+        });
     });
 
-    getInput('builder-service-checklist').addEventListener('change', function(event) {
+    getInput('opp-property-type').addEventListener('change', function() {
+        formState.projectScopes = [];
+        renderPropertyChecklist();
+    });
+
+    getInput('builder-property-checklist').addEventListener('change', function(event) {
+        var checkbox = event.target.closest('input[type="checkbox"]');
+        if (!checkbox) return;
+        if (checkbox.checked) {
+            if (formState.projectScopes.indexOf(checkbox.value) === -1) {
+                formState.projectScopes.push(checkbox.value);
+            }
+        } else {
+            formState.projectScopes = formState.projectScopes.filter(function(item) {
+                return item !== checkbox.value;
+            });
+        }
+        checkbox.closest('.builder-check-item').classList.toggle('selected', checkbox.checked);
+    });
+
+    getInput('builder-team-checklist').addEventListener('change', function(event) {
         var checkbox = event.target.closest('input[type="checkbox"]');
         if (!checkbox) return;
         if (checkbox.checked) {
@@ -504,6 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var rowId = target.getAttribute('data-row-id');
         var field = target.getAttribute('data-chrono-field');
         if (!rowId || !field) return;
+
         formState.chronogramRows = formState.chronogramRows.map(function(row) {
             if (String(row.id) === String(rowId)) {
                 row[field] = target.value;
@@ -523,39 +683,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     getInput('opp-attachments').addEventListener('change', function(event) {
-        readFiles(event.target.files);
+        readFiles(event.target.files).then(function() {
+            event.target.value = '';
+        });
     });
 
-    getInput('builder-documents-list').addEventListener('change', function(event) {
-        var select = event.target.closest('select[data-document-id]');
-        if (!select) return;
-        var documentId = select.getAttribute('data-document-id');
+    getInput('builder-documents-list').addEventListener('input', function(event) {
+        var input = event.target.closest('[data-document-field="file_name"]');
+        if (!input) return;
+        var documentId = input.getAttribute('data-document-id');
         formState.documents = formState.documents.map(function(doc) {
             if (String(doc.id) === String(documentId)) {
-                doc.docType = select.value;
+                doc.file_name = input.value;
             }
             return doc;
         });
     });
 
+    getInput('builder-documents-list').addEventListener('change', function(event) {
+        var select = event.target.closest('[data-document-field="document_type"]');
+        if (!select) return;
+        var documentId = select.getAttribute('data-document-id');
+        formState.documents = formState.documents.map(function(doc) {
+            if (String(doc.id) === String(documentId)) {
+                doc.document_type = select.value;
+            }
+            return doc;
+        });
+    });
+
+    getInput('builder-documents-list').addEventListener('click', function(event) {
+        var button = event.target.closest('[data-delete-document]');
+        if (!button) return;
+        var documentId = button.getAttribute('data-delete-document');
+        formState.documents = formState.documents.filter(function(doc) {
+            return String(doc.id) !== String(documentId);
+        });
+        var firstImage = formState.documents.find(function(item) {
+            return item.data_url;
+        });
+        formState.imageDataUrl = firstImage ? firstImage.data_url : '';
+        renderDocuments();
+    });
+
     getInput('opp-save-draft').addEventListener('click', function() {
-        saveOpportunity('draft');
+        saveOpportunity('draft', true);
     });
 
     getInput('opp-submit').addEventListener('click', function() {
-        saveOpportunity('published');
+        saveOpportunity('published', false);
     });
 
     if (!editId) {
         addChronogramRow();
     }
+
     loadEditingRecord();
     if (!formState.type) {
         toggleTypeVisibility();
+        renderPropertyChecklist();
+        renderTeamChecklist();
     }
-    renderServiceChecklist();
     renderChronogramRows();
     renderDocuments();
     updateTeamWidget();
     openStep('type');
+    refreshPublishState();
 });

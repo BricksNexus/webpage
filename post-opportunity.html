@@ -93,6 +93,7 @@
                                 </label>
                             </div>
                             <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="type">Save as Draft</button>
                                 <button type="button" class="builder-btn builder-btn-primary" data-continue-step="type">Continue</button>
                             </div>
                         </div>
@@ -113,7 +114,7 @@
                                     <label for="opp-property-type">Property type</label>
                                     <select id="opp-property-type">
                                         <option value="">Select a property type</option>
-                                        <option value="land">Land</option>
+                                        <option value="land">Land / Lot</option>
                                         <option value="house">House</option>
                                         <option value="apartment">Apartment</option>
                                         <option value="building">Building</option>
@@ -124,6 +125,11 @@
                             <div class="builder-field">
                                 <label for="opp-summary">Job description / project brief</label>
                                 <textarea id="opp-summary" rows="4" placeholder="Describe the scope, stage, urgency, and deliverables you expect."></textarea>
+                            </div>
+                            <div class="builder-field project-only">
+                                <label>Opportunity description checklist</label>
+                                <p class="builder-field-hint">These options adapt to the selected property type.</p>
+                                <div class="builder-checklist builder-property-checklist" id="builder-property-checklist"></div>
                             </div>
                             <div class="builder-grid-three">
                                 <div class="builder-field">
@@ -145,6 +151,7 @@
                             </div>
                             <div class="builder-section-actions">
                                 <button type="button" class="builder-btn builder-btn-secondary" data-open-step="type">Back</button>
+                                <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="details">Save as Draft</button>
                                 <button type="button" class="builder-btn builder-btn-primary" data-continue-step="details">Continue</button>
                             </div>
                         </div>
@@ -156,8 +163,8 @@
                             <span class="builder-section-title">What I Need</span>
                         </button>
                         <div class="builder-section-panel">
-                            <p class="builder-section-copy project-only">Select the professionals you need. This checklist updates based on the property type.</p>
-                            <div class="builder-checklist project-only" id="builder-service-checklist"></div>
+                            <p class="builder-section-copy project-only">Select the professionals you need for this project. Every checked profession appears as a live tag in My Team.</p>
+                            <div class="builder-checklist builder-team-checklist project-only" id="builder-team-checklist"></div>
                             <div class="builder-field simple-only">
                                 <label for="opp-simple-need">What do you need?</label>
                                 <textarea id="opp-simple-need" rows="3" placeholder="Describe the role or service provider you need to hire."></textarea>
@@ -168,6 +175,7 @@
                             </div>
                             <div class="builder-section-actions">
                                 <button type="button" class="builder-btn builder-btn-secondary" data-open-step="details">Back</button>
+                                <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="needs">Save as Draft</button>
                                 <button type="button" class="builder-btn builder-btn-primary" data-continue-step="needs">Continue</button>
                             </div>
                         </div>
@@ -187,6 +195,7 @@
                                             <th>Task Name</th>
                                             <th>Start Date</th>
                                             <th>End Date</th>
+                                            <th>Status</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -196,6 +205,7 @@
                             <button type="button" class="builder-inline-btn" id="chronogram-add-row">Add Task</button>
                             <div class="builder-section-actions">
                                 <button type="button" class="builder-btn builder-btn-secondary" data-open-step="needs">Back</button>
+                                <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="chronogram">Save as Draft</button>
                                 <button type="button" class="builder-btn builder-btn-primary" data-continue-step="chronogram">Continue</button>
                             </div>
                         </div>
@@ -235,6 +245,7 @@
                             </div>
                             <div class="builder-section-actions">
                                 <button type="button" class="builder-btn builder-btn-secondary" data-open-step="chronogram">Back</button>
+                                <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="financing">Save as Draft</button>
                                 <button type="button" class="builder-btn builder-btn-primary" data-continue-step="financing">Continue</button>
                             </div>
                         </div>
@@ -254,6 +265,7 @@
                             <div id="builder-documents-list" class="builder-documents-list"></div>
                             <div class="builder-section-actions">
                                 <button type="button" class="builder-btn builder-btn-secondary" data-open-step="financing">Back</button>
+                                <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="documents">Save as Draft</button>
                             </div>
                         </div>
                     </section>
@@ -263,8 +275,8 @@
                     <div class="builder-side-card">
                         <p class="builder-side-eyebrow">Live team</p>
                         <h2>My Team</h2>
-                        <p class="builder-side-copy">Professionals tagged in the checklist appear here live.</p>
-                        <ul id="builder-team-list" class="builder-team-list"></ul>
+                        <p class="builder-side-copy">Checked professions appear here instantly as tags.</p>
+                        <div id="builder-team-list" class="builder-team-tags"></div>
                         <p id="builder-team-empty" class="builder-side-empty">No professions selected yet.</p>
                     </div>
                     <div class="builder-side-card">
@@ -283,7 +295,7 @@
 
     <footer class="builder-footer">
         <button type="button" class="builder-btn builder-btn-secondary" id="opp-save-draft">Save as Draft</button>
-        <button type="button" class="builder-btn builder-btn-primary" id="opp-submit">Publish</button>
+        <button type="button" class="builder-btn builder-btn-primary" id="opp-submit" disabled>Publish</button>
     </footer>
 
     <script src="post-opportunity.js"></script>
