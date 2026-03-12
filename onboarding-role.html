@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Account Type · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <header class="auth-top-bar">
+        <a href="index.html">
+            <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus">
+            <span>BricksNexus</span>
+        </a>
+    </header>
+
+    <main class="auth-main">
+        <div class="auth-card auth-card-wide">
+            <h1>Register as an Individual or a Company?</h1>
+            <p class="subtitle">Choose how you want to appear in the BricksNexus marketplace.</p>
+
+            <div class="auth-summary" id="onboarding-summary"></div>
+
+            <div class="role-toggle role-toggle-stacked" id="onboarding-role-toggle" role="radiogroup" aria-label="Registration type">
+                <button type="button" class="role-option active" data-role="individual" aria-checked="true">
+                    <strong>Individual</strong>
+                    <span>Create a hidden draft Open to Work card linked to your profile.</span>
+                </button>
+                <button type="button" class="role-option" data-role="company" aria-checked="false">
+                    <strong>Company</strong>
+                    <span>Create a hidden draft Service card linked to your company account.</span>
+                </button>
+            </div>
+
+            <div class="auth-actions">
+                <a href="signup.html" class="auth-secondary-link">Back</a>
+                <button type="button" class="auth-btn" id="onboarding-finish-btn">Continue</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="app-state.js"></script>
+    <script>
+        (function() {
+            var app = window.BricksNexusApp;
+            var pendingRaw = sessionStorage.getItem('bricksnexus_pending_signup');
+            if (!pendingRaw) {
+                window.location.replace('signup.html');
+                return;
+            }
+
+            var pending;
+            try {
+                pending = JSON.parse(pendingRaw);
+            } catch (error) {
+                window.location.replace('signup.html');
+                return;
+            }
+
+            var summary = document.getElementById('onboarding-summary');
+            if (summary) {
+                summary.innerHTML = '<strong>' + pending.name + '</strong><span>' + pending.email + '</span>';
+            }
+
+            var selectedRole = 'individual';
+            var roleButtons = document.querySelectorAll('.role-option');
+            roleButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedRole = button.dataset.role || 'individual';
+                    roleButtons.forEach(function(item) {
+                        var isActive = item === button;
+                        item.classList.toggle('active', isActive);
+                        item.setAttribute('aria-checked', isActive ? 'true' : 'false');
+                    });
+                });
+            });
+
+            document.getElementById('onboarding-finish-btn').addEventListener('click', function() {
+                var user = app.upsertUser({
+                    name: pending.name,
+                    email: pending.email,
+                    accountType: selectedRole,
+                    initials: app.getInitials(pending.name, pending.email)
+                });
+                app.createAutoDraftsForUser(user);
+                app.createSession(user);
+                sessionStorage.removeItem('bricksnexus_pending_signup');
+                window.location.href = pending.returnUrl || 'dashboard.html';
+            });
+        })();
+    </script>
+</body>
+</html>

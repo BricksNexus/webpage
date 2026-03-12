@@ -11,9 +11,10 @@
     <link rel="stylesheet" href="profile.css">
 </head>
 <body>
+    <script src="app-state.js"></script>
     <script>
         (function() {
-            if (!sessionStorage.getItem('bricksnexus_initials')) {
+            if (!window.BricksNexusApp.isAuthenticated()) {
                 window.location.replace('login.html?return=profile.html');
             }
         })();
@@ -27,7 +28,7 @@
         </div>
         <div class="top-bar-right">
             <a href="index.html" class="icon-button" aria-label="Back to marketplace">← Marketplace</a>
-            <a href="profile.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My profile"></a>
+            <a href="dashboard.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My dashboard"></a>
         </div>
     </header>
 
@@ -108,6 +109,17 @@
                         <a href="open-to-work.html" class="profile-empty-btn">Post New</a>
                     </div>
                 </div>
+
+                <section class="profile-publish-card" aria-label="Feed visibility">
+                    <div>
+                        <h3>Publish my card to the public feed</h3>
+                        <p>Turn this on to push your role card from hidden draft mode to the marketplace feed.</p>
+                    </div>
+                    <label class="profile-publish-toggle">
+                        <input type="checkbox" id="profile-publish-toggle">
+                        <span class="profile-publish-slider"></span>
+                    </label>
+                </section>
             </div>
         </div>
     </main>

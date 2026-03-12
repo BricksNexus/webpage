@@ -62,8 +62,12 @@
                             <div><dt>Name</dt><dd id="dashboard-profile-name">—</dd></div>
                             <div><dt>Email</dt><dd id="dashboard-profile-email">—</dd></div>
                             <div><dt>Account Type</dt><dd id="dashboard-profile-type">—</dd></div>
+                            <div><dt>Professional Title</dt><dd id="dashboard-profile-title">—</dd></div>
                             <div><dt>Member Since</dt><dd id="dashboard-profile-member-since">—</dd></div>
                         </dl>
+                        <div class="dashboard-settings-actions">
+                            <a href="profile.html" class="dashboard-action-btn">Edit Profile Details</a>
+                        </div>
                     </div>
                     <div class="dashboard-summary-card">
                         <h2>Quick Actions</h2>
@@ -110,13 +114,35 @@
                         <div><dt>Role</dt><dd id="dashboard-settings-role">—</dd></div>
                         <div><dt>Email</dt><dd id="dashboard-settings-email">—</dd></div>
                     </dl>
+                    <div class="dashboard-preferences">
+                        <label class="dashboard-pref-row">
+                            <span>Email notifications</span>
+                            <input type="checkbox" id="dashboard-pref-email">
+                        </label>
+                        <label class="dashboard-pref-row">
+                            <span>Marketplace updates</span>
+                            <input type="checkbox" id="dashboard-pref-marketplace">
+                        </label>
+                    </div>
                     <div class="dashboard-settings-actions">
                         <button type="button" class="profile-btn profile-btn-secondary" id="dashboard-logout-btn">Log out</button>
+                        <button type="button" class="profile-btn profile-btn-danger" id="dashboard-delete-account-btn">Delete Account</button>
                     </div>
                 </div>
             </section>
         </section>
     </main>
+
+    <dialog class="profile-modal" id="dashboard-delete-modal" aria-labelledby="dashboard-delete-title" aria-modal="true">
+        <div class="profile-modal-inner">
+            <h2 id="dashboard-delete-title" class="profile-modal-title">Delete account?</h2>
+            <p class="dashboard-delete-copy">This will remove your local BricksNexus account and any cards linked to it from this browser.</p>
+            <div class="profile-modal-actions">
+                <button type="button" class="profile-btn profile-btn-secondary" id="dashboard-delete-cancel">Cancel</button>
+                <button type="button" class="profile-btn profile-btn-danger" id="dashboard-delete-confirm">Delete Account</button>
+            </div>
+        </div>
+    </dialog>
 
     <script src="dashboard.js"></script>
 </body>

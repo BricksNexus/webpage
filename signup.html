@@ -24,13 +24,6 @@
 
             <form class="auth-form" id="signup-form">
                 <div class="field">
-                    <label>Account type</label>
-                    <div class="role-toggle" id="account-type-toggle" role="radiogroup" aria-label="Account type">
-                        <button type="button" class="role-option active" data-role="individual" aria-checked="true">Individual</button>
-                        <button type="button" class="role-option" data-role="company" aria-checked="false">Company</button>
-                    </div>
-                </div>
-                <div class="field">
                     <label for="name">Full name</label>
                     <input type="text" id="name" name="name" placeholder="Your name" required>
                 </div>
@@ -58,43 +51,17 @@
             var params = new URLSearchParams(window.location.search);
             var returnUrl = params.get('return') || 'index.html';
             if (returnUrl.indexOf('://') !== -1) returnUrl = 'index.html';
-            var selectedRole = 'individual';
-            var roleButtons = document.querySelectorAll('.role-option');
-
-            roleButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    selectedRole = button.dataset.role || 'individual';
-                    roleButtons.forEach(function(item) {
-                        var isActive = item === button;
-                        item.classList.toggle('active', isActive);
-                        item.setAttribute('aria-checked', isActive ? 'true' : 'false');
-                    });
-                    var nameLabel = document.querySelector('label[for="name"]');
-                    var nameInput = document.getElementById('name');
-                    if (selectedRole === 'company') {
-                        if (nameLabel) nameLabel.textContent = 'Company name';
-                        if (nameInput) nameInput.placeholder = 'Your company name';
-                    } else {
-                        if (nameLabel) nameLabel.textContent = 'Full name';
-                        if (nameInput) nameInput.placeholder = 'Your name';
-                    }
-                });
-            });
 
             document.getElementById('signup-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 var fullName = (document.getElementById('name').value || '').trim();
                 var email = (document.getElementById('email').value || '').trim();
-                var initials = app.getInitials(fullName, email);
-                var user = app.upsertUser({
+                sessionStorage.setItem('bricksnexus_pending_signup', JSON.stringify({
                     name: fullName,
                     email: email,
-                    accountType: selectedRole,
-                    initials: initials
-                });
-                app.createAutoDraftsForUser(user);
-                app.createSession(user);
-                window.location.href = returnUrl;
+                    returnUrl: returnUrl
+                }));
+                window.location.href = 'onboarding-role.html';
             });
         })();
     </script>

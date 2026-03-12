@@ -395,6 +395,72 @@
     background: #2563eb;
 }
 
+.profile-publish-card {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border, #e2e8f0);
+    background: var(--card-bg, #fff);
+}
+
+.profile-publish-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.profile-publish-card p {
+    color: var(--text-secondary, #64748b);
+    font-size: 0.875rem;
+}
+
+.profile-publish-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 54px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.profile-publish-toggle input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+}
+
+.profile-publish-slider {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: #cbd5e1;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.profile-publish-slider::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.28);
+    transition: transform 0.2s;
+}
+
+.profile-publish-toggle input:checked + .profile-publish-slider {
+    background: var(--accent, #3b82f6);
+}
+
+.profile-publish-toggle input:checked + .profile-publish-slider::after {
+    transform: translateX(22px);
+}
+
 /* ========== Modal ========== */
 .profile-modal {
     border: none;
@@ -576,6 +642,11 @@
     .profile-sidebar {
         width: 100%;
         min-width: 0;
+    }
+
+    .profile-publish-card {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .profile-sidebar-card {

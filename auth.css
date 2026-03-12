@@ -135,6 +135,71 @@ body.auth-page {
     color: #eff6ff;
 }
 
+.role-option strong {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.role-option span {
+    display: block;
+    margin-top: 0.25rem;
+    color: inherit;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.role-toggle-stacked {
+    grid-template-columns: 1fr;
+}
+
+.auth-card-wide {
+    max-width: 520px;
+}
+
+.auth-summary {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.auth-summary strong,
+.auth-summary span {
+    display: block;
+}
+
+.auth-summary strong {
+    color: #f8fafc;
+    font-size: 0.95rem;
+}
+
+.auth-summary span {
+    margin-top: 0.2rem;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.auth-actions {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.auth-secondary-link {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.auth-secondary-link:hover {
+    text-decoration: underline;
+}
+
 .auth-form .forgot {
     display: block;
     font-size: 0.8125rem;

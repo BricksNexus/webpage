@@ -456,6 +456,62 @@
             });
         })();
 
+        (function renderSavedOpenToWork() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem(app.KEYS.openToWork) || '[]');
+            } catch (e) {
+                console.error('Failed to read open to work cards from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category="services"]');
+
+            data.forEach(cardData => {
+                const card = document.createElement('article');
+                card.className = 'feed-card compact';
+                card.dataset.category = 'services';
+                card.dataset.cardId = String(cardData.id);
+                card.dataset.cardType = 'open-to-work';
+
+                const avatarMarkup = cardData.imageDataUrl
+                    ? `<img src="${cardData.imageDataUrl}" alt="${cardData.creatorName || 'Profile'}">`
+                    : `${app.getInitials(cardData.creatorName || '', cardData.creatorEmail || '')}`;
+
+                card.innerHTML = `
+                    <div class="card-type">Open to Work</div>
+                    <div class="card-body">
+                        <div class="card-header-row">
+                            <div class="card-avatar">${avatarMarkup}</div>
+                            <div>
+                                <h3 class="card-title">${cardData.roleTitle || cardData.title || 'Open to Work'}</h3>
+                                <div class="card-meta">
+                                    <span>${cardData.creatorName || 'Professional'}</span>
+                                    ${cardData.location ? `<span>${cardData.location}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-details">${cardData.summary || 'Open to Work profile posted by a BricksNexus member.'}</div>
+                        <div class="card-actions">
+                            <button type="button">View profile</button>
+                            <button type="button" class="primary" data-requires-auth="contact">Contact</button>
+                        </div>
+                    </div>
+                `;
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor);
+                } else {
+                    feed.appendChild(card);
+                }
+            });
+        })();
+
         (function attachExpressInterestHandlers() {
             const feed = document.querySelector('.feed');
             if (!feed) return;
@@ -524,7 +580,7 @@
             var avatarEl = document.getElementById('top-bar-avatar');
             if (currentUser && avatarEl && loginEl) {
                 loginEl.style.display = 'none';
-                avatarEl.textContent = (currentUser.initials || app.getInitials(currentUser.name, currentUser.email)).toUpperCase();
+                app.applySmartAvatar(avatarEl, currentUser);
                 avatarEl.style.display = 'flex';
             }
         })();

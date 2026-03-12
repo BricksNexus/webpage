@@ -21,14 +21,15 @@
     }
 
     var initials = (currentUser.initials || app.getInitials(currentUser.name, currentUser.email)).toUpperCase();
-    setText('dashboard-user-avatar', initials);
+    app.applySmartAvatar(document.getElementById('dashboard-user-avatar'), currentUser);
     setText('dashboard-user-name', currentUser.name || 'Profile');
     setText('dashboard-user-role', currentUser.accountType === 'company' ? 'Company account' : 'Individual account');
-    setText('dashboard-top-avatar', initials);
+    app.applySmartAvatar(document.getElementById('dashboard-top-avatar'), currentUser);
 
     setText('dashboard-profile-name', currentUser.name || '—');
     setText('dashboard-profile-email', currentUser.email || '—');
     setText('dashboard-profile-type', currentUser.accountType === 'company' ? 'Company' : 'Individual');
+    setText('dashboard-profile-title', currentUser.professionalTitle || '—');
     setText('dashboard-profile-member-since', getProfileValue('bricksnexus_profile_member_since', new Date(currentUser.createdAt).toLocaleDateString()));
     setText('dashboard-settings-role', currentUser.accountType === 'company' ? 'Company' : 'Individual');
     setText('dashboard-settings-email', currentUser.email || '—');
@@ -70,6 +71,12 @@
             item.__sourceKey = app.KEYS.serviceDrafts;
             item.__typeLabel = 'Service Draft';
             item.__editHref = 'post-service.html?edit=' + encodeURIComponent(item.id) + '&draft=1';
+            return item;
+        }))
+        .concat(app.getUserItems(app.KEYS.openToWork).map(function(item) {
+            item.__sourceKey = app.KEYS.openToWork;
+            item.__typeLabel = 'Open to Work';
+            item.__editHref = 'profile.html';
             return item;
         }))
         .concat(app.getUserItems(app.KEYS.openToWorkDrafts).map(function(item) {
@@ -198,9 +205,56 @@
     }
 
     var logoutBtn = document.getElementById('dashboard-logout-btn');
+    var prefEmail = document.getElementById('dashboard-pref-email');
+    var prefMarketplace = document.getElementById('dashboard-pref-marketplace');
+    var deleteBtn = document.getElementById('dashboard-delete-account-btn');
+    var deleteModal = document.getElementById('dashboard-delete-modal');
+    var deleteCancel = document.getElementById('dashboard-delete-cancel');
+    var deleteConfirm = document.getElementById('dashboard-delete-confirm');
+
+    if (prefEmail) prefEmail.checked = !(currentUser.preferences && currentUser.preferences.emailNotifications === false);
+    if (prefMarketplace) prefMarketplace.checked = !(currentUser.preferences && currentUser.preferences.marketplaceUpdates === false);
+
+    function persistPreferences() {
+        currentUser = app.updateCurrentUser({
+            preferences: {
+                emailNotifications: !!(prefEmail && prefEmail.checked),
+                marketplaceUpdates: !!(prefMarketplace && prefMarketplace.checked)
+            }
+        }) || currentUser;
+    }
+
+    if (prefEmail) prefEmail.addEventListener('change', persistPreferences);
+    if (prefMarketplace) prefMarketplace.addEventListener('change', persistPreferences);
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             app.clearSession();
+            window.location.href = 'index.html';
+        });
+    }
+
+    if (deleteBtn && deleteModal) {
+        deleteBtn.addEventListener('click', function() {
+            deleteModal.showModal();
+        });
+    }
+
+    if (deleteCancel && deleteModal) {
+        deleteCancel.addEventListener('click', function() {
+            deleteModal.close();
+        });
+    }
+
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function(event) {
+            if (event.target === deleteModal) deleteModal.close();
+        });
+    }
+
+    if (deleteConfirm) {
+        deleteConfirm.addEventListener('click', function() {
+            app.deleteCurrentUser();
             window.location.href = 'index.html';
         });
     }
