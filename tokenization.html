@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenization Opportunity · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tokenization.css">
+</head>
+<body>
+    <header class="token-topbar">
+        <div class="token-topbar-inner">
+            <a href="index.html" class="token-back-link">← Back to Marketplace</a>
+            <a href="landing.html" class="token-brand">
+                <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
+                <span>BricksNexus</span>
+            </a>
+            <div class="token-status-badge">
+                <span class="token-status-dot"></span>
+                KYC Status: Verified
+            </div>
+        </div>
+    </header>
+
+    <main class="token-page">
+        <section class="token-hero">
+            <div class="token-gallery-shell token-card">
+                <div class="token-gallery-main" id="token-gallery-main">
+                    <div class="token-gallery-overlay"></div>
+                    <div class="token-gallery-caption">
+                        <p class="token-eyebrow">Tokenization Opportunity</p>
+                        <h1 id="token-property-name">Miami Harbor Residences</h1>
+                        <p id="token-gallery-caption-text">Aerial view</p>
+                    </div>
+                </div>
+                <div class="token-gallery-thumbs" id="token-gallery-thumbs"></div>
+            </div>
+
+            <aside class="token-purchase-widget token-card">
+                <div class="token-purchase-head">
+                    <div>
+                        <p class="token-eyebrow">Purchase Widget</p>
+                        <h2>Commit Capital</h2>
+                    </div>
+                    <div class="token-trust-pills">
+                        <span class="token-pill verified">Verified</span>
+                        <span class="token-pill compliant">SEC Compliant</span>
+                    </div>
+                </div>
+
+                <div class="token-metrics-grid">
+                    <div class="token-metric-card">
+                        <span>Token Price</span>
+                        <strong id="token-price">$50</strong>
+                    </div>
+                    <div class="token-metric-card">
+                        <span>Est. Annual Yield</span>
+                        <strong id="token-yield">12.5%</strong>
+                    </div>
+                </div>
+
+                <div class="token-minimum-label" id="token-minimum-investment">Minimum Investment: $1,000</div>
+
+                <div class="token-progress-wrap">
+                    <div class="token-progress-meta">
+                        <span>Funding Progress</span>
+                        <strong id="token-progress-percent">68%</strong>
+                    </div>
+                    <div class="token-progress-bar">
+                        <div class="token-progress-fill" id="token-progress-fill"></div>
+                    </div>
+                    <div class="token-progress-amounts">
+                        <span id="token-raised-amount">$1,687,500 raised</span>
+                        <span id="token-target-amount">$2,500,000 target</span>
+                    </div>
+                </div>
+
+                <button type="button" class="token-primary-btn">Commit Capital</button>
+            </aside>
+        </section>
+
+        <section class="token-content-grid">
+            <div class="token-main-column">
+                <section class="token-summary token-card">
+                    <div class="token-summary-head">
+                        <div>
+                            <p class="token-eyebrow">Investment Snapshot</p>
+                            <h2 id="token-summary-title">Miami Harbor Residences</h2>
+                            <p class="token-summary-location" id="token-location">Wynwood, Miami, Florida</p>
+                        </div>
+                        <div class="token-trust-pills">
+                            <span class="token-pill verified">Asset Verified</span>
+                            <span class="token-pill compliant">Real Asset Backed</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="token-tabs-section">
+                    <div class="token-tabs" id="token-tabs">
+                        <button type="button" class="token-tab active" data-tab="overview">Overview</button>
+                        <button type="button" class="token-tab" data-tab="financials">Financials</button>
+                        <button type="button" class="token-tab" data-tab="documents">Documents</button>
+                        <button type="button" class="token-tab" data-tab="blockchain">Blockchain</button>
+                    </div>
+
+                    <div class="token-tab-panels">
+                        <section class="token-tab-panel active token-card" id="token-panel-overview">
+                            <div class="token-panel-grid">
+                                <div>
+                                    <h3>Overview</h3>
+                                    <p id="token-description"></p>
+                                    <div class="token-thesis-block">
+                                        <h4>Investment Thesis</h4>
+                                        <ul id="token-thesis-list"></ul>
+                                    </div>
+                                </div>
+                                <div class="token-map-card">
+                                    <h4>Location Map</h4>
+                                    <div class="token-map-placeholder" id="token-map-placeholder">Map Placeholder</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="token-tab-panel token-card" id="token-panel-financials" hidden>
+                            <div class="token-panel-grid token-panel-grid-financials">
+                                <div>
+                                    <h3>Capital Stack</h3>
+                                    <div class="token-capital-bar" id="token-capital-bar"></div>
+                                    <div class="token-capital-legend" id="token-capital-legend"></div>
+                                </div>
+                                <div>
+                                    <h3>Projected Cash Flow</h3>
+                                    <div class="token-table-wrap">
+                                        <table class="token-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Year</th>
+                                                    <th>Revenue</th>
+                                                    <th>Distributions</th>
+                                                    <th>Total Return</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="token-cashflow-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="token-tab-panel token-card" id="token-panel-documents" hidden>
+                            <h3>Document Vault</h3>
+                            <div class="token-doc-list" id="token-doc-list"></div>
+                        </section>
+
+                        <section class="token-tab-panel token-card" id="token-panel-blockchain" hidden>
+                            <h3>Blockchain Registry</h3>
+                            <div class="token-chain-grid">
+                                <div class="token-chain-card">
+                                    <span>Smart Contract Address</span>
+                                    <strong id="token-contract-address"></strong>
+                                </div>
+                                <div class="token-chain-card">
+                                    <span>Network</span>
+                                    <strong id="token-network"></strong>
+                                </div>
+                                <a class="token-chain-card token-chain-link" id="token-explorer-link" href="#" target="_blank" rel="noreferrer">
+                                    <span>Explorer</span>
+                                    <strong>View on Explorer</strong>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="token-side-column">
+                <section class="token-card token-calculator-card">
+                    <div class="token-purchase-head">
+                        <div>
+                            <p class="token-eyebrow">Investment Calculator</p>
+                            <h2>Model Your Allocation</h2>
+                        </div>
+                    </div>
+
+                    <label class="token-input-label" for="investment-amount">Capital Commitment</label>
+                    <input id="investment-amount" class="token-input" type="number" min="0" step="100" value="1000">
+
+                    <div class="token-calculator-results">
+                        <div class="token-calc-result">
+                            <span>Projected Monthly Income</span>
+                            <strong id="calc-monthly-income">$10.42</strong>
+                        </div>
+                        <div class="token-calc-result">
+                            <span>Estimated Total Return</span>
+                            <strong id="calc-total-return">$1,125.00</strong>
+                        </div>
+                        <div class="token-calc-result">
+                            <span>Approx. Tokens</span>
+                            <strong id="calc-token-count">20.0</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="token-card token-trust-card">
+                    <p class="token-eyebrow">Trust Signals</p>
+                    <h2>Structured for Confidence</h2>
+                    <ul class="token-trust-list">
+                        <li>Independent diligence package and legal documentation available in the vault.</li>
+                        <li>On-chain issuance reference tied to a verified real-world asset structure.</li>
+                        <li>Clear capital stack, projected distributions, and transparent funding progress.</li>
+                    </ul>
+                </section>
+            </aside>
+        </section>
+    </main>
+
+    <script src="tokenization.js"></script>
+</body>
+</html>
