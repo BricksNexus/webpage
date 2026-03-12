@@ -37,7 +37,7 @@
                     <path d="M15 12H3"/>
                 </svg>
             </a>
-            <a href="profile.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My profile" title="My profile" style="display: none;"></a>
+            <a href="dashboard.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My dashboard" title="My dashboard" style="display: none;"></a>
             <button class="icon-button" aria-label="Open menu">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <path d="M4 7h16"/>
@@ -134,10 +134,10 @@
                         Budget: $1.2M – $2.5M · NO:02 H803-47433-843
                     </div>
                     <div class="card-actions">
-                        <button type="button">Express Interest</button>
+                        <button type="button" data-requires-auth="interest">Express Interest</button>
                         <button type="button">Save</button>
-                        <button type="button">Message</button>
-                        <button type="button" class="primary">Bid Now</button>
+                        <button type="button" data-requires-auth="message">Message</button>
+                        <button type="button" class="primary" data-requires-auth="bid">Bid Now</button>
                     </div>
                 </div>
             </article>
@@ -164,7 +164,7 @@
                     </div>
                     <div class="card-actions">
                         <button type="button">View profile</button>
-                        <button type="button" class="primary">Contact</button>
+                        <button type="button" class="primary" data-requires-auth="contact">Contact</button>
                     </div>
                 </div>
             </article>
@@ -190,7 +190,7 @@
                     </div>
                     <div class="card-actions">
                         <button type="button">Learn more</button>
-                        <button type="button" class="primary">Request quote</button>
+                        <button type="button" class="primary" data-requires-auth="hire">Hire</button>
                     </div>
                 </div>
             </article>
@@ -257,11 +257,13 @@
         </div>
     </aside>
 
+    <script src="app-state.js"></script>
     <script>
         const filterButtons = document.querySelectorAll('.filter-btn');
         const clearFiltersBtn = document.getElementById('clear-filters-btn');
         const addMenuToggle = document.getElementById('add-menu-toggle');
         const addMenu = document.getElementById('add-menu');
+        const app = window.BricksNexusApp;
 
         function applyCategoryFilters() {
             const feedCards = document.querySelectorAll('.feed-card');
@@ -368,9 +370,9 @@
                         <div class=\"card-meta\"></div>
                         <div class=\"card-details\"></div>
                         <div class=\"card-actions\">
-                            <button type=\"button\">Express interest</button>
+                            <button type=\"button\" data-requires-auth=\"interest\">Express interest</button>
                             <button type=\"button\">Save</button>
-                            <button type=\"button\" class=\"primary\">Message</button>
+                            <button type=\"button\" class=\"primary\" data-requires-auth=\"bid\">Bid</button>
                         </div>
                     </div>
                 `;
@@ -436,7 +438,7 @@
                         <div class=\"card-details\"></div>
                         <div class=\"card-actions\">
                             <button type=\"button\">View details</button>
-                            <button type=\"button\" class=\"primary\">Message</button>
+                            <button type=\"button\" class=\"primary\" data-requires-auth=\"hire\">Hire</button>
                         </div>
                     </div>
                 `;
@@ -460,27 +462,25 @@
             feed.addEventListener('click', function(e) {
                 var btn = e.target.closest('.card-actions button');
                 if (!btn) return;
-                var label = (btn.textContent || '').trim();
-                if (label !== 'Express interest' && label !== 'Message') return;
+                var actionType = btn.getAttribute('data-requires-auth') || '';
                 var card = btn.closest('.feed-card');
-                if (!card || !card.dataset.cardId) return;
-                var initials = sessionStorage.getItem('bricksnexus_initials');
-                var name = sessionStorage.getItem('bricksnexus_name') || '';
-                var email = sessionStorage.getItem('bricksnexus_email') || '';
-                if (!initials) {
-                    var returnTo = encodeURIComponent('index.html');
-                    window.location.href = 'login.html?return=' + returnTo;
+                var currentUser = app.getCurrentUser();
+
+                if (actionType && !currentUser) {
+                    app.requireAuth('index.html');
                     return;
                 }
+                if (!card || !card.dataset.cardId || actionType !== 'interest') return;
                 try {
                     var raw = localStorage.getItem('bricksnexus_interests') || '[]';
                     var list = JSON.parse(raw);
                     list.push({
                         cardId: card.dataset.cardId,
                         cardType: card.dataset.cardType || 'opportunity',
-                        interestedBy: initials,
-                        interestedByName: name || initials,
-                        interestedByEmail: email,
+                        interestedBy: currentUser.initials,
+                        interestedByName: currentUser.name || currentUser.initials,
+                        interestedByEmail: currentUser.email,
+                        interestedByUserId: currentUser.id,
                         date: new Date().toISOString()
                     });
                     localStorage.setItem('bricksnexus_interests', JSON.stringify(list));
@@ -519,12 +519,12 @@
         })();
 
         (function() {
-            var initials = sessionStorage.getItem('bricksnexus_initials');
+            var currentUser = app.getCurrentUser();
             var loginEl = document.getElementById('top-bar-login');
             var avatarEl = document.getElementById('top-bar-avatar');
-            if (initials && avatarEl && loginEl) {
+            if (currentUser && avatarEl && loginEl) {
                 loginEl.style.display = 'none';
-                avatarEl.textContent = initials.toUpperCase();
+                avatarEl.textContent = (currentUser.initials || app.getInitials(currentUser.name, currentUser.email)).toUpperCase();
                 avatarEl.style.display = 'flex';
             }
         })();

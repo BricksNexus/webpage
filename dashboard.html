@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="marketplace.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <script src="app-state.js"></script>
+    <script>
+        if (!window.BricksNexusApp.isAuthenticated()) {
+            window.location.replace('login.html?return=dashboard.html');
+        }
+    </script>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <a href="index.html" class="dashboard-logo-link">
+                <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
+                <span>BricksNexus</span>
+            </a>
+        </div>
+        <div class="top-bar-right">
+            <a href="index.html" class="dashboard-top-link">Marketplace</a>
+            <a href="profile.html" class="dashboard-top-link">Public Profile</a>
+            <a href="dashboard.html" class="user-avatar top-bar-avatar" id="dashboard-top-avatar" aria-label="Dashboard avatar"></a>
+        </div>
+    </header>
+
+    <main class="dashboard-shell">
+        <aside class="dashboard-sidebar" aria-label="Dashboard navigation">
+            <div class="dashboard-user-card">
+                <div class="dashboard-user-avatar" id="dashboard-user-avatar"></div>
+                <div class="dashboard-user-meta">
+                    <strong id="dashboard-user-name">Profile</strong>
+                    <span id="dashboard-user-role">Member</span>
+                </div>
+            </div>
+            <nav class="dashboard-nav">
+                <button type="button" class="dashboard-nav-btn active" data-panel="profile">Profile</button>
+                <button type="button" class="dashboard-nav-btn" data-panel="messages">Messages</button>
+                <button type="button" class="dashboard-nav-btn" data-panel="opportunities">My Opportunities</button>
+                <button type="button" class="dashboard-nav-btn" data-panel="settings">Settings</button>
+            </nav>
+        </aside>
+
+        <section class="dashboard-content">
+            <section class="dashboard-panel active" id="dashboard-panel-profile">
+                <div class="dashboard-panel-header">
+                    <h1>Profile</h1>
+                    <p>Your internal workspace for managing your marketplace identity.</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-summary-card">
+                        <h2>Account Summary</h2>
+                        <dl class="dashboard-summary-list">
+                            <div><dt>Name</dt><dd id="dashboard-profile-name">—</dd></div>
+                            <div><dt>Email</dt><dd id="dashboard-profile-email">—</dd></div>
+                            <div><dt>Account Type</dt><dd id="dashboard-profile-type">—</dd></div>
+                            <div><dt>Member Since</dt><dd id="dashboard-profile-member-since">—</dd></div>
+                        </dl>
+                    </div>
+                    <div class="dashboard-summary-card">
+                        <h2>Quick Actions</h2>
+                        <div class="dashboard-quick-actions">
+                            <a href="post-opportunity.html" class="dashboard-action-btn">New Opportunity</a>
+                            <a href="post-service.html" class="dashboard-action-btn">New Service</a>
+                            <a href="open-to-work.html" class="dashboard-action-btn">Open to Work</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-panel" id="dashboard-panel-messages" hidden>
+                <div class="dashboard-panel-header">
+                    <h1>Messages</h1>
+                    <p>Direct interest and contact activity tied to your marketplace cards.</p>
+                </div>
+                <div id="dashboard-messages-empty" class="profile-empty-state">
+                    <div class="profile-empty-illus" aria-hidden="true"></div>
+                    <p class="profile-empty-text">No messages yet</p>
+                </div>
+            </section>
+
+            <section class="dashboard-panel" id="dashboard-panel-opportunities" hidden>
+                <div class="dashboard-panel-header">
+                    <h1>My Opportunities</h1>
+                    <p>Manage all cards you created across opportunities, services, and open-to-work drafts.</p>
+                </div>
+                <div id="dashboard-item-list" class="dashboard-item-list"></div>
+                <div id="dashboard-items-empty" class="profile-empty-state" style="display: none;">
+                    <div class="profile-empty-illus" aria-hidden="true"></div>
+                    <p class="profile-empty-text">You have not created any cards yet.</p>
+                    <a href="post-opportunity.html" class="profile-empty-btn">Create First Card</a>
+                </div>
+            </section>
+
+            <section class="dashboard-panel" id="dashboard-panel-settings" hidden>
+                <div class="dashboard-panel-header">
+                    <h1>Settings</h1>
+                    <p>Control account session and review the role currently assigned to your account.</p>
+                </div>
+                <div class="dashboard-summary-card">
+                    <dl class="dashboard-summary-list">
+                        <div><dt>Role</dt><dd id="dashboard-settings-role">—</dd></div>
+                        <div><dt>Email</dt><dd id="dashboard-settings-email">—</dd></div>
+                    </dl>
+                    <div class="dashboard-settings-actions">
+                        <button type="button" class="profile-btn profile-btn-secondary" id="dashboard-logout-btn">Log out</button>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

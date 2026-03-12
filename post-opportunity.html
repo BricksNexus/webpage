@@ -3,249 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post a New Opportunity · BricksNexus</title>
+    <title>Create New Opportunity · BricksNexus</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="post-opportunity.css">
 </head>
 <body>
+    <script src="app-state.js"></script>
     <script>
-        (function() {
-            if (!sessionStorage.getItem('bricksnexus_initials')) {
-                var returnTo = encodeURIComponent(window.location.pathname.split('/').pop() || 'post-opportunity.html');
-                window.location.replace('login.html?return=' + returnTo);
-            }
-        })();
+        if (!window.BricksNexusApp.isAuthenticated()) {
+            var returnTo = encodeURIComponent(window.location.pathname.split('/').pop() + window.location.search);
+            window.location.replace('login.html?return=' + returnTo);
+        }
     </script>
-    <aside class="sidebar">
-        <div class="logo">
-            <a href="index.html">BricksNexus</a>
-        </div>
 
-        <nav class="sidebar-nav">
-            <button>
-                <span class="icon">1</span>
-                Open to Work
-            </button>
-            <button>
-                <span class="icon">2</span>
-                Services
-            </button>
-            <button class="active">
-                <span class="icon">3</span>
-                Opportunities
-            </button>
-            <button>
-                <span class="icon">4</span>
-                Tokenization
-            </button>
-        </nav>
-    </aside>
-
-    <main class="main">
-        <div class="progress-steps">
-            <span class="step-active">Core details</span>
-            <span>›</span>
-            <span>Review &amp; publish</span>
-        </div>
-
-        <header>
-            <h1 class="page-title">Post a New Opportunity</h1>
-            <p class="page-subtitle">Describe the project, location and budget so the right builders can express interest.</p>
-        </header>
-
-        <section class="layout">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-header-title">1. Core details &amp; location</div>
-                    <span class="badge-step">Step 1 of 2</span>
-                </div>
-
-                <div class="field-group">
-                    <div class="field-label">
-                        <span>Opportunity title</span>
-                        <small>What is this project?</small>
-                    </div>
-                    <input type="text" id="opp-title" placeholder="e.g. Foundation work for 12‑unit apartment">
-                </div>
-
-                <div class="field-group">
-                    <div class="field-label">
-                        <span>Type of opportunity</span>
-                        <small>Select the best match</small>
-                    </div>
-                    <div class="pill-row">
-                        <span class="pill-option active">RFP</span>
-                        <span class="pill-option">Land sale</span>
-                        <span class="pill-option">Sub‑contracting</span>
-                        <span class="pill-option">Joint venture</span>
-                    </div>
-                </div>
-
-                <div class="field-group">
-                    <div class="field-label">
-                        <span>Short description</span>
-                        <small>Visible on the marketplace card</small>
-                    </div>
-                    <textarea id="opp-summary" placeholder="Briefly describe the work scope, timeline and any key requirements."></textarea>
-                </div>
-
-                <div class="section-title">Location</div>
-                <p class="section-subtitle">Where is the project based?</p>
-
-                <div class="inline-grid">
-                    <div class="field-group">
-                        <div class="field-label">
-                            <span>City</span>
-                        </div>
-                        <input type="text" id="opp-city" placeholder="e.g. Austin">
-                    </div>
-                    <div class="field-group">
-                        <div class="field-label">
-                            <span>State / region</span>
-                        </div>
-                        <input type="text" id="opp-region" placeholder="e.g. TX">
-                    </div>
-                </div>
-
-                <div class="field-group">
-                    <div class="field-label">
-                        <span>Project address (optional)</span>
-                    </div>
-                    <input type="text" id="opp-address" placeholder="Street address or nearest intersection">
-                </div>
-
-                <div class="section-title">2. Financial budget</div>
-                <p class="section-subtitle">Share a high‑level budget range and funding details.</p>
-
-                <div class="inline-grid">
-                    <div class="field-group">
-                        <div class="field-label">
-                            <span>Estimated budget</span>
-                        </div>
-                        <input type="text" id="opp-budget" placeholder="$350k – $800k">
-                    </div>
-                    <div class="field-group">
-                        <div class="field-label">
-                            <span>Payment terms</span>
-                        </div>
-                        <input type="text" id="opp-terms" placeholder="e.g. Progress draws, milestone‑based">
-                    </div>
-                </div>
-
-                <div class="inline-grid">
-                    <div class="field-group">
-                        <div class="field-label">
-                            <span>Equity offered (if any)</span>
-                        </div>
-                        <input type="text" id="opp-equity" placeholder="e.g. Up to 10%">
-                    </div>
-                    <div class="field-group">
-                        <div class="field-label">
-                            <span>Target ROI</span>
-                        </div>
-                        <input type="text" id="opp-roi" placeholder="e.g. 12–15% over 3 years">
-                    </div>
-                </div>
-
-                <div class="toggle-row">
-                    <span>Looking for fractional funding?</span>
-                    <div class="switch"></div>
-                </div>
-
-                <div class="section-title">Trade skills needed</div>
-                <p class="section-subtitle">Tag the disciplines you’re looking for.</p>
-
-                <div class="tags-row">
-                    <span class="tag">#Masonry</span>
-                    <span class="tag">#Electrical</span>
-                    <span class="tag">#ProjectManagement</span>
-                </div>
-                <div class="tag-input-row">
-                    <input type="text" placeholder="Add another skill tag">
-                    <button type="button">Add</button>
-                </div>
-
-                <div class="toggle-row">
-                    <span>Requires verified &amp; bonded builders only</span>
-                    <div class="switch"></div>
-                </div>
-
-                <div class="section-title">Attachments</div>
-                <p class="section-subtitle">Add images, drawings or documents that help builders understand the opportunity.</p>
-
-                <div class="attachments-card">
-                    <label class="attachments-drop">
-                        <strong>Drag &amp; drop files</strong>
-                        <span>or click to browse from your computer</span>
-                        <input type="file" id="opp-attachments" name="attachments" multiple>
-                    </label>
-                    <p class="attachments-hint">Accepted formats: PDF, JPG, PNG, DOCX · Up to 25MB total (example limits).</p>
-                </div>
-
-                <div class="footer-actions">
-                    <div class="footer-left">
-                        <button type="button" id="opp-save-draft">Save as draft</button>
-                        <span>Changes are saved securely.</span>
-                    </div>
-                    <div class="footer-right">
-                        <button type="button" class="btn-secondary" onclick="history.back()">Back</button>
-                        <button type="button" id="opp-submit" class="btn-primary">Review &amp; publish</button>
-                    </div>
-                </div>
+    <div class="builder-shell">
+        <aside class="builder-sidebar">
+            <div class="builder-brand">
+                <a href="index.html">BricksNexus</a>
+                <span>Opportunity Builder</span>
             </div>
 
-            <aside class="map-panel">
-                <h2>Project location</h2>
-                <p class="section-subtitle">Pin the approximate site to help builders understand travel and logistics.</p>
-                <div class="map-wrapper">
-                    <iframe
-                        title="Opportunity project map"
-                        src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&q=Austin,TX"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                        allowfullscreen>
-                    </iframe>
-                </div>
+            <div class="builder-sidebar-card">
+                <p class="builder-sidebar-eyebrow">Progress</p>
+                <nav class="builder-progress" aria-label="Opportunity builder steps">
+                    <button type="button" class="builder-progress-step active" data-target-step="type">
+                        <span class="builder-progress-index">1</span>
+                        <span>Type</span>
+                    </button>
+                    <button type="button" class="builder-progress-step" data-target-step="details">
+                        <span class="builder-progress-index">2</span>
+                        <span>Details</span>
+                    </button>
+                    <button type="button" class="builder-progress-step" data-target-step="needs">
+                        <span class="builder-progress-index">3</span>
+                        <span>What I Need</span>
+                    </button>
+                    <button type="button" class="builder-progress-step" data-target-step="chronogram">
+                        <span class="builder-progress-index">4</span>
+                        <span>Chronogram</span>
+                    </button>
+                    <button type="button" class="builder-progress-step" data-target-step="financing">
+                        <span class="builder-progress-index">5</span>
+                        <span>Financing</span>
+                    </button>
+                    <button type="button" class="builder-progress-step" data-target-step="documents">
+                        <span class="builder-progress-index">6</span>
+                        <span>Documents</span>
+                    </button>
+                </nav>
+            </div>
+        </aside>
 
-                <div class="field-group">
-                    <div class="field-label">
-                        <span>Project phase</span>
+        <main class="builder-main">
+            <header class="builder-header">
+                <div>
+                    <p class="builder-header-eyebrow">B2B Marketplace</p>
+                    <h1>Create New Opportunity</h1>
+                    <p class="builder-header-copy">Build a structured posting for hiring, services, or full real estate / construction projects.</p>
+                </div>
+                <a href="dashboard.html" class="builder-dashboard-link">Go to Dashboard</a>
+            </header>
+
+            <section class="builder-layout">
+                <form class="builder-form" id="opportunity-builder-form">
+                    <section class="builder-section active" id="builder-step-type" data-step="type" data-step-index="0">
+                        <button type="button" class="builder-section-toggle">
+                            <span class="builder-section-number">1</span>
+                            <span class="builder-section-title">Type</span>
+                        </button>
+                        <div class="builder-section-panel">
+                            <p class="builder-section-copy">Choose the type of opportunity you want to publish.</p>
+                            <div class="builder-type-grid" id="builder-type-options">
+                                <label class="builder-type-card">
+                                    <input type="radio" name="opportunity_kind" value="hiring">
+                                    <strong>Hiring</strong>
+                                    <span>Simple posting focused on role, job description, location, and budget.</span>
+                                </label>
+                                <label class="builder-type-card">
+                                    <input type="radio" name="opportunity_kind" value="services">
+                                    <strong>Services</strong>
+                                    <span>Simple posting for hiring service providers and contractors.</span>
+                                </label>
+                                <label class="builder-type-card">
+                                    <input type="radio" name="opportunity_kind" value="project">
+                                    <strong>Project</strong>
+                                    <span>Structured project builder with team, chronogram, financing, and documents.</span>
+                                </label>
+                            </div>
+                            <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-primary" data-continue-step="type">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="builder-section" id="builder-step-details" data-step="details" data-step-index="1">
+                        <button type="button" class="builder-section-toggle">
+                            <span class="builder-section-number">2</span>
+                            <span class="builder-section-title">Details</span>
+                        </button>
+                        <div class="builder-section-panel">
+                            <div class="builder-grid-two">
+                                <div class="builder-field">
+                                    <label for="opp-title">Opportunity title</label>
+                                    <input type="text" id="opp-title" placeholder="e.g. Mixed-use building permitting package">
+                                </div>
+                                <div class="builder-field project-only">
+                                    <label for="opp-property-type">Property type</label>
+                                    <select id="opp-property-type">
+                                        <option value="">Select a property type</option>
+                                        <option value="land">Land</option>
+                                        <option value="house">House</option>
+                                        <option value="apartment">Apartment</option>
+                                        <option value="building">Building</option>
+                                        <option value="office">Office</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="builder-field">
+                                <label for="opp-summary">Job description / project brief</label>
+                                <textarea id="opp-summary" rows="4" placeholder="Describe the scope, stage, urgency, and deliverables you expect."></textarea>
+                            </div>
+                            <div class="builder-grid-three">
+                                <div class="builder-field">
+                                    <label for="opp-city">City</label>
+                                    <input type="text" id="opp-city" placeholder="Austin">
+                                </div>
+                                <div class="builder-field">
+                                    <label for="opp-region">State / region</label>
+                                    <input type="text" id="opp-region" placeholder="TX">
+                                </div>
+                                <div class="builder-field">
+                                    <label for="opp-budget">Budget</label>
+                                    <input type="text" id="opp-budget" placeholder="$350k - $800k">
+                                </div>
+                            </div>
+                            <div class="builder-field">
+                                <label for="opp-address">Address / site note</label>
+                                <input type="text" id="opp-address" placeholder="Street address, district, or nearest landmark">
+                            </div>
+                            <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-secondary" data-open-step="type">Back</button>
+                                <button type="button" class="builder-btn builder-btn-primary" data-continue-step="details">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="builder-section" id="builder-step-needs" data-step="needs" data-step-index="2">
+                        <button type="button" class="builder-section-toggle">
+                            <span class="builder-section-number">3</span>
+                            <span class="builder-section-title">What I Need</span>
+                        </button>
+                        <div class="builder-section-panel">
+                            <p class="builder-section-copy project-only">Select the professionals you need. This checklist updates based on the property type.</p>
+                            <div class="builder-checklist project-only" id="builder-service-checklist"></div>
+                            <div class="builder-field simple-only">
+                                <label for="opp-simple-need">What do you need?</label>
+                                <textarea id="opp-simple-need" rows="3" placeholder="Describe the role or service provider you need to hire."></textarea>
+                            </div>
+                            <div class="builder-field">
+                                <label for="opp-terms">Success criteria / deliverables</label>
+                                <textarea id="opp-terms" rows="3" placeholder="List the exact deliverables, standards, permits, or milestones expected."></textarea>
+                            </div>
+                            <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-secondary" data-open-step="details">Back</button>
+                                <button type="button" class="builder-btn builder-btn-primary" data-continue-step="needs">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="builder-section" id="builder-step-chronogram" data-step="chronogram" data-step-index="3">
+                        <button type="button" class="builder-section-toggle">
+                            <span class="builder-section-number">4</span>
+                            <span class="builder-section-title">Chronogram</span>
+                        </button>
+                        <div class="builder-section-panel">
+                            <p class="builder-section-copy">Create a simplified timeline similar to a lightweight Primavera / Gantt schedule.</p>
+                            <div class="builder-table-wrap">
+                                <table class="builder-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Task Name</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="chronogram-body"></tbody>
+                                </table>
+                            </div>
+                            <button type="button" class="builder-inline-btn" id="chronogram-add-row">Add Task</button>
+                            <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-secondary" data-open-step="needs">Back</button>
+                                <button type="button" class="builder-btn builder-btn-primary" data-continue-step="chronogram">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="builder-section" id="builder-step-financing" data-step="financing" data-step-index="4">
+                        <button type="button" class="builder-section-toggle">
+                            <span class="builder-section-number">5</span>
+                            <span class="builder-section-title">Financing</span>
+                        </button>
+                        <div class="builder-section-panel">
+                            <div class="builder-grid-two">
+                                <div class="builder-field">
+                                    <label for="opp-financing-model">Financing model</label>
+                                    <select id="opp-financing-model">
+                                        <option value="">Select a model</option>
+                                        <option value="self-funded">Self-funded</option>
+                                        <option value="debt">Debt</option>
+                                        <option value="equity">Equity</option>
+                                        <option value="hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+                                <div class="builder-field">
+                                    <label for="opp-roi">Target ROI / margin</label>
+                                    <input type="text" id="opp-roi" placeholder="e.g. 12% ROI">
+                                </div>
+                            </div>
+                            <div class="builder-grid-two">
+                                <div class="builder-field">
+                                    <label for="opp-equity">Equity offered</label>
+                                    <input type="text" id="opp-equity" placeholder="e.g. Up to 10%">
+                                </div>
+                                <div class="builder-field">
+                                    <label for="opp-capital-gap">Capital gap / hiring budget note</label>
+                                    <input type="text" id="opp-capital-gap" placeholder="Optional">
+                                </div>
+                            </div>
+                            <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-secondary" data-open-step="chronogram">Back</button>
+                                <button type="button" class="builder-btn builder-btn-primary" data-continue-step="financing">Continue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="builder-section" id="builder-step-documents" data-step="documents" data-step-index="5">
+                        <button type="button" class="builder-section-toggle">
+                            <span class="builder-section-number">6</span>
+                            <span class="builder-section-title">Documents</span>
+                        </button>
+                        <div class="builder-section-panel">
+                            <label class="builder-upload-zone" for="opp-attachments">
+                                <input type="file" id="opp-attachments" multiple>
+                                <strong>Upload files</strong>
+                                <span>Deeds, permits, photos, budgets, or any supporting material.</span>
+                            </label>
+                            <div id="builder-documents-list" class="builder-documents-list"></div>
+                            <div class="builder-section-actions">
+                                <button type="button" class="builder-btn builder-btn-secondary" data-open-step="financing">Back</button>
+                            </div>
+                        </div>
+                    </section>
+                </form>
+
+                <aside class="builder-sidepanel">
+                    <div class="builder-side-card">
+                        <p class="builder-side-eyebrow">Live team</p>
+                        <h2>My Team</h2>
+                        <p class="builder-side-copy">Professionals tagged in the checklist appear here live.</p>
+                        <ul id="builder-team-list" class="builder-team-list"></ul>
+                        <p id="builder-team-empty" class="builder-side-empty">No professions selected yet.</p>
                     </div>
-                    <select>
-                        <option>Concept / feasibility</option>
-                        <option>Design / permitting</option>
-                        <option selected>Ready for bid</option>
-                        <option>Under construction</option>
-                    </select>
-                </div>
-            </aside>
-        </section>
-    </main>
-
-    <!-- AI Opportunity Chatbot -->
-    <div class="chatbot-wrapper" id="chatbot-wrapper">
-        <div class="chatbot-panel" id="chatbot-panel">
-            <div class="chatbot-header">
-                <h3>Discover opportunities</h3>
-                <p>AI can help you find options you might not have considered (e.g. ADUs, zoning).</p>
-                <button type="button" class="chatbot-close" id="chatbot-close" aria-label="Close chat">×</button>
-            </div>
-            <div class="chatbot-messages" id="chatbot-messages"></div>
-            <div class="chatbot-input-wrap">
-                <input type="text" class="chatbot-input" id="chatbot-input" placeholder="Type your answer..." autocomplete="off">
-                <button type="button" class="chatbot-send" id="chatbot-send" aria-label="Send">Send</button>
-            </div>
-        </div>
-        <button type="button" class="chatbot-toggle" id="chatbot-toggle" aria-label="Open opportunity assistant">
-            <span class="chatbot-toggle-icon">💬</span>
-            <span class="chatbot-toggle-label">Discover opportunities</span>
-        </button>
+                    <div class="builder-side-card">
+                        <p class="builder-side-eyebrow">Publishing</p>
+                        <h2>Before you publish</h2>
+                        <ul class="builder-side-notes">
+                            <li>Guests can view your card, but contact and bid actions require login.</li>
+                            <li>Project postings can include team needs, schedule rows, and typed documents.</li>
+                            <li>Use draft mode if you want to return and complete the builder later.</li>
+                        </ul>
+                    </div>
+                </aside>
+            </section>
+        </main>
     </div>
 
+    <footer class="builder-footer">
+        <button type="button" class="builder-btn builder-btn-secondary" id="opp-save-draft">Save as Draft</button>
+        <button type="button" class="builder-btn builder-btn-primary" id="opp-submit">Publish</button>
+    </footer>
+
     <script src="post-opportunity.js"></script>
-    <script src="post-opportunity-chatbot.js"></script>
 </body>
 </html>
 

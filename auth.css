@@ -106,6 +106,35 @@ body.auth-page {
     margin-bottom: 1rem;
 }
 
+.role-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.role-option {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.45);
+    color: #cbd5e1;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.role-option:hover {
+    border-color: rgba(125, 211, 252, 0.45);
+}
+
+.role-option.active {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.18);
+    color: #eff6ff;
+}
+
 .auth-form .forgot {
     display: block;
     font-size: 0.8125rem;

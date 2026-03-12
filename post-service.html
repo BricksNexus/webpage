@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="post-service.css">
 </head>
 <body>
+    <script src="app-state.js"></script>
     <script>
         (function() {
-            if (!sessionStorage.getItem('bricksnexus_initials')) {
+            if (!window.BricksNexusApp.isAuthenticated()) {
                 var returnTo = encodeURIComponent(window.location.pathname.split('/').pop() || 'post-service.html');
                 window.location.replace('login.html?return=' + returnTo);
             }

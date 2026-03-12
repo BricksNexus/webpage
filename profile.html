@@ -32,25 +32,114 @@
     </header>
 
     <main class="profile-main">
-        <div class="profile-header">
-            <div class="profile-photo-wrap">
-                <img id="profile-photo" src="" alt="Profile" class="profile-photo">
-                <div id="profile-photo-placeholder" class="profile-photo-placeholder"></div>
+        <!-- Top: Cover + profile picture overlay -->
+        <section class="profile-cover-section" aria-label="Profile cover and photo">
+            <div class="profile-cover-wrap" id="profile-cover-wrap">
+                <img id="cover-photo" class="profile-cover-img" src="" alt="" role="presentation">
+                <div id="cover-photo-placeholder" class="profile-cover-placeholder"></div>
             </div>
-            <div class="profile-info">
-                <h1 id="profile-name" class="profile-name"></h1>
-                <p id="profile-email" class="profile-email"></p>
-                <p id="profile-initials-hint" class="profile-meta"></p>
+            <div class="profile-avatar-overlay">
+                <div class="profile-avatar-wrap" id="profile-avatar-wrap">
+                    <img id="profile-photo" class="profile-avatar-img" src="" alt="Profile" role="presentation">
+                    <div id="profile-photo-placeholder" class="profile-avatar-placeholder"></div>
+                </div>
+                <div class="profile-edit-photos-dropdown">
+                    <button type="button" class="profile-edit-photos-btn" id="profile-edit-photos-btn" aria-label="Edit cover and profile photo" aria-expanded="false" aria-haspopup="true">Edit</button>
+                    <div class="profile-edit-photos-menu" id="profile-edit-photos-menu" role="menu" aria-hidden="true">
+                        <button type="button" role="menuitem" id="profile-upload-cover" data-target="cover">Cover photo</button>
+                        <button type="button" role="menuitem" id="profile-upload-avatar" data-target="avatar">Profile photo</button>
+                    </div>
+                </div>
+                <input type="file" id="cover-photo-input" class="profile-file-input" accept="image/*" aria-hidden="true">
+                <input type="file" id="profile-photo-input" class="profile-file-input" accept="image/*" aria-hidden="true">
+            </div>
+        </section>
+
+        <div class="profile-layout">
+            <!-- Left: User info sidebar -->
+            <aside class="profile-sidebar" aria-label="Profile information">
+                <div class="profile-sidebar-card">
+                    <h2 id="user-display-name" class="profile-sidebar-name" data-field="display_name">—</h2>
+                    <p id="user-professional-title-display" class="profile-sidebar-title" data-field="professional_title">—</p>
+                    <p id="user-bio-display" class="profile-sidebar-bio" data-field="bio">—</p>
+                    <p id="user-location-display" class="profile-sidebar-location" data-field="location">—</p>
+                    <p id="user-member-since-display" class="profile-sidebar-member-since" data-field="member_since">—</p>
+                    <button type="button" class="profile-edit-profile-btn" id="profile-edit-profile-btn">Edit Profile</button>
+                </div>
+            </aside>
+
+            <!-- Right/Center: View toggle + activity tabs -->
+            <div class="profile-content">
+                <div class="profile-view-toggle-wrap">
+                    <span class="profile-view-label">View as:</span>
+                    <div class="profile-view-toggle" role="group" aria-label="Profile view mode">
+                        <button type="button" class="profile-view-btn active" id="profile-view-private" data-view="private">Private (you)</button>
+                        <button type="button" class="profile-view-btn" id="profile-view-public" data-view="public">Public</button>
+                    </div>
+                </div>
+
+                <div class="profile-tabs" role="tablist" aria-label="Activity tabs">
+                    <button type="button" class="profile-tab active" role="tab" id="tab-opportunities" aria-selected="true" aria-controls="panel-opportunities" data-tab="opportunities">My Opportunities</button>
+                    <button type="button" class="profile-tab" role="tab" id="tab-services" aria-selected="false" aria-controls="panel-services" data-tab="services">My Services</button>
+                    <button type="button" class="profile-tab" role="tab" id="tab-open-to-work" aria-selected="false" aria-controls="panel-open-to-work" data-tab="open-to-work">Open to Work</button>
+                </div>
+
+                <div id="panel-opportunities" class="profile-tab-panel active" role="tabpanel" aria-labelledby="tab-opportunities">
+                    <div id="profile-opportunities-list" class="profile-feed-list"></div>
+                    <div id="profile-opportunities-empty" class="profile-empty-state" style="display: none;">
+                        <div class="profile-empty-illus" aria-hidden="true"></div>
+                        <p class="profile-empty-text">No opportunities yet</p>
+                        <a href="post-opportunity.html" class="profile-empty-btn">Post New</a>
+                    </div>
+                </div>
+                <div id="panel-services" class="profile-tab-panel" role="tabpanel" aria-labelledby="tab-services" hidden>
+                    <div id="profile-services-list" class="profile-feed-list"></div>
+                    <div id="profile-services-empty" class="profile-empty-state" style="display: none;">
+                        <div class="profile-empty-illus" aria-hidden="true"></div>
+                        <p class="profile-empty-text">No services yet</p>
+                        <a href="post-service.html" class="profile-empty-btn">Post New</a>
+                    </div>
+                </div>
+                <div id="panel-open-to-work" class="profile-tab-panel" role="tabpanel" aria-labelledby="tab-open-to-work" hidden>
+                    <div id="profile-open-to-work-list" class="profile-feed-list"></div>
+                    <div id="profile-open-to-work-empty" class="profile-empty-state" style="display: none;">
+                        <div class="profile-empty-illus" aria-hidden="true"></div>
+                        <p class="profile-empty-text">No Open to Work profile yet</p>
+                        <a href="open-to-work.html" class="profile-empty-btn">Post New</a>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <section class="profile-section">
-            <h2>My cards</h2>
-            <p class="section-desc">Opportunities and services you’ve posted. See who has expressed interest.</p>
-            <div id="my-cards-list" class="my-cards-list"></div>
-            <p id="no-cards-message" class="no-cards-message" style="display: none;">You haven’t posted any opportunities or services yet. <a href="post-opportunity.html">Post an opportunity</a> or <a href="post-service.html">post a service</a>.</p>
-        </section>
     </main>
+
+    <!-- Edit Profile modal -->
+    <dialog class="profile-modal" id="profile-edit-modal" aria-labelledby="profile-modal-title" aria-modal="true">
+        <div class="profile-modal-inner">
+            <h2 id="profile-modal-title" class="profile-modal-title">Edit Profile</h2>
+            <form id="profile-edit-form" class="profile-edit-form">
+                <div class="profile-field">
+                    <label for="user-name-input">Display name</label>
+                    <input type="text" id="user-name-input" name="display_name" data-field="display_name" placeholder="Your name" class="profile-input">
+                </div>
+                <div class="profile-field">
+                    <label for="user-title-input">Professional title</label>
+                    <input type="text" id="user-title-input" name="professional_title" data-field="professional_title" placeholder="e.g. General Contractor" class="profile-input">
+                </div>
+                <div class="profile-field">
+                    <label for="user-bio-input">Bio</label>
+                    <textarea id="user-bio-input" name="bio" data-field="bio" placeholder="Short bio or summary" rows="3" class="profile-input profile-textarea"></textarea>
+                </div>
+                <div class="profile-field">
+                    <label for="user-location-input">Location</label>
+                    <input type="text" id="user-location-input" name="location" data-field="location" placeholder="e.g. Greater Austin, TX" class="profile-input">
+                </div>
+                <div class="profile-modal-actions">
+                    <button type="button" class="profile-btn profile-btn-secondary" id="profile-modal-cancel">Cancel</button>
+                    <button type="submit" class="profile-btn profile-btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
     <script src="profile.js"></script>
 </body>

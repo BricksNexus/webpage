@@ -41,8 +41,10 @@
             </p>
         </div>
     </main>
+    <script src="app-state.js"></script>
     <script>
         (function() {
+            var app = window.BricksNexusApp;
             var params = new URLSearchParams(window.location.search);
             var returnUrl = params.get('return') || 'index.html';
             if (returnUrl.indexOf('://') !== -1) returnUrl = 'index.html';
@@ -50,11 +52,16 @@
             document.getElementById('login-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 var email = (document.getElementById('email').value || '').trim();
-                var part = email.split('@')[0] || '';
-                var initials = (part.slice(0, 2) || 'U').toUpperCase();
-                sessionStorage.setItem('bricksnexus_initials', initials);
-                sessionStorage.setItem('bricksnexus_email', email);
-                sessionStorage.setItem('bricksnexus_name', ''); // login has no name
+                var existingUser = app.getUsers().find(function(user) {
+                    return String(user.email || '').toLowerCase() === email.toLowerCase();
+                });
+                var user = existingUser || app.upsertUser({
+                    name: '',
+                    email: email,
+                    accountType: 'individual',
+                    initials: app.getInitials('', email)
+                });
+                app.createSession(user);
                 window.location.href = returnUrl;
             });
         })();
