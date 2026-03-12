@@ -50,7 +50,9 @@
             var app = window.BricksNexusApp;
             var params = new URLSearchParams(window.location.search);
             var returnUrl = params.get('return') || 'index.html';
+            var preferredRole = params.get('role');
             if (returnUrl.indexOf('://') !== -1) returnUrl = 'index.html';
+            if (preferredRole !== 'company' && preferredRole !== 'individual') preferredRole = '';
 
             document.getElementById('signup-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -59,9 +61,10 @@
                 sessionStorage.setItem('bricksnexus_pending_signup', JSON.stringify({
                     name: fullName,
                     email: email,
-                    returnUrl: returnUrl
+                    returnUrl: returnUrl,
+                    preferredRole: preferredRole
                 }));
-                window.location.href = 'onboarding-role.html';
+                window.location.href = 'onboarding-role.html' + (preferredRole ? '?role=' + encodeURIComponent(preferredRole) : '');
             });
         })();
     </script>

@@ -85,9 +85,67 @@
                     <h1>Messages</h1>
                     <p>Direct interest and contact activity tied to your marketplace cards.</p>
                 </div>
-                <div id="dashboard-messages-empty" class="profile-empty-state">
-                    <div class="profile-empty-illus" aria-hidden="true"></div>
-                    <p class="profile-empty-text">No messages yet</p>
+                <div class="dashboard-messages-layout" id="dashboard-messages-layout">
+                    <aside class="dashboard-messages-sidebar">
+                        <div class="dashboard-messages-sidebar-head">
+                            <h2>Conversations</h2>
+                            <span id="dashboard-thread-count" class="dashboard-thread-count">0</span>
+                        </div>
+                        <div id="dashboard-thread-list" class="dashboard-thread-list"></div>
+                        <div id="dashboard-messages-empty" class="profile-empty-state dashboard-messages-empty">
+                            <div class="profile-empty-illus" aria-hidden="true"></div>
+                            <p class="profile-empty-text">No conversations yet</p>
+                        </div>
+                    </aside>
+                    <section class="dashboard-chat-pane">
+                        <div id="dashboard-chat-empty" class="dashboard-chat-empty">
+                            <h2>Select a conversation</h2>
+                            <p>Contact and bid activity for each card will appear here.</p>
+                        </div>
+                        <div id="dashboard-chat-shell" class="dashboard-chat-shell" hidden>
+                            <header class="dashboard-chat-header">
+                                <div>
+                                    <span id="dashboard-chat-type" class="dashboard-chat-type">Opportunity</span>
+                                    <h2 id="dashboard-chat-title">Card discussion</h2>
+                                    <p id="dashboard-chat-subtitle" class="dashboard-chat-subtitle"></p>
+                                </div>
+                                <div id="dashboard-chat-header-actions" class="dashboard-chat-header-actions"></div>
+                            </header>
+                            <div id="dashboard-chat-messages" class="dashboard-chat-messages"></div>
+                            <section id="dashboard-bid-panel" class="dashboard-bid-panel" hidden>
+                                <div class="dashboard-bid-panel-head">
+                                    <h3>Submit Bid</h3>
+                                    <button type="button" class="dashboard-link-btn" id="dashboard-bid-cancel">Cancel</button>
+                                </div>
+                                <form id="dashboard-bid-form" class="dashboard-bid-form">
+                                    <div class="dashboard-bid-grid">
+                                        <label class="dashboard-chat-field">
+                                            <span>Proposed Amount</span>
+                                            <input type="number" id="dashboard-bid-amount" min="0" step="1" placeholder="25000" required>
+                                        </label>
+                                        <label class="dashboard-chat-field">
+                                            <span>Estimated Timeline</span>
+                                            <input type="text" id="dashboard-bid-timeline" placeholder="8 weeks" required>
+                                        </label>
+                                    </div>
+                                    <label class="dashboard-chat-field">
+                                        <span>Proposal Details</span>
+                                        <textarea id="dashboard-bid-details" rows="4" placeholder="Scope, assumptions, milestones, and next steps." required></textarea>
+                                    </label>
+                                    <div class="dashboard-chat-form-actions">
+                                        <button type="submit" class="dashboard-action-btn">Send Bid</button>
+                                    </div>
+                                </form>
+                            </section>
+                            <form id="dashboard-chat-form" class="dashboard-chat-form">
+                                <textarea id="dashboard-chat-input" rows="3" placeholder="Write your message..."></textarea>
+                                <div class="dashboard-chat-form-actions">
+                                    <button type="button" class="dashboard-action-btn" id="dashboard-open-bid-btn">Submit Bid</button>
+                                    <button type="submit" class="dashboard-action-btn">Send Message</button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
                 </div>
             </section>
 

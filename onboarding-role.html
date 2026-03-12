@@ -46,6 +46,7 @@
     <script>
         (function() {
             var app = window.BricksNexusApp;
+            var params = new URLSearchParams(window.location.search);
             var pendingRaw = sessionStorage.getItem('bricksnexus_pending_signup');
             if (!pendingRaw) {
                 window.location.replace('signup.html');
@@ -65,18 +66,24 @@
                 summary.innerHTML = '<strong>' + pending.name + '</strong><span>' + pending.email + '</span>';
             }
 
-            var selectedRole = 'individual';
+            var selectedRole = params.get('role') || pending.preferredRole || 'individual';
             var roleButtons = document.querySelectorAll('.role-option');
+
+            function syncRoleButtons() {
+                roleButtons.forEach(function(item) {
+                    var isActive = (item.dataset.role || 'individual') === selectedRole;
+                    item.classList.toggle('active', isActive);
+                    item.setAttribute('aria-checked', isActive ? 'true' : 'false');
+                });
+            }
+
             roleButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
                     selectedRole = button.dataset.role || 'individual';
-                    roleButtons.forEach(function(item) {
-                        var isActive = item === button;
-                        item.classList.toggle('active', isActive);
-                        item.setAttribute('aria-checked', isActive ? 'true' : 'false');
-                    });
+                    syncRoleButtons();
                 });
             });
+            syncRoleButtons();
 
             document.getElementById('onboarding-finish-btn').addEventListener('click', function() {
                 var user = app.upsertUser({

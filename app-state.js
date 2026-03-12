@@ -28,6 +28,10 @@ window.BricksNexusApp = (function() {
         localStorage.setItem(key, JSON.stringify(value));
     }
 
+    function createId(prefix) {
+        return (prefix || 'id') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    }
+
     function getInitials(name, email) {
         var cleanName = (name || '').trim();
         if (cleanName) {
@@ -45,6 +49,13 @@ window.BricksNexusApp = (function() {
     function getUsers() {
         var list = readJson(KEYS.users, []);
         return Array.isArray(list) ? list : [];
+    }
+
+    function getUserById(userId) {
+        if (userId == null) return null;
+        return getUsers().find(function(user) {
+            return String(user.id) === String(userId);
+        }) || null;
     }
 
     function saveUsers(users) {
@@ -228,6 +239,268 @@ window.BricksNexusApp = (function() {
         return false;
     }
 
+    function getCardStorageKeys(cardType) {
+        if (cardType === 'service') return [KEYS.services, KEYS.serviceDrafts];
+        if (cardType === 'open-to-work') return [KEYS.openToWork, KEYS.openToWorkDrafts];
+        return [KEYS.opportunities, KEYS.opportunityDrafts];
+    }
+
+    function getCardTypeLabel(cardType, cardRecord) {
+        if (cardType === 'service') return 'Service';
+        if (cardType === 'open-to-work') return 'Job';
+        if (cardRecord && cardRecord.opportunityKind === 'hiring') return 'Job';
+        return 'Opportunity';
+    }
+
+    function canSubmitBidForCard(cardType, cardRecord) {
+        return cardType === 'service' || (!!cardRecord && cardRecord.opportunityKind === 'project');
+    }
+
+    function findCardRecord(cardId, cardType) {
+        var match = null;
+        var storageKey = '';
+        getCardStorageKeys(cardType).some(function(key) {
+            var list = readJson(key, []);
+            match = Array.isArray(list) ? list.find(function(item) {
+                return String(item.id) === String(cardId);
+            }) : null;
+            if (match) {
+                storageKey = key;
+                return true;
+            }
+            return false;
+        });
+        return match ? { record: match, storageKey: storageKey } : null;
+    }
+
+    function getThreads() {
+        var list = readJson(KEYS.messages, []);
+        return Array.isArray(list) ? list : [];
+    }
+
+    function saveThreads(threads) {
+        writeJson(KEYS.messages, threads);
+    }
+
+    function getThreadById(threadId) {
+        return getThreads().find(function(thread) {
+            return String(thread.id) === String(threadId);
+        }) || null;
+    }
+
+    function getThreadsForUser(userId) {
+        var targetUserId = userId != null ? String(userId) : String((getCurrentUser() || {}).id || '');
+        return getThreads().filter(function(thread) {
+            return String(thread.ownerUserId || '') === targetUserId
+                || String(thread.recipientUserId || '') === targetUserId
+                || String(thread.createdByUserId || '') === targetUserId;
+        }).sort(function(a, b) {
+            return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
+        });
+    }
+
+    function saveThread(thread) {
+        var threads = getThreads();
+        var index = threads.findIndex(function(entry) {
+            return String(entry.id) === String(thread.id);
+        });
+        if (index >= 0) threads[index] = thread;
+        else threads.unshift(thread);
+        saveThreads(threads);
+        return thread;
+    }
+
+    function buildSampleOwnerId(cardId) {
+        return 'sample-owner-' + String(cardId);
+    }
+
+    function openCardThread(options) {
+        var currentUser = getCurrentUser();
+        if (!currentUser || !options || !options.cardId) return null;
+
+        var cardType = options.cardType || 'opportunity';
+        var resolvedCard = findCardRecord(options.cardId, cardType);
+        var cardRecord = resolvedCard ? resolvedCard.record : null;
+        var ownerUserId = String(options.ownerUserId || (cardRecord && cardRecord.creatorUserId) || buildSampleOwnerId(options.cardId));
+        var ownerName = options.ownerName || (cardRecord && cardRecord.creatorName) || 'Card owner';
+        var cardTitle = options.cardTitle || (cardRecord && (cardRecord.title || cardRecord.roleTitle || cardRecord.category)) || 'Card';
+        var cardLabel = options.cardLabel || getCardTypeLabel(cardType, cardRecord);
+        if (ownerUserId === String(currentUser.id) && !options.recipientUserId) return null;
+        var threads = getThreads();
+        var existing = threads.find(function(thread) {
+            return String(thread.cardId) === String(options.cardId)
+                && String(thread.cardType) === String(cardType)
+                && (
+                    (String(thread.ownerUserId || '') === ownerUserId && String(thread.recipientUserId || '') === String(currentUser.id))
+                    || (String(thread.ownerUserId || '') === String(currentUser.id) && String(thread.recipientUserId || '') === ownerUserId)
+                );
+        });
+
+        if (existing) return existing;
+
+        var thread = {
+            id: createId('thread'),
+            cardId: String(options.cardId),
+            cardType: cardType,
+            cardTitle: cardTitle,
+            cardLabel: cardLabel,
+            cardStorageKey: options.cardStorageKey || (resolvedCard && resolvedCard.storageKey) || '',
+            ownerUserId: ownerUserId,
+            ownerName: ownerName,
+            recipientUserId: String(currentUser.id) === ownerUserId ? String(options.recipientUserId || '') : String(currentUser.id),
+            recipientName: String(currentUser.id) === ownerUserId ? (options.recipientName || 'Contact') : (currentUser.name || currentUser.initials),
+            createdByUserId: String(currentUser.id),
+            bidAllowed: canSubmitBidForCard(cardType, cardRecord),
+            status: 'active',
+            lastActionType: options.actionType || 'contact',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            unreadBy: ownerUserId && ownerUserId !== String(currentUser.id) ? [ownerUserId] : [],
+            messages: [{
+                id: createId('msg'),
+                type: 'system',
+                senderUserId: String(currentUser.id),
+                senderName: currentUser.name || currentUser.initials,
+                text: options.actionType === 'bid' ? 'Conversation opened from a bid request.' : 'Conversation opened from the marketplace.',
+                createdAt: new Date().toISOString()
+            }]
+        };
+        return saveThread(thread);
+    }
+
+    function markThreadRead(threadId, userId) {
+        var targetUserId = String(userId || (getCurrentUser() || {}).id || '');
+        if (!targetUserId) return null;
+        var thread = getThreadById(threadId);
+        if (!thread) return null;
+        thread.unreadBy = (thread.unreadBy || []).filter(function(entry) {
+            return String(entry) !== targetUserId;
+        });
+        thread.updatedAt = new Date().toISOString();
+        return saveThread(thread);
+    }
+
+    function sendThreadMessage(threadId, payload) {
+        var currentUser = getCurrentUser();
+        var thread = getThreadById(threadId);
+        if (!currentUser || !thread) return null;
+
+        var message = {
+            id: createId('msg'),
+            type: payload && payload.type ? payload.type : 'text',
+            senderUserId: String(currentUser.id),
+            senderName: currentUser.name || currentUser.initials,
+            text: payload && payload.text ? payload.text : '',
+            bid: payload && payload.bid ? payload.bid : null,
+            status: payload && payload.status ? payload.status : '',
+            createdAt: new Date().toISOString()
+        };
+
+        thread.messages = Array.isArray(thread.messages) ? thread.messages : [];
+        thread.messages.push(message);
+        thread.updatedAt = message.createdAt;
+        thread.lastMessage = message.type === 'bid' ? 'Bid submitted' : (message.text || 'New message');
+
+        var otherPartyId = String(thread.ownerUserId) === String(currentUser.id) ? String(thread.recipientUserId || '') : String(thread.ownerUserId || '');
+        var unreadBy = Array.isArray(thread.unreadBy) ? thread.unreadBy.slice() : [];
+        if (otherPartyId && unreadBy.indexOf(otherPartyId) === -1) unreadBy.push(otherPartyId);
+        thread.unreadBy = unreadBy.filter(Boolean);
+
+        return saveThread(thread);
+    }
+
+    function submitBid(threadId, payload) {
+        var thread = getThreadById(threadId);
+        if (!thread) return null;
+        return sendThreadMessage(threadId, {
+            type: 'bid',
+            text: payload && payload.details ? payload.details : 'Bid proposal submitted.',
+            bid: {
+                proposedAmount: payload && payload.proposedAmount ? payload.proposedAmount : '',
+                estimatedTimeline: payload && payload.estimatedTimeline ? payload.estimatedTimeline : '',
+                proposalDetails: payload && payload.details ? payload.details : '',
+                status: 'pending'
+            }
+        });
+    }
+
+    function addSystemThreadMessage(threadId, text) {
+        var currentUser = getCurrentUser();
+        var thread = getThreadById(threadId);
+        if (!thread) return null;
+        thread.messages = Array.isArray(thread.messages) ? thread.messages : [];
+        thread.messages.push({
+            id: createId('msg'),
+            type: 'system',
+            senderUserId: 'system',
+            senderName: 'BricksNexus',
+            text: text || '',
+            createdAt: new Date().toISOString()
+        });
+        thread.updatedAt = new Date().toISOString();
+        var notifiedUserId = currentUser && String(thread.ownerUserId || '') === String(currentUser.id)
+            ? String(thread.recipientUserId || '')
+            : String(thread.ownerUserId || '');
+        thread.unreadBy = Array.isArray(thread.unreadBy) ? thread.unreadBy.filter(Boolean) : [];
+        if (notifiedUserId && thread.unreadBy.indexOf(notifiedUserId) === -1) {
+            thread.unreadBy.push(notifiedUserId);
+        }
+        return saveThread(thread);
+    }
+
+    function awardThread(threadId, bidMessageId) {
+        var currentUser = getCurrentUser();
+        var thread = getThreadById(threadId);
+        if (!currentUser || !thread) return null;
+        if (String(thread.ownerUserId || '') !== String(currentUser.id)) return null;
+
+        thread.messages = (thread.messages || []).map(function(message) {
+            if (message.type !== 'bid') return message;
+            if (bidMessageId && String(message.id) !== String(bidMessageId)) return message;
+            if (!message.bid) message.bid = {};
+            message.bid.status = 'accepted';
+            return message;
+        });
+        thread.status = 'closed/awarded';
+        thread.awardedAt = new Date().toISOString();
+        thread.updatedAt = thread.awardedAt;
+        thread.lastMessage = thread.cardType === 'service' ? 'Hired' : 'Bid accepted';
+        saveThread(thread);
+
+        if (thread.cardStorageKey) {
+            updateItem(thread.cardStorageKey, thread.cardId, function(item) {
+                item.status = 'closed/awarded';
+                item.awardedToUserId = thread.recipientUserId;
+                item.updatedAt = new Date().toISOString();
+                return item;
+            });
+        }
+
+        return addSystemThreadMessage(thread.id, thread.cardType === 'service'
+            ? 'You were hired for this card.'
+            : 'Your bid was accepted.');
+    }
+
+    function getThreadPendingBids(threadId) {
+        var thread = getThreadById(threadId);
+        if (!thread || !Array.isArray(thread.messages)) return [];
+        return thread.messages.filter(function(message) {
+            return message.type === 'bid' && message.bid && message.bid.status !== 'accepted';
+        });
+    }
+
+    function getCardBidStats(cardId) {
+        return getThreads().reduce(function(result, thread) {
+            if (String(thread.cardId) !== String(cardId)) return result;
+            var pendingCount = (thread.messages || []).filter(function(message) {
+                return message.type === 'bid' && message.bid && message.bid.status !== 'accepted';
+            }).length;
+            result.pending += pendingCount;
+            if ((thread.status || '') === 'closed/awarded') result.awarded = true;
+            return result;
+        }, { pending: 0, awarded: false });
+    }
+
     function updateCurrentUser(updates) {
         var currentUser = getCurrentUser();
         if (!currentUser) return null;
@@ -377,10 +650,16 @@ window.BricksNexusApp = (function() {
             KEYS.opportunityDrafts,
             KEYS.services,
             KEYS.serviceDrafts,
-            KEYS.openToWorkDrafts
+            KEYS.openToWorkDrafts,
+            KEYS.messages
         ].forEach(function(key) {
             var list = readJson(key, []);
             writeJson(key, list.filter(function(item) {
+                if (key === KEYS.messages) {
+                    return String(item.ownerUserId || '') !== String(user.id)
+                        && String(item.recipientUserId || '') !== String(user.id)
+                        && String(item.createdByUserId || '') !== String(user.id);
+                }
                 return String(item.creatorUserId || '') !== String(user.id);
             }));
         });
@@ -399,6 +678,7 @@ window.BricksNexusApp = (function() {
         createSession: createSession,
         clearSession: clearSession,
         getCurrentUser: getCurrentUser,
+        getUserById: getUserById,
         isAuthenticated: isAuthenticated,
         createAutoDraftsForUser: createAutoDraftsForUser,
         getUserItems: getUserItems,
@@ -411,6 +691,19 @@ window.BricksNexusApp = (function() {
         getSmartAvatar: getSmartAvatar,
         applySmartAvatar: applySmartAvatar,
         setRoleCardVisibility: setRoleCardVisibility,
-        deleteCurrentUser: deleteCurrentUser
+        deleteCurrentUser: deleteCurrentUser,
+        findCardRecord: findCardRecord,
+        getCardTypeLabel: getCardTypeLabel,
+        canSubmitBidForCard: canSubmitBidForCard,
+        getThreads: getThreads,
+        getThreadsForUser: getThreadsForUser,
+        getThreadById: getThreadById,
+        openCardThread: openCardThread,
+        markThreadRead: markThreadRead,
+        sendThreadMessage: sendThreadMessage,
+        submitBid: submitBid,
+        awardThread: awardThread,
+        getThreadPendingBids: getThreadPendingBids,
+        getCardBidStats: getCardBidStats
     };
 })();

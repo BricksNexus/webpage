@@ -12,96 +12,63 @@
 <body>
     <header class="top-bar">
         <div class="top-bar-left">
-            <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
-            <span>BricksNexus</span>
+            <a href="index.html" class="top-bar-brand">
+                <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
+                <span>BricksNexus</span>
+            </a>
         </div>
         <div class="top-bar-right">
-            <div class="top-bar-add">
-                <button class="icon-button" id="add-menu-toggle" aria-label="Add item" title="Add Open to Work, Service, Opportunity or Tokenization">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <path d="M12 5v14"/>
-                        <path d="M5 12h14"/>
-                    </svg>
-                </button>
-                <div class="add-menu" id="add-menu">
-                    <a href="open-to-work.html">Open to Work</a>
-                    <a href="post-service.html">Service</a>
-                    <a href="post-opportunity.html">Opportunity</a>
-                    <a href="#">Tokenization</a>
-                </div>
-            </div>
-            <a href="login.html" class="icon-button top-bar-login" id="top-bar-login" aria-label="Login">
+            <a href="dashboard.html?panel=messages" class="icon-button top-bar-saved-searches" id="top-bar-saved-searches" aria-label="Saved searches" title="Saved searches" style="display: none;">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <path d="M10 17l5-5-5-5"/>
-                    <path d="M15 12H3"/>
+                    <path d="m19 21-5.2-5.2"/>
+                    <circle cx="10" cy="10" r="6"/>
+                    <path d="m10 7 1 2 2.2.3-1.6 1.5.4 2.2-2-1.1-2 1.1.4-2.2L6.8 9.3 9 9z"/>
                 </svg>
             </a>
+            <a href="about.html" class="top-bar-auth-link" id="top-bar-about">About</a>
+            <a href="post-opportunity.html" class="top-bar-post-btn" id="top-bar-post-btn" style="display: none;">Post Opportunity</a>
+            <a href="login.html" class="top-bar-auth-link" id="top-bar-login">Login</a>
+            <a href="signup.html" class="top-bar-auth-link top-bar-auth-link-primary" id="top-bar-signup">Sign up</a>
             <a href="dashboard.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My dashboard" title="My dashboard" style="display: none;"></a>
-            <button class="icon-button" aria-label="Open menu">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M4 7h16"/>
-                    <path d="M4 12h16"/>
-                    <path d="M4 17h10"/>
-                </svg>
-            </button>
         </div>
     </header>
 
     <div class="app-shell">
-    <!-- Left sidebar: filters -->
+    <!-- Left sidebar -->
     <aside class="sidebar-left">
-        <div class="logo">
-            <a href="landing.html">
-                <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
-                BricksNexus
-            </a>
+        <div class="marketplace-sidecard">
+            <p class="marketplace-side-eyebrow">Marketplace</p>
+            <h2>Discover active construction demand faster</h2>
+            <p>Browse curated opportunities, hire specialized teams, and track who is available now.</p>
         </div>
-        <button class="filter-btn" data-filter="open-to-work">
-            <span class="icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0z"/>
-                    <path d="M12 2c-2 0-4 2-4 5v2h8V7c0-3-2-5-4-5z"/>
-                </svg>
-            </span>
-            Open to Work
-        </button>
-        <button class="filter-btn" data-filter="services">
-            <span class="icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                </svg>
-            </span>
-            Services
-        </button>
-        <button class="filter-btn" data-filter="opportunities">
-            <span class="icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                    <path d="M9.3 17.7a1 1 0 0 0 0-1.4L7.7 14.7a1 1 0 0 0-1.4 0L2.53 18.47a6 6 0 0 1 7.94-7.94l6.91-6.91a2.12 2.12 0 0 1 3 3l-6.91 6.91a6 6 0 0 1-7.94 7.94l3.76-3.76z"/>
-                </svg>
-            </span>
-            Opportunities
-        </button>
-        <button class="filter-btn" data-filter="tokenization">
-            <span class="icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    <path d="M12 5v2M12 17v2M7.05 7.05l1.42 1.42M15.54 15.54l1.42 1.42M5 12h2M17 12h2M7.05 16.95l1.42-1.42M15.54 8.46l1.42-1.42"/>
-                </svg>
-            </span>
-            Tokenization
-        </button>
-
-        <button class="clear-filters-btn" id="clear-filters-btn" type="button">
-            Clean filters
-        </button>
+        <div class="marketplace-sidecard">
+            <p class="marketplace-side-eyebrow">Trending Now</p>
+            <ul class="marketplace-side-list">
+                <li>Downtown infill projects</li>
+                <li>Permit-ready engineering teams</li>
+                <li>Contractors exploring new work</li>
+            </ul>
+        </div>
     </aside>
 
     <!-- Central area: feed -->
     <main class="main-content">
-        <div class="view-controls">
+        <section class="marketplace-hero">
+            <div>
+                <p class="marketplace-hero-eyebrow">B2B Construction Marketplace</p>
+                <h1>Find projects, services, and builders in one feed</h1>
+                <p>Match capital, execution teams, and professional services with stronger visibility into budgets, timelines, and market signals.</p>
+            </div>
+        </section>
+        <div class="marketplace-toolbar">
+            <div class="filter-pills" id="filter-pills" role="tablist" aria-label="Marketplace filters">
+                <button type="button" class="filter-pill active" data-filter="all">All</button>
+                <button type="button" class="filter-pill" data-filter="projects">Projects</button>
+                <button type="button" class="filter-pill" data-filter="services">Services</button>
+                <button type="button" class="filter-pill" data-filter="hiring">Hiring</button>
+                <button type="button" class="filter-pill" data-filter="exploring">Exploring</button>
+            </div>
+            <div class="view-controls">
             <div class="view-toggle">
                 <button type="button" class="active">List View</button>
                 <button type="button">Map View</button>
@@ -112,39 +79,44 @@
                 <button type="button" id="clear-local-services" style="font-size: 0.75rem;">Clear local services</button>
             </div>
         </div>
+        </div>
         <div class="active-filters">
-            <span>Active:</span>
-            <span class="pill">Budget: $1M+</span>
-            <span class="pill">Phase: Permitting</span>
+            <span>Focus:</span>
+            <span class="pill" id="active-filter-label">All marketplace cards</span>
         </div>
 
         <section class="feed" aria-label="Marketplace feed">
             <!-- Opportunity card -->
-            <article class="feed-card" data-category="opportunities">
-                <div class="card-type">Opportunity</div>
-                <img class="card-image" src="images/land_infill.jpeg" alt="Urban infill opportunity">
+            <article class="feed-card" data-category="opportunities" data-card-segment="projects" data-card-id="sample-opportunity-1" data-card-type="opportunity" data-owner-name="Property Owner">
+                <div class="card-media">
+                    <div class="card-type">Opportunity</div>
+                    <img class="card-image" src="images/land_infill.jpeg" alt="Urban infill opportunity">
+                </div>
                 <div class="card-body">
                     <h3 class="card-title">Urban Infill Project – Downtown Revitalization</h3>
+                    <div class="card-metric">$1.2M - $2.5M Budget</div>
                     <div class="card-meta">
                         <span>Developer: Herizen Builders</span>
                         <span class="badge badge-verified">Verified builder</span>
                         <span class="rating">★ 4.8</span>
                     </div>
                     <div class="card-details">
-                        Budget: $1.2M – $2.5M · NO:02 H803-47433-843
+                        Downtown mixed-use site · Project bid package open now · NO:02 H803-47433-843
                     </div>
+                </div>
+                <div class="card-footer">
                     <div class="card-actions">
-                        <button type="button" data-requires-auth="interest">Express Interest</button>
-                        <button type="button">Save</button>
-                        <button type="button" data-requires-auth="message">Message</button>
                         <button type="button" class="primary" data-requires-auth="bid">Bid Now</button>
+                        <button type="button" data-requires-auth="interest">Save for Later</button>
                     </div>
                 </div>
             </article>
 
             <!-- Open to Work card -->
-            <article class="feed-card compact" data-category="open-to-work">
-                <div class="card-type">Open to Work</div>
+            <article class="feed-card compact" data-category="open-to-work" data-card-segment="exploring" data-card-id="sample-open-to-work-1" data-card-type="open-to-work" data-owner-name="Marcus T.">
+                <div class="card-media compact">
+                    <div class="card-type">Open to Work</div>
+                </div>
                 <div class="card-body">
                     <div class="card-header-row">
                         <div class="card-avatar">
@@ -152,6 +124,7 @@
                         </div>
                         <div>
                             <h3 class="card-title">General contractor available – residential & light commercial</h3>
+                            <div class="card-metric">Rate from $95/hr</div>
                             <div class="card-meta">
                                 <span>Marcus T.</span>
                                 <span class="badge badge-verified">Verified</span>
@@ -162,16 +135,20 @@
                     <div class="card-details">
                         ​15+ years experience. Licensed & insured. Available from March 2025.
                     </div>
+                </div>
+                <div class="card-footer">
                     <div class="card-actions">
-                        <button type="button">View profile</button>
                         <button type="button" class="primary" data-requires-auth="contact">Contact</button>
+                        <button type="button">View Profile</button>
                     </div>
                 </div>
             </article>
 
             <!-- Sponsored service card -->
-            <article class="feed-card compact" data-category="services">
-                <div class="card-type">Service</div>
+            <article class="feed-card compact" data-category="services" data-card-segment="services" data-card-id="sample-service-1" data-card-type="service" data-owner-name="BuildRight Engineering">
+                <div class="card-media compact">
+                    <div class="card-type">Service</div>
+                </div>
                 <div class="card-body">
                     <div class="card-header-row">
                         <div class="card-avatar">
@@ -179,6 +156,7 @@
                         </div>
                         <div>
                             <h3 class="card-title">Structural engineering & permit drawings</h3>
+                            <div class="card-metric">Consultation from $2,500</div>
                             <div class="card-meta">
                                 <span>BuildRight Engineering</span>
                                 <span class="badge badge-sponsored">Sponsored</span>
@@ -188,9 +166,11 @@
                     <div class="card-details">
                         Fast turnaround. Residential and multi-family. Free initial consultation.
                     </div>
+                </div>
+                <div class="card-footer">
                     <div class="card-actions">
-                        <button type="button">Learn more</button>
                         <button type="button" class="primary" data-requires-auth="hire">Hire</button>
+                        <button type="button">Learn More</button>
                     </div>
                 </div>
             </article>
@@ -225,10 +205,10 @@
         <div class="intel-block">
             <h3>Material Price Index</h3>
             <ul class="intel-list">
-                <li><span>Lumber</span><span class="trend-up">+4.5%</span></li>
-                <li><span>Steel</span><span class="trend-up">+5%</span></li>
-                <li><span>Concrete</span><span class="trend-up">+2%</span></li>
-                <li><span>Mortgage rates</span><span>1.1%</span></li>
+                <li><span>Lumber</span><span class="trend-up">↗ +4.5%</span></li>
+                <li><span>Steel</span><span class="trend-up">↗ +5.0%</span></li>
+                <li><span>Concrete</span><span class="trend-up">↗ +2.0%</span></li>
+                <li><span>Mortgage rates</span><span class="trend-down">↘ 1.1%</span></li>
             </ul>
         </div>
 
@@ -259,28 +239,25 @@
 
     <script src="app-state.js"></script>
     <script>
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const clearFiltersBtn = document.getElementById('clear-filters-btn');
-        const addMenuToggle = document.getElementById('add-menu-toggle');
-        const addMenu = document.getElementById('add-menu');
+        const filterButtons = document.querySelectorAll('.filter-pill');
+        const activeFilterLabel = document.getElementById('active-filter-label');
         const app = window.BricksNexusApp;
 
         function applyCategoryFilters() {
             const feedCards = document.querySelectorAll('.feed-card');
-            const activeFilters = Array.from(filterButtons)
-                .filter(btn => btn.classList.contains('active'))
-                .map(btn => btn.dataset.filter);
-
-            if (!activeFilters.length) {
-                feedCards.forEach(card => {
-                    card.style.display = '';
-                });
-                return;
-            }
+            const activeFilter = (Array.from(filterButtons).find(btn => btn.classList.contains('active')) || {}).dataset?.filter || 'all';
+            const labels = {
+                all: 'All marketplace cards',
+                projects: 'Project opportunities',
+                services: 'Service providers',
+                hiring: 'Hiring opportunities',
+                exploring: 'Professionals exploring work'
+            };
+            if (activeFilterLabel) activeFilterLabel.textContent = labels[activeFilter] || labels.all;
 
             feedCards.forEach(card => {
-                const category = card.dataset.category;
-                if (!category || activeFilters.includes(category)) {
+                const segment = card.dataset.cardSegment || '';
+                if (activeFilter === 'all' || activeFilter === segment) {
                     card.style.display = '';
                 } else {
                     card.style.display = 'none';
@@ -290,28 +267,10 @@
 
         filterButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
+                filterButtons.forEach(b => b.classList.toggle('active', b === btn));
                 applyCategoryFilters();
             });
         });
-
-        if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => {
-                filterButtons.forEach(b => b.classList.remove('active'));
-                applyCategoryFilters();
-            });
-        }
-
-        if (addMenuToggle && addMenu) {
-            addMenuToggle.addEventListener('click', (event) => {
-                event.stopPropagation();
-                addMenu.classList.toggle('open');
-            });
-
-            document.addEventListener('click', () => {
-                addMenu.classList.remove('open');
-            });
-        }
 
         const main = document.querySelector('.main-content');
         const viewButtons = document.querySelectorAll('.view-toggle button');
@@ -350,29 +309,36 @@
                 const card = document.createElement('article');
                 card.className = 'feed-card';
                 card.dataset.category = 'opportunities';
+                card.dataset.cardSegment = opp.opportunityKind === 'hiring' ? 'hiring' : 'projects';
                 card.dataset.cardId = String(opp.id);
                 card.dataset.cardType = 'opportunity';
+                card.dataset.ownerName = opp.creatorName || '';
 
                 const title = opp.title || 'New opportunity';
                 const summary = opp.summary || 'Details added by the owner.';
                 const city = opp.city || '';
                 const region = opp.region || '';
                 const budget = opp.budget || '';
+                const typeLabel = opp.opportunityKind === 'hiring' ? 'Hiring' : 'Opportunity';
 
                 const hasImage = !!opp.imageDataUrl;
                 card.innerHTML = `
-                    <div class=\"card-type\">Opportunity</div>
-                    ${hasImage
-                        ? `<img class=\"card-image\" src=\"${opp.imageDataUrl}\" alt=\"Opportunity image\">`
-                        : `<div class=\"card-image-placeholder\">New opportunity</div>`}
+                    <div class="card-media">
+                        <div class=\"card-type\">${typeLabel}</div>
+                        ${hasImage
+                            ? `<img class=\"card-image\" src=\"${opp.imageDataUrl}\" alt=\"Opportunity image\">`
+                            : `<div class=\"card-image-placeholder\">New opportunity</div>`}
+                    </div>
                     <div class=\"card-body\">
                         <h3 class=\"card-title\"></h3>
+                        <div class="card-metric">${budget ? `Budget: ${budget}` : 'Budget on request'}</div>
                         <div class=\"card-meta\"></div>
                         <div class=\"card-details\"></div>
+                    </div>
+                    <div class="card-footer">
                         <div class=\"card-actions\">
-                            <button type=\"button\" data-requires-auth=\"interest\">Express interest</button>
-                            <button type=\"button\">Save</button>
-                            <button type=\"button\" class=\"primary\" data-requires-auth=\"bid\">Bid</button>
+                            <button type=\"button\" class=\"primary\" data-requires-auth=\"bid\">${opp.opportunityKind === 'hiring' ? 'Contact' : 'Bid'}</button>
+                            <button type=\"button\" data-requires-auth=\"interest\">Save</button>
                         </div>
                     </div>
                 `;
@@ -418,8 +384,10 @@
                 const card = document.createElement('article');
                 card.className = 'feed-card compact';
                 card.dataset.category = 'services';
+                card.dataset.cardSegment = 'services';
                 card.dataset.cardId = String(service.id);
                 card.dataset.cardType = 'service';
+                card.dataset.ownerName = service.creatorName || '';
 
                 const title = service.title || 'New service';
                 const category = service.category || 'Service';
@@ -427,18 +395,23 @@
                 const radius = service.radius || '';
 
                 card.innerHTML = `
-                    <div class=\"card-type\">Service</div>
+                    <div class="card-media compact">
+                        <div class=\"card-type\">Service</div>
+                    </div>
                     <div class=\"card-body\">
                         <h3 class=\"card-title\"></h3>
+                        <div class="card-metric">${service.consultationOffered ? 'Consultation available' : 'Custom quote'}</div>
                         <div class=\"card-meta\">
                             <span>${category}</span>
                             ${service.consultationOffered ? '<span class=\"badge badge-sponsored\">Consultation available</span>' : ''}
                             ${radius ? `<span>${radius}</span>` : ''}
                         </div>
                         <div class=\"card-details\"></div>
+                    </div>
+                    <div class="card-footer">
                         <div class=\"card-actions\">
-                            <button type=\"button\">View details</button>
                             <button type=\"button\" class=\"primary\" data-requires-auth=\"hire\">Hire</button>
+                            <button type=\"button\">View details</button>
                         </div>
                     </div>
                 `;
@@ -475,21 +448,26 @@
             data.forEach(cardData => {
                 const card = document.createElement('article');
                 card.className = 'feed-card compact';
-                card.dataset.category = 'services';
+                card.dataset.category = 'open-to-work';
+                card.dataset.cardSegment = 'exploring';
                 card.dataset.cardId = String(cardData.id);
                 card.dataset.cardType = 'open-to-work';
+                card.dataset.ownerName = cardData.creatorName || '';
 
                 const avatarMarkup = cardData.imageDataUrl
                     ? `<img src="${cardData.imageDataUrl}" alt="${cardData.creatorName || 'Profile'}">`
                     : `${app.getInitials(cardData.creatorName || '', cardData.creatorEmail || '')}`;
 
                 card.innerHTML = `
-                    <div class="card-type">Open to Work</div>
+                    <div class="card-media compact">
+                        <div class="card-type">Open to Work</div>
+                    </div>
                     <div class="card-body">
                         <div class="card-header-row">
                             <div class="card-avatar">${avatarMarkup}</div>
                             <div>
                                 <h3 class="card-title">${cardData.roleTitle || cardData.title || 'Open to Work'}</h3>
+                                <div class="card-metric">Open for new projects</div>
                                 <div class="card-meta">
                                     <span>${cardData.creatorName || 'Professional'}</span>
                                     ${cardData.location ? `<span>${cardData.location}</span>` : ''}
@@ -497,9 +475,11 @@
                             </div>
                         </div>
                         <div class="card-details">${cardData.summary || 'Open to Work profile posted by a BricksNexus member.'}</div>
+                    </div>
+                    <div class="card-footer">
                         <div class="card-actions">
-                            <button type="button">View profile</button>
                             <button type="button" class="primary" data-requires-auth="contact">Contact</button>
+                            <button type="button">View profile</button>
                         </div>
                     </div>
                 `;
@@ -512,7 +492,7 @@
             });
         })();
 
-        (function attachExpressInterestHandlers() {
+        (function attachCardActionHandlers() {
             const feed = document.querySelector('.feed');
             if (!feed) return;
             feed.addEventListener('click', function(e) {
@@ -526,7 +506,25 @@
                     app.requireAuth('index.html');
                     return;
                 }
-                if (!card || !card.dataset.cardId || actionType !== 'interest') return;
+                if (!card || !card.dataset.cardId || !actionType) return;
+
+                if (actionType === 'contact' || actionType === 'bid' || actionType === 'hire') {
+                    var thread = app.openCardThread({
+                        cardId: card.dataset.cardId,
+                        cardType: card.dataset.cardType || 'opportunity',
+                        cardTitle: (card.querySelector('.card-title') || {}).textContent || 'Card discussion',
+                        cardLabel: (card.querySelector('.card-type') || {}).textContent || 'Opportunity',
+                        ownerName: card.dataset.ownerName || '',
+                        actionType: actionType
+                    });
+                    if (!thread) return;
+                    var nextUrl = 'dashboard.html?panel=messages&thread=' + encodeURIComponent(thread.id);
+                    if (actionType === 'bid') nextUrl += '&compose=bid';
+                    window.location.href = nextUrl;
+                    return;
+                }
+
+                if (actionType !== 'interest') return;
                 try {
                     var raw = localStorage.getItem('bricksnexus_interests') || '[]';
                     var list = JSON.parse(raw);
@@ -577,9 +575,15 @@
         (function() {
             var currentUser = app.getCurrentUser();
             var loginEl = document.getElementById('top-bar-login');
+            var signupEl = document.getElementById('top-bar-signup');
             var avatarEl = document.getElementById('top-bar-avatar');
+            var postBtn = document.getElementById('top-bar-post-btn');
+            var savedSearchesEl = document.getElementById('top-bar-saved-searches');
             if (currentUser && avatarEl && loginEl) {
                 loginEl.style.display = 'none';
+                if (signupEl) signupEl.style.display = 'none';
+                if (postBtn) postBtn.style.display = 'inline-flex';
+                if (savedSearchesEl) savedSearchesEl.style.display = 'flex';
                 app.applySmartAvatar(avatarEl, currentUser);
                 avatarEl.style.display = 'flex';
             }

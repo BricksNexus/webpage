@@ -221,6 +221,341 @@ body {
     gap: 1rem;
 }
 
+.dashboard-messages-layout {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    min-height: 620px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card-bg);
+}
+
+.dashboard-messages-sidebar {
+    border-right: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.02);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.dashboard-messages-sidebar-head {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard-messages-sidebar-head h2 {
+    font-size: 1rem;
+}
+
+.dashboard-thread-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.dashboard-thread-list {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.dashboard-thread-item {
+    padding: 1rem;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dashboard-thread-item:hover,
+.dashboard-thread-item.active {
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.dashboard-thread-item-top,
+.dashboard-thread-item-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.dashboard-thread-item-top strong {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.dashboard-thread-item-top span,
+.dashboard-thread-item-bottom span {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.dashboard-thread-preview {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.dashboard-thread-badges {
+    display: inline-flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-alert-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.dashboard-alert-badge.bid {
+    background: rgba(245, 158, 11, 0.14);
+    color: #b45309;
+}
+
+.dashboard-alert-badge.awarded {
+    background: rgba(16, 185, 129, 0.14);
+    color: #047857;
+}
+
+.dashboard-chat-pane {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+}
+
+.dashboard-chat-empty,
+.dashboard-chat-shell {
+    flex: 1;
+    min-height: 0;
+}
+
+.dashboard-chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.dashboard-chat-shell {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-chat-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard-chat-type {
+    display: inline-flex;
+    margin-bottom: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.dashboard-chat-subtitle {
+    margin-top: 0.3rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.dashboard-chat-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.dashboard-chat-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.75));
+}
+
+.dashboard-message-row {
+    display: flex;
+}
+
+.dashboard-message-row.mine {
+    justify-content: flex-end;
+}
+
+.dashboard-message-row.theirs,
+.dashboard-message-row.system {
+    justify-content: flex-start;
+}
+
+.dashboard-message-bubble {
+    max-width: min(78%, 620px);
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
+    line-height: 1.5;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-message-row.mine .dashboard-message-bubble {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border-bottom-right-radius: 6px;
+}
+
+.dashboard-message-row.theirs .dashboard-message-bubble {
+    background: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 6px;
+}
+
+.dashboard-message-row.system .dashboard-message-bubble {
+    background: rgba(15, 23, 42, 0.06);
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.dashboard-message-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+    opacity: 0.85;
+}
+
+.dashboard-message-bid {
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dashboard-message-row.theirs .dashboard-message-bid,
+.dashboard-message-row.system .dashboard-message-bid {
+    border-top-color: rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-message-bid strong {
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.dashboard-message-bid-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.82rem;
+}
+
+.dashboard-link-btn {
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dashboard-bid-panel,
+.dashboard-chat-form {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+    background: #fff;
+}
+
+.dashboard-bid-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.dashboard-bid-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.dashboard-chat-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dashboard-chat-field span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dashboard-chat-field input,
+.dashboard-chat-field textarea,
+.dashboard-chat-form textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 0.85rem;
+    font: inherit;
+    color: var(--text-primary);
+    background: #fff;
+}
+
+.dashboard-chat-form textarea {
+    resize: vertical;
+    min-height: 84px;
+}
+
+.dashboard-chat-form-actions {
+    margin-top: 0.85rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-messages-empty {
+    margin: 1rem;
+}
+
 .dashboard-item-toolbar {
     display: flex;
     align-items: center;
@@ -259,6 +594,11 @@ body {
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.dashboard-tag.closed {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
 }
 
 .dashboard-settings-actions {
@@ -322,5 +662,32 @@ body {
 
     .dashboard-grid {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dashboard-messages-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-messages-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 280px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-chat-header,
+    .dashboard-item-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-bid-grid,
+    .dashboard-message-bid-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-message-bubble {
+        max-width: 100%;
     }
 }

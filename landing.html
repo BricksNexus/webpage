@@ -3,98 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BricksNexus</title>
+    <title>BricksNexus · Strategic Landing</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: 'DM Sans', sans-serif;
-            background: linear-gradient(135deg, #0f0f12 0%, #1a1a24 50%, #0f0f12 100%);
-            color: #e8e8e8;
-            padding: 2rem;
-        }
-
-        .container {
-            text-align: center;
-            max-width: 600px;
-        }
-
-        .logo-image {
-            width: min(260px, 60vw);
-            margin: 0 auto 2rem;
-            display: block;
-        }
-
-        h1 {
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 1rem;
-            background: linear-gradient(90deg, #ffffff, #a0a0a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .tagline {
-            font-size: clamp(1.25rem, 4vw, 1.75rem);
-            font-weight: 600;
-            color: #7dd3fc;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .divider {
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #7dd3fc, transparent);
-            margin: 2rem auto;
-            border-radius: 2px;
-        }
-
-        .cta-btn {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 0.75rem 1.75rem;
-            background: #7dd3fc;
-            color: #0f0f12;
-            font-family: inherit;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            text-decoration: none;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-        }
-
-        .cta-btn:hover {
-            background: #38bdf8;
-            transform: translateY(-1px);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <div class="container">
-        <img class="logo-image" src="file:///Users/flaviabeppler/.cursor/projects/Users-flaviabeppler-Macbook-1-Working-BricksNexus-03-Product-Operations-Website/assets/IMG_8588-21f4f1cd-a24f-4389-ab5a-0c57171c8fa1.png" alt="BricksNexus logo">
-        <h1>BricksNexus</h1>
-        <div class="divider"></div>
-        <p class="tagline">Building Something New!</p>
-        <a href="index.html" class="cta-btn">Go to Marketplace</a>
-    </div>
+    <header class="landing-header">
+        <a href="landing.html" class="landing-brand">
+            <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
+            <span>BricksNexus</span>
+        </a>
+        <nav class="landing-nav" aria-label="Landing sections">
+            <a href="#account-types">Account Types</a>
+            <a href="#platform-edge">Platform Edge</a>
+            <a href="about.html">About Us</a>
+            <a href="#landing-footer">Marketplace</a>
+        </nav>
+        <div class="landing-header-actions">
+            <a href="about.html" class="landing-link-btn">About</a>
+            <a href="login.html" class="landing-link-btn">Login</a>
+            <a href="signup.html" class="landing-primary-btn">Get Started</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="landing-hero landing-reveal">
+            <div class="landing-mesh" aria-hidden="true"></div>
+            <div class="landing-hero-content">
+                <p class="landing-eyebrow">BricksNexus B2B Marketplace</p>
+                <h1>The Nexus of Real Estate Development &amp; Construction.</h1>
+                <p class="landing-subhead">The B2B marketplace connecting project owners, developers, and skilled professionals.</p>
+                <div class="landing-cta-grid">
+                    <a href="signup.html?role=individual" class="landing-cta-card">
+                        <span class="landing-cta-kicker">For Talent</span>
+                        <strong>I am a Professional</strong>
+                        <p>Build a digital CV, surface your expertise, and react to work faster.</p>
+                    </a>
+                    <a href="signup.html?role=company" class="landing-cta-card landing-cta-card-primary">
+                        <span class="landing-cta-kicker">For Demand</span>
+                        <strong>I am a Developer/Owner</strong>
+                        <p>Launch project opportunities, manage teams, and hire verified partners.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="account-types" class="landing-section landing-reveal">
+            <div class="landing-section-heading">
+                <p class="landing-eyebrow">Choose Your Entry Point</p>
+                <h2>Two account paths designed for the full project lifecycle.</h2>
+            </div>
+            <div class="landing-split-grid">
+                <article class="landing-split-card">
+                    <p class="landing-split-label">Individuals</p>
+                    <h3>For Professionals &amp; Contractors</h3>
+                    <ul>
+                        <li>Build a digital CV that doubles as an active marketplace profile.</li>
+                        <li>Get hired for `Hiring` opportunities and message owners directly.</li>
+                        <li>React to `Service` requests and bid when the timing is right.</li>
+                    </ul>
+                    <a href="signup.html?role=individual" class="landing-secondary-btn">Join as Individual</a>
+                </article>
+                <article class="landing-split-card landing-split-card-primary">
+                    <p class="landing-split-label">Companies</p>
+                    <h3>For Developers &amp; Firms</h3>
+                    <ul>
+                        <li>Post `Project` opportunities for land, office, residential, and more.</li>
+                        <li>Use the Chronogram and Team tools to structure scope before publishing.</li>
+                        <li>Find verified vendors and keep documents organized from day one.</li>
+                    </ul>
+                    <a href="signup.html?role=company" class="landing-primary-btn">Join as Company</a>
+                </article>
+            </div>
+        </section>
+
+        <section id="platform-edge" class="landing-section landing-reveal">
+            <div class="landing-section-heading">
+                <p class="landing-eyebrow">Platform Edge</p>
+                <h2>Why teams use BricksNexus to move faster.</h2>
+            </div>
+            <div class="landing-edge-grid">
+                <article class="landing-edge-card">
+                    <div class="landing-edge-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 18h16"/>
+                            <path d="M6 15l3-3 3 2 5-6 1 1"/>
+                            <path d="M6 6h.01M12 9h.01M18 5h.01"/>
+                        </svg>
+                    </div>
+                    <h3>Real-time Intelligence</h3>
+                    <p>Track Material Price Index movements and market trend signals without leaving the platform.</p>
+                </article>
+                <article class="landing-edge-card">
+                    <div class="landing-edge-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M8 6h12"/>
+                            <path d="M8 12h8"/>
+                            <path d="M8 18h10"/>
+                            <path d="M4 6h.01M4 12h.01M4 18h.01"/>
+                        </svg>
+                    </div>
+                    <h3>Project Management</h3>
+                    <p>Use Chronogram and document tagging tools to structure tasks, files, and delivery expectations.</p>
+                </article>
+                <article class="landing-edge-card">
+                    <div class="landing-edge-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="12" r="8"/>
+                            <path d="M12 8v8"/>
+                            <path d="M8 12h8"/>
+                            <path d="M16.5 7.5 7.5 16.5"/>
+                        </svg>
+                    </div>
+                    <h3>Tokenization</h3>
+                    <p>Get an early look at the future of fractional real estate investment built into the ecosystem.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer id="landing-footer" class="landing-footer landing-reveal">
+        <div>
+            <strong>BricksNexus</strong>
+            <p>Connect the full chain from project vision to execution.</p>
+        </div>
+        <div class="landing-footer-links">
+            <a href="about.html">About Us</a>
+            <a href="index.html">Browse the Marketplace</a>
+            <a href="signup.html">Create an account</a>
+        </div>
+    </footer>
+
+    <script>
+        (function() {
+            var elements = document.querySelectorAll('.landing-reveal');
+            if (!('IntersectionObserver' in window)) {
+                elements.forEach(function(element) {
+                    element.classList.add('visible');
+                });
+                return;
+            }
+
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                });
+            }, {
+                threshold: 0.15
+            });
+
+            elements.forEach(function(element) {
+                observer.observe(element);
+            });
+        })();
+    </script>
 </body>
 </html>
-
