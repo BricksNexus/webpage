@@ -752,15 +752,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Opportunity Explorer (chatbot)
     // ------------------------------
     (function initOpportunityExplorerChatbot() {
+        var chatLauncher = getInput('opp-chat-launcher');
+        var chatPrompt = getInput('opp-chat-help-prompt');
+        var chatPanel = getInput('opp-chat-panel');
+        var chatClose = getInput('opp-chat-close-btn');
         var chatAddressInput = getInput('opp-chat-address');
         var analyzeBtn = getInput('opp-chat-analyze-btn');
         var applyBtn = getInput('opp-chat-apply-btn');
         var chatLog = getInput('opp-chat-log');
         var chatActions = getInput('opp-chat-actions');
 
-        if (!chatAddressInput || !analyzeBtn || !applyBtn || !chatLog || !chatActions) return;
+        if (
+            !chatLauncher || !chatPrompt || !chatPanel || !chatClose ||
+            !chatAddressInput || !analyzeBtn || !applyBtn || !chatLog || !chatActions
+        ) return;
 
         var CHAT = {
+            isOpen: false,
+            hasGreeted: false,
             state: 'idle',
             addressText: '',
             inferred: null, // { city, region, assetTypeKey, occupancy }
@@ -833,6 +842,25 @@ document.addEventListener('DOMContentLoaded', function() {
             msg.appendChild(bubble);
             chatLog.appendChild(msg);
             chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function openChatbox() {
+            CHAT.isOpen = true;
+            chatPanel.classList.remove('hidden');
+            chatPrompt.style.display = 'none';
+            chatLauncher.style.display = 'none';
+
+            if (!CHAT.hasGreeted) {
+                appendMsg('bot', 'Hi! I can help you analyze zoning/use/occupancy possibilities and draft this opportunity for you. Start by entering an address.');
+                CHAT.hasGreeted = true;
+            }
+        }
+
+        function closeChatbox() {
+            CHAT.isOpen = false;
+            chatPanel.classList.add('hidden');
+            chatPrompt.style.display = '';
+            chatLauncher.style.display = '';
         }
 
         function setChatActions(actions) {
@@ -1260,6 +1288,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!CHAT.ready) return;
             applyAnalysisToForm();
         });
+
+        chatLauncher.addEventListener('click', openChatbox);
+        chatPrompt.addEventListener('click', openChatbox);
+        chatClose.addEventListener('click', closeChatbox);
     })();
 
     openStep('type');
