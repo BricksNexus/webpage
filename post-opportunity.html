@@ -61,7 +61,7 @@
                 <div>
                     <p class="builder-header-eyebrow">B2B Marketplace</p>
                     <h1>Create New Opportunity</h1>
-                    <p class="builder-header-copy">Build a structured posting for hiring, services, or full real estate / construction projects.</p>
+                    <p class="builder-header-copy">Build a structured posting for hiring, services, full real estate / construction projects, or exploring ideas and interest.</p>
                 </div>
                 <a href="dashboard.html" class="builder-dashboard-link">Go to Dashboard</a>
             </header>
@@ -91,6 +91,11 @@
                                     <strong>Project</strong>
                                     <span>Structured project builder with team, chronogram, financing, and documents.</span>
                                 </label>
+                                <label class="builder-type-card">
+                                    <input type="radio" name="opportunity_kind" value="exploring">
+                                    <strong>Exploring</strong>
+                                    <span>Early-stage or exploratory posting to gauge interest, partners, or ideas before committing to a full project.</span>
+                                </label>
                             </div>
                             <div class="builder-section-actions">
                                 <button type="button" class="builder-btn builder-btn-secondary" data-save-draft-step="type">Save as Draft</button>
@@ -105,6 +110,38 @@
                             <span class="builder-section-title">Details</span>
                         </button>
                         <div class="builder-section-panel">
+                            <section class="builder-opportunity-explorer" aria-label="Opportunity Explorer chatbot">
+                                <div class="builder-explorer-head">
+                                    <div>
+                                        <h3>Opportunity Explorer</h3>
+                                        <p>Enter an address to get a draft opportunity for creating additional housing units.</p>
+                                    </div>
+                                </div>
+
+                                <div class="builder-explorer-address">
+                                    <label for="opp-chat-address">Address</label>
+                                    <div class="builder-explorer-address-row">
+                                        <input
+                                            id="opp-chat-address"
+                                            type="text"
+                                            placeholder="e.g. 123 Main St, Austin, TX 78701"
+                                        />
+                                        <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-analyze-btn">
+                                            Analyze &amp; Suggest
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="builder-explorer-chat">
+                                    <div class="builder-explorer-log" id="opp-chat-log" aria-live="polite"></div>
+                                    <div class="builder-explorer-actions" id="opp-chat-actions"></div>
+                                </div>
+
+                                <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-apply-btn" disabled>
+                                    Apply to Opportunity
+                                </button>
+                            </section>
+
                             <div class="builder-grid-two">
                                 <div class="builder-field">
                                     <label for="opp-title">Opportunity title</label>

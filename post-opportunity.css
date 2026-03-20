@@ -662,3 +662,122 @@ body {
         align-items: stretch;
     }
 }
+
+/* Opportunity Explorer (chatbot) */
+.builder-opportunity-explorer {
+    margin-bottom: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 14px;
+}
+
+.builder-explorer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.builder-explorer-head h3 {
+    margin: 0;
+    font-size: 16px;
+    letter-spacing: 0.2px;
+}
+
+.builder-explorer-head p {
+    margin: 4px 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.builder-explorer-address label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 6px;
+}
+
+.builder-explorer-address-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.builder-explorer-chat {
+    margin-top: 10px;
+}
+
+.builder-explorer-log {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    height: 220px;
+    overflow: auto;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.builder-chat-msg {
+    display: flex;
+    margin: 8px 0;
+}
+
+.builder-chat-msg.bot {
+    justify-content: flex-start;
+}
+
+.builder-chat-msg.user {
+    justify-content: flex-end;
+}
+
+.builder-chat-bubble {
+    max-width: 88%;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.builder-chat-msg.bot .builder-chat-bubble {
+    background: rgba(45, 156, 219, 0.14);
+    border: 1px solid rgba(45, 156, 219, 0.28);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.builder-chat-msg.user .builder-chat-bubble {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.builder-explorer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.builder-explorer-action {
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.builder-explorer-action:hover {
+    border-color: rgba(45, 156, 219, 0.5);
+}
+
+@media (max-width: 720px) {
+    .builder-explorer-address-row {
+        grid-template-columns: 1fr;
+    }
+}

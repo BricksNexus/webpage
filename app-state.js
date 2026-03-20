@@ -253,6 +253,7 @@ window.BricksNexusApp = (function() {
         if (cardType === 'open-to-work') return 'Job';
         if (cardType === 'tokenization') return 'Tokenization';
         if (cardRecord && cardRecord.opportunityKind === 'hiring') return 'Job';
+        if (cardRecord && cardRecord.opportunityKind === 'exploring') return 'Exploring';
         return 'Opportunity';
     }
 

@@ -747,6 +747,510 @@ document.addEventListener('DOMContentLoaded', function() {
     renderChronogramRows();
     renderDocuments();
     updateTeamWidget();
+
+    // ------------------------------
+    // Opportunity Explorer (chatbot)
+    // ------------------------------
+    (function initOpportunityExplorerChatbot() {
+        var chatAddressInput = getInput('opp-chat-address');
+        var analyzeBtn = getInput('opp-chat-analyze-btn');
+        var applyBtn = getInput('opp-chat-apply-btn');
+        var chatLog = getInput('opp-chat-log');
+        var chatActions = getInput('opp-chat-actions');
+
+        if (!chatAddressInput || !analyzeBtn || !applyBtn || !chatLog || !chatActions) return;
+
+        var CHAT = {
+            state: 'idle',
+            addressText: '',
+            inferred: null, // { city, region, assetTypeKey, occupancy }
+            plan: null, // { strategyKey, strategyLabel, desiredUnits, readinessLabel }
+            ready: false
+        };
+
+        function todayISO() {
+            var d = new Date();
+            var yyyy = d.getFullYear();
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            return yyyy + '-' + mm + '-' + dd;
+        }
+
+        function addMonthsToISO(plusMonths) {
+            var d = new Date();
+            d.setMonth(d.getMonth() + plusMonths);
+            var yyyy = d.getFullYear();
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            return yyyy + '-' + mm + '-' + dd;
+        }
+
+        function parseAddressParts(addressText) {
+            var raw = String(addressText || '').trim();
+            if (!raw) return { city: '', region: '' };
+
+            var parts = raw.split(',').map(function(p) { return String(p).trim(); }).filter(Boolean);
+
+            // Common format: "... , City, ST ZIP"
+            var region = '';
+            var city = '';
+            if (parts.length >= 2) {
+                var last = parts[parts.length - 1];
+                var regionMatch = last.match(/\b([A-Za-z]{2})\b/);
+                region = regionMatch ? regionMatch[1].toUpperCase() : '';
+
+                // city is typically the element before the region part
+                if (parts.length >= 3) city = parts[parts.length - 2];
+                else city = parts[parts.length - 2];
+            }
+
+            city = city ? city.replace(/\s*[\d-].*$/, '').trim() : '';
+            return { city: city, region: region };
+        }
+
+        function inferAssetTypeKey(addressText) {
+            var t = String(addressText || '').toLowerCase();
+            if (/(apartment|apt|unit|duplex|triplex|fourplex|multi[-\s]?family|condo)/i.test(t)) return 'apartment';
+            if (/(office|suite)/i.test(t)) return 'office';
+            if (/(building)/i.test(t)) return 'building';
+            if (/(lot|land|vacant|empty|field)/i.test(t)) return 'land';
+            return 'house';
+        }
+
+        function inferOccupancyLabel(addressText) {
+            var t = String(addressText || '').toLowerCase();
+            if (/(vacant|empty|unoccupied)/i.test(t)) return 'Vacant / underutilized';
+            if (/(rented|tenant|tenanted|leased)/i.test(t)) return 'Rented / multi-tenant';
+            return 'Owner-occupied (home)';
+        }
+
+        function appendMsg(role, text) {
+            var msg = document.createElement('div');
+            msg.className = 'builder-chat-msg ' + (role === 'user' ? 'user' : 'bot');
+            var bubble = document.createElement('div');
+            bubble.className = 'builder-chat-bubble';
+            bubble.innerHTML = escapeHtml(text);
+            msg.appendChild(bubble);
+            chatLog.appendChild(msg);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function setChatActions(actions) {
+            chatActions.innerHTML = '';
+            if (!actions || !actions.length) return;
+
+            actions.forEach(function(action) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'builder-explorer-action';
+                btn.textContent = action.label;
+                btn.setAttribute('data-chat-action', action.key);
+                chatActions.appendChild(btn);
+            });
+        }
+
+        function resetChat() {
+            CHAT.state = 'idle';
+            CHAT.addressText = '';
+            CHAT.inferred = null;
+            CHAT.plan = null;
+            CHAT.ready = false;
+            chatLog.innerHTML = '';
+            chatActions.innerHTML = '';
+            applyBtn.disabled = true;
+        }
+
+        function formatMoneyK(amount) {
+            var safe = Math.max(0, Number(amount) || 0);
+            var k = Math.round(safe / 1000);
+            return '$' + k + 'k';
+        }
+
+        function computeBudgetRangeUSD(assetTypeKey, strategyKey, desiredUnits) {
+            var units = Math.max(1, Number(desiredUnits) || 1);
+            var base = { low: 200000, high: 450000 };
+
+            if (strategyKey === 'adu') base = { low: 200000, high: 450000 };
+            if (strategyKey === 'convert') base = { low: 300000, high: 650000 };
+            if (strategyKey === 'addition') base = { low: 450000, high: 950000 };
+            if (strategyKey === 'subdivision') base = { low: 150000, high: 350000 };
+
+            // Slightly different weighting for land projects (subdivision)
+            if (assetTypeKey === 'land' && strategyKey === 'subdivision') {
+                base = { low: 160000, high: 380000 };
+            }
+
+            var lowTotal = base.low * units;
+            var highTotal = base.high * units;
+
+            // Round to the nearest $25k for readability
+            var roundTo = 25000;
+            lowTotal = Math.round(lowTotal / roundTo) * roundTo;
+            highTotal = Math.round(highTotal / roundTo) * roundTo;
+
+            return formatMoneyK(lowTotal) + ' - ' + formatMoneyK(highTotal);
+        }
+
+        function getStrategyOptionsForAssetType(assetTypeKey) {
+            if (assetTypeKey === 'land') {
+                return [
+                    { key: 'subdivision', label: 'Subdivision (add new lots)' },
+                    { key: 'addition', label: 'Build additional units (if zoning allows)' }
+                ];
+            }
+            return [
+                { key: 'adu', label: 'Add an ADU / accessory unit' },
+                { key: 'convert', label: 'Convert existing space to add units' },
+                { key: 'addition', label: 'Build additional units / expansion' }
+            ];
+        }
+
+        function getHousingReadinessOptions(strategyKey) {
+            // Light UX: user can choose speed/effort, we reflect it in the summary.
+            if (strategyKey === 'subdivision') {
+                return [
+                    { key: 'permit_first', label: 'Feasibility first (permits + mapping)' },
+                    { key: 'ready_to_build', label: 'Ready to build (existing site plan)' }
+                ];
+            }
+            return [
+                { key: 'permit_first', label: 'Feasibility first (concept + permits)' },
+                { key: 'ready_to_build', label: 'Ready to build (design already underway)' }
+            ];
+        }
+
+        function summarizeForOpportunity() {
+            var inferred = CHAT.inferred;
+            var plan = CHAT.plan;
+
+            var assetLabel = inferred && inferred.assetTypeKey ? inferred.assetTypeKey.charAt(0).toUpperCase() + inferred.assetTypeKey.slice(1) : 'property';
+            var occupancy = inferred && inferred.occupancy ? inferred.occupancy : 'varies';
+            var strategyKey = plan ? plan.strategyKey : '';
+            var strategyLabel = plan ? plan.strategyLabel : 'housing expansion';
+            var desiredUnits = plan ? plan.desiredUnits : 1;
+            var readinessLabel = plan && plan.readinessLabel ? plan.readinessLabel : 'standard timeline';
+
+            var steps = [];
+            if (strategyKey === 'adu') steps = ['ADU feasibility review', 'Conceptual design + code checks', 'Permit package + inspections', 'Construction and occupancy'];
+            if (strategyKey === 'convert') steps = ['Space-use + code assessment', 'Design for unit conversion', 'Permit submissions + revisions', 'Build-out and final approvals'];
+            if (strategyKey === 'addition') steps = ['Site capacity + setback analysis', 'Permit-ready plans', 'Construction timeline + inspections', 'Delivery and closeout'];
+            if (strategyKey === 'subdivision') steps = ['Zoning/lot-splitting feasibility memo', 'Survey + infrastructure planning', 'Approvals (land use + utilities)', 'Final plat and build plan'];
+
+            return {
+                title: (desiredUnits > 1 ? desiredUnits + '-unit' : '1-unit') + ' ' + strategyLabel + ' - ' + (inferred.city || 'your area'),
+                summary:
+                    'Goal: create additional housing units based on local zoning, existing use, and occupancy.\n\n' +
+                    'Address & context:\n' +
+                    '- Asset type (inferred): ' + assetLabel + '\n' +
+                    '- Current occupancy (assumption): ' + occupancy + '\n' +
+                    '- Strategy: ' + strategyLabel + ' (' + desiredUnits + ' added unit' + (desiredUnits > 1 ? 's' : '') + ')\n\n' +
+                    'Zoning/use/occupancy analysis (directional):\n' +
+                    '- We recommend confirming allowed uses, density limits, setbacks, parking requirements, and any ADU/lot-split rules for the parcel.\n' +
+                    '- Feasibility outcomes usually depend on whether the site qualifies for an overlay/waiver and how existing structures integrate with proposed units.\n\n' +
+                    'Suggested next steps (' + readinessLabel + '):\n' +
+                    steps.map(function(s, i) { return (i + 1) + '. ' + s; }).join('\n') + '\n\n' +
+                    'Deliverables to request in this opportunity:\n' +
+                    '- Zoning/use feasibility memo\n' +
+                    '- Preliminary site plan / unit layout\n' +
+                    '- Permit package plan (what to file, when, and by whom)\n' +
+                    '- Construction schedule assumptions and cost range\n\n' +
+                    'Note: This draft is not legal advice. Use local jurisdiction guidance (planning/zoning) to validate feasibility.',
+                budget: computeBudgetRangeUSD(inferred.assetTypeKey, plan.strategyKey, plan.desiredUnits),
+                city: inferred.city || '',
+                region: inferred.region || ''
+            };
+        }
+
+        function generateNeedsAndTerms() {
+            var inferred = CHAT.inferred || {};
+            var plan = CHAT.plan || {};
+            var strategyLabel = plan.strategyLabel || 'housing expansion';
+
+            var need = 'Request a zoning/use feasibility and design permitting team to evaluate ' + strategyLabel + ' for the provided address (assessing current use/occupancy and constraints).';
+            var terms = 'Deliverables:\n- Zoning/use feasibility memo (allowed uses, density, setbacks, parking)\n- Preliminary unit layout / site plan\n- Permit roadmap (submittals, sequencing, lead disciplines)\n- High-level cost/timeline range for the proposed unit(s)';
+
+            return { need: need, terms: terms };
+        }
+
+        function suggestTeamForProject() {
+            var plan = CHAT.plan || {};
+            var strategyKey = plan.strategyKey || 'adu';
+            var inferred = CHAT.inferred || {};
+
+            var base = ['Project Manager', 'General Contractor', 'Architect', 'Civil Engineer', 'Real Estate Lawyer'];
+
+            if (strategyKey === 'subdivision') {
+                return ['Surveyor', 'Civil Engineer', 'Real Estate Lawyer', 'Project Manager', 'General Contractor', 'Architect'];
+            }
+
+            if (inferred.assetTypeKey === 'apartment' || inferred.assetTypeKey === 'house') {
+                base = base.concat(['Plumber', 'Electrician']);
+            }
+            if (strategyKey === 'adu') {
+                return base.concat(['Plumber', 'Electrician']);
+            }
+            if (strategyKey === 'convert') {
+                return base.concat(['Plumber', 'Electrician']);
+            }
+            if (strategyKey === 'addition') {
+                return base.concat(['Plumber', 'Electrician']);
+            }
+            return base;
+        }
+
+        function applyAnalysisToForm() {
+            var inferred = CHAT.inferred;
+            var plan = CHAT.plan;
+            if (!inferred || !plan) return;
+
+            var result = summarizeForOpportunity();
+            setValue('opp-title', result.title);
+            setValue('opp-summary', result.summary);
+            // If parsing failed, don't overwrite any existing values.
+            setValue('opp-city', result.city || getValue('opp-city'));
+            setValue('opp-region', result.region || getValue('opp-region'));
+            setValue('opp-budget', result.budget);
+            setValue('opp-address', CHAT.addressText || getValue('opp-address'));
+
+            // Fill needs step hints so non-project flows can continue.
+            var needs = generateNeedsAndTerms();
+            setValue('opp-simple-need', needs.need);
+            setValue('opp-terms', needs.terms);
+
+            // If user is on the full Project flow, also suggest property scopes, team, and a basic chronogram/financing.
+            if (formState.type === 'project') {
+                var assetTypeKey = inferred.assetTypeKey;
+                setValue('opp-property-type', assetTypeKey);
+
+                // Choose a few relevant property scope tags.
+                var scopes = [];
+                if (plan.strategyKey === 'subdivision') {
+                    scopes = ['Sub-division', 'Rezoning', 'Land Clearing'];
+                } else if (plan.strategyKey === 'adu' || plan.strategyKey === 'convert') {
+                    scopes = ['Kitchen/Bath Remodel', 'Interior Design', 'Structural Repair'];
+                    if (assetTypeKey === 'house' || assetTypeKey === 'apartment') scopes.unshift('Full Renovation');
+                } else if (plan.strategyKey === 'addition') {
+                    scopes = ['Structural Repair', 'Interior Design', 'Full Renovation'];
+                }
+
+                // Filter to valid options based on property type (PROPERTY_SCOPE_MAP).
+                scopes = (PROPERTY_SCOPE_MAP[assetTypeKey] || []).filter(function(opt) {
+                    return scopes.indexOf(opt) >= 0;
+                });
+
+                formState.projectScopes = scopes.slice();
+                renderPropertyChecklist();
+
+                formState.selectedProfessions = suggestTeamForProject();
+                renderTeamChecklist();
+                updateTeamWidget();
+
+                // Basic chronogram suggestions (validateStep requires full rows for project flow).
+                formState.chronogramRows = [
+                    {
+                        id: String(Date.now() + 1),
+                        task_name: 'Zoning/use feasibility & constraints',
+                        start_date: addMonthsToISO(0),
+                        end_date: addMonthsToISO(2),
+                        status: 'Pending'
+                    },
+                    {
+                        id: String(Date.now() + 2),
+                        task_name: 'Design + permit package preparation',
+                        start_date: addMonthsToISO(2),
+                        end_date: addMonthsToISO(4),
+                        status: 'Pending'
+                    },
+                    {
+                        id: String(Date.now() + 3),
+                        task_name: 'Construction & inspections',
+                        start_date: addMonthsToISO(4),
+                        end_date: addMonthsToISO(10),
+                        status: 'Pending'
+                    }
+                ];
+                renderChronogramRows();
+
+                // Financing model is required for the Project flow.
+                setValue('opp-financing-model', 'hybrid');
+            }
+
+            // Keep the right-side tag/widget in sync for both project and non-project flows.
+            updateTeamWidget();
+            clearErrors();
+
+            appendMsg('bot', 'Draft applied to the opportunity form. You can now continue to the next step.');
+        }
+
+        function handleAnalyze() {
+            var addressText = chatAddressInput.value || '';
+            addressText = String(addressText).trim();
+            if (!addressText) {
+                appendMsg('bot', 'Please enter an address to analyze.');
+                return;
+            }
+
+            resetChat();
+            CHAT.addressText = addressText;
+            appendMsg('user', addressText);
+
+            var parts = parseAddressParts(addressText);
+            var assetTypeKey = inferAssetTypeKey(addressText);
+
+            // Directional assumption; user can override later via fields.
+            var occupancyAssumption = inferOccupancyLabel(addressText);
+
+            CHAT.inferred = {
+                city: parts.city,
+                region: parts.region,
+                assetTypeKey: assetTypeKey,
+                occupancy: occupancyAssumption
+            };
+
+            CHAT.state = 'occupancy';
+            CHAT.plan = null;
+
+            appendMsg('bot',
+                'Thanks. Based on the address, I infer:\n' +
+                '- Property type (directional): ' + assetTypeKey + '\n' +
+                '- Current occupancy (assumption): ' + occupancyAssumption + '\n\n' +
+                'Which best matches the property today?'
+            );
+
+            setChatActions([
+                { key: 'occ_owner', label: 'Owner-occupied (home)' },
+                { key: 'occ_rented', label: 'Rented / multi-tenant' },
+                { key: 'occ_vacant', label: 'Vacant / underutilized' }
+            ]);
+        }
+
+        function setOccupancyFromAction(key) {
+            var occupancy = 'Owner-occupied (home)';
+            if (key === 'occ_rented') occupancy = 'Rented / multi-tenant';
+            if (key === 'occ_vacant') occupancy = 'Vacant / underutilized';
+            CHAT.inferred.occupancy = occupancy;
+        }
+
+        function handleOccupancyChoice(actionKey) {
+            setOccupancyFromAction(actionKey);
+            appendMsg('bot',
+                'Got it. For this occupancy, the most likely paths depend on zoning/land-use rules and whether the site can support additional units.\n\n' +
+                'How would you like to expand housing?'
+            );
+            CHAT.state = 'strategy';
+
+            var strategyOptions = getStrategyOptionsForAssetType(CHAT.inferred.assetTypeKey);
+            var mapped = strategyOptions.map(function(opt) {
+                // Ensure we use strategy keys consistent with our budget/team logic.
+                var keyMap = { 'subdivision': 'subdivision', 'addition': 'addition', 'adu': 'adu', 'convert': 'convert' };
+                // Normalize label -> key if needed.
+                if (opt.key === 'subdivision' || opt.key === 'addition' || opt.key === 'adu' || opt.key === 'convert') return opt;
+                return { key: keyMap[opt.key] || opt.key, label: opt.label };
+            });
+            setChatActions(mapped);
+        }
+
+        function strategyLabelForKey(strategyKey) {
+            if (strategyKey === 'adu') return 'ADU / accessory unit';
+            if (strategyKey === 'convert') return 'conversion-based unit addition';
+            if (strategyKey === 'addition') return 'expansion-based unit addition';
+            if (strategyKey === 'subdivision') return 'subdivision housing';
+            return 'housing expansion';
+        }
+
+        function handleStrategyChoice(strategyKey) {
+            var strategyLabel = strategyLabelForKey(strategyKey);
+            CHAT.plan = {
+                strategyKey: strategyKey,
+                strategyLabel: strategyLabel,
+                desiredUnits: 1,
+                readinessLabel: 'standard timeline'
+            };
+
+            appendMsg('bot',
+                'Great. Next, how many additional unit(s) are you aiming for?'
+            );
+            CHAT.state = 'units';
+
+            setChatActions([
+                { key: 'units_1', label: '1 unit' },
+                { key: 'units_2', label: '2 units' },
+                { key: 'units_3', label: '3 units' },
+                { key: 'units_4p', label: '4+ units' }
+            ]);
+        }
+
+        function handleUnitsChoice(unitsKey) {
+            if (!CHAT.plan) return;
+            var units = 1;
+            if (unitsKey === 'units_2') units = 2;
+            if (unitsKey === 'units_3') units = 3;
+            if (unitsKey === 'units_4p') units = 4;
+            CHAT.plan.desiredUnits = units;
+
+            // Readiness: small extra question to make output feel more “zoning-realistic”.
+            appendMsg('bot', 'Do you want to start with feasibility/permitting first, or are you ready to build based on existing work?');
+            CHAT.state = 'readiness';
+
+            setChatActions(getHousingReadinessOptions(CHAT.plan.strategyKey));
+        }
+
+        function handleReadinessChoice(readinessKey) {
+            if (!CHAT.plan) return;
+            if (readinessKey === 'ready_to_build') CHAT.plan.readinessLabel = 'ready-to-build assumptions';
+            else CHAT.plan.readinessLabel = 'feasibility + permitting first';
+
+            CHAT.ready = true;
+            var result = summarizeForOpportunity();
+            appendMsg('bot',
+                'I prepared a draft based on your choices.\n' +
+                '- Suggested budget: ' + result.budget + '\n' +
+                '- Suggested title: ' + result.title + '\n\n' +
+                'Click “Apply to Opportunity” to fill the form.'
+            );
+            applyBtn.disabled = false;
+            CHAT.state = 'ready';
+        }
+
+        analyzeBtn.addEventListener('click', handleAnalyze);
+        chatAddressInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAnalyze();
+            }
+        });
+
+        chatActions.addEventListener('click', function(e) {
+            var target = e.target;
+            if (!target || !target.getAttribute) return;
+            if (!target.getAttribute('data-chat-action')) return;
+
+            var actionKey = target.getAttribute('data-chat-action');
+
+            if (CHAT.state === 'occupancy') {
+                handleOccupancyChoice(actionKey);
+                return;
+            }
+            if (CHAT.state === 'strategy') {
+                handleStrategyChoice(actionKey);
+                return;
+            }
+            if (CHAT.state === 'units') {
+                handleUnitsChoice(actionKey);
+                return;
+            }
+            if (CHAT.state === 'readiness') {
+                handleReadinessChoice(actionKey);
+                return;
+            }
+        });
+
+        applyBtn.addEventListener('click', function() {
+            if (!CHAT.ready) return;
+            applyAnalysisToForm();
+        });
+    })();
+
     openStep('type');
     refreshPublishState();
 });
