@@ -1003,6 +1003,17 @@ document.addEventListener('DOMContentLoaded', function() {
             var plan = CHAT.plan;
             if (!inferred || !plan) return;
 
+            // If the user hasn't selected an opportunity type yet, infer it.
+            // "Feasibility/permitting first" maps to a lighter "Exploring" posting,
+            // while "Ready to build" maps to the full "Project" builder flow.
+            if (!formState.type) {
+                var inferredType = 'project';
+                var readinessText = String(plan.readinessLabel || '');
+                if (readinessText.toLowerCase().indexOf('feasibility') >= 0) inferredType = 'exploring';
+                setSelectedType(inferredType);
+                appendMsg('bot', 'I set your opportunity type to: ' + inferredType.charAt(0).toUpperCase() + inferredType.slice(1) + '.');
+            }
+
             var result = summarizeForOpportunity();
             setValue('opp-title', result.title);
             setValue('opp-summary', result.summary);
