@@ -781,3 +781,22 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+.builder-explorer-floating {
+    position: fixed;
+    right: 16px;
+    bottom: 96px; /* leave room for the fixed builder footer */
+    margin: 0;
+    width: min(420px, calc(100vw - 32px));
+    z-index: 35; /* above the fixed footer (z-index: 20) */
+}
+
+@media (max-width: 720px) {
+    .builder-explorer-floating {
+        bottom: 88px;
+    }
+
+    .builder-explorer-log {
+        height: 180px;
+    }
+}

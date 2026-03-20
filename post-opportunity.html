@@ -68,38 +68,6 @@
 
             <section class="builder-layout">
                 <form class="builder-form" id="opportunity-builder-form">
-                    <section class="builder-opportunity-explorer" aria-label="Opportunity Explorer chatbot">
-                        <div class="builder-explorer-head">
-                            <div>
-                                <h3>Opportunity Explorer</h3>
-                                <p>Enter an address to get a draft opportunity for creating additional housing units.</p>
-                            </div>
-                        </div>
-
-                        <div class="builder-explorer-address">
-                            <label for="opp-chat-address">Address</label>
-                            <div class="builder-explorer-address-row">
-                                <input
-                                    id="opp-chat-address"
-                                    type="text"
-                                    placeholder="e.g. 123 Main St, Austin, TX 78701"
-                                />
-                                <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-analyze-btn">
-                                    Analyze &amp; Suggest
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="builder-explorer-chat">
-                            <div class="builder-explorer-log" id="opp-chat-log" aria-live="polite"></div>
-                            <div class="builder-explorer-actions" id="opp-chat-actions"></div>
-                        </div>
-
-                        <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-apply-btn" disabled>
-                            Apply to Opportunity
-                        </button>
-                    </section>
-
                     <section class="builder-section active" id="builder-step-type" data-step="type" data-step-index="0">
                         <button type="button" class="builder-section-toggle">
                             <span class="builder-section-number">1</span>
@@ -334,6 +302,38 @@
         <button type="button" class="builder-btn builder-btn-secondary" id="opp-save-draft">Save as Draft</button>
         <button type="button" class="builder-btn builder-btn-primary" id="opp-submit" disabled>Publish</button>
     </footer>
+
+    <section class="builder-opportunity-explorer builder-explorer-floating" aria-label="Opportunity Explorer chatbot">
+        <div class="builder-explorer-head">
+            <div>
+                <h3>Opportunity Explorer</h3>
+                <p>Enter an address to get a draft opportunity for creating additional housing units.</p>
+            </div>
+        </div>
+
+        <div class="builder-explorer-address">
+            <label for="opp-chat-address">Address</label>
+            <div class="builder-explorer-address-row">
+                <input
+                    id="opp-chat-address"
+                    type="text"
+                    placeholder="e.g. 123 Main St, Austin, TX 78701"
+                />
+                <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-analyze-btn">
+                    Analyze &amp; Suggest
+                </button>
+            </div>
+        </div>
+
+        <div class="builder-explorer-chat">
+            <div class="builder-explorer-log" id="opp-chat-log" aria-live="polite"></div>
+            <div class="builder-explorer-actions" id="opp-chat-actions"></div>
+        </div>
+
+        <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-apply-btn" disabled>
+            Apply to Opportunity
+        </button>
+    </section>
 
     <script src="post-opportunity.js"></script>
 </body>
