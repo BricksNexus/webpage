@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "fetch-zoning": "node scripts/fetch-zoning-by-address.mjs"
   },
   "dependencies": {
     "next": "latest",
