@@ -8,7 +8,7 @@
  *   node scripts/fetch-zoning-by-address.mjs "120 Broadway, New York, NY"
  *   node scripts/fetch-zoning-by-address.mjs "1 City Hall Plaza, Boston, MA" --city boston
  *
- * Env: .env.local (see .env.example)
+ * Env: .env.local (see .env.example). Paid geocoding optional — free Census/Nominatim same as /api/property.
  */
 
 import { existsSync, readFileSync } from "node:fs";

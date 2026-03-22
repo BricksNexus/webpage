@@ -16,7 +16,7 @@ The app is a **Next.js** project in this directory. Vercel detects it automatica
    | `ZONING_CONSULTANT_API_KEY` | Same as above if you prefer that name (alias) |
    | `OPENROUTER_MODEL` | Optional; default **`openrouter/free`** (no credits). Use e.g. `openai/gpt-4o` if you buy credits |
    | `OPENROUTER_SITE_URL` or `NEXT_PUBLIC_SITE_URL` | Optional referer for OpenRouter |
-   | `MAPBOX_ACCESS_TOKEN` or `GOOGLE_MAPS_GEOCODING_API_KEY` | `/api/property` geocoding |
+   | `MAPBOX_ACCESS_TOKEN` or `GOOGLE_MAPS_GEOCODING_API_KEY` | Optional; better `/api/property` geocoding. If unset, the API uses free U.S. Census (US) + OSM Nominatim |
    | NYC / Boston keys | Optional city enrichers (see `.env.example`) |
 
 6. **Deploy.** After the first deploy, `https://your-project.vercel.app/` redirects to the marketplace (`/index.html` in `public/`), and App Router routes (`/about`, `/tokenization`, `/homeowner-feasibility`, `/api/*`) work on the same origin.

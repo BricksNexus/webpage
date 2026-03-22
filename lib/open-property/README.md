@@ -6,7 +6,7 @@ There is **no single worldwide API** that returns **legal zoning districts** and
 
 | Layer | Coverage | What you get |
 |--------|-----------|----------------|
-| **Geocoding** | Global (Mapbox / Google) | Normalized address, coordinates, city/region/country |
+| **Geocoding** | Global | **Mapbox / Google** if env set; else **free U.S. Census** (US addresses); else **OSM Nominatim**; else **comma-parse demo** (no coordinates → OSM/Census skipped) |
 | **OpenStreetMap (Overpass)** | Global where mapped | `building`, `landuse`, `amenity`, rare `zoning` tags — **hints only** |
 | **U.S. Census Geocoder** | United States | Incorporated place, county, state FIPS — **jurisdiction**, not zoning |
 

@@ -2,7 +2,7 @@
 
 Helps homeowners explore **ADUs** and **additional units** using:
 
-1. **`POST /api/property`** — Accepts `{ "address": "…", "metroOverride"?: "nyc" | "boston" | "generic" }`. Uses **Mapbox/Google geocoding**, then:
+1. **`POST /api/property`** — Accepts `{ "address": "…", "metroOverride"?: "nyc" | "boston" | "generic" }`. Geocodes with **Mapbox/Google if set**, else **free U.S. Census** (US), else **OSM Nominatim**, else **parse-only demo** (no coords), then:
    - **Worldwide:** **OpenStreetMap (Overpass)** for building / landuse (and rare zoning) tags.
    - **United States:** **U.S. Census Geocoder** for incorporated place / county / state (jurisdiction, not zoning).
    - **Optional:** NYC (Geoclient + PLUTO) or Boston (CKAN assessing) when env keys and location match.
@@ -33,7 +33,7 @@ lib/
 
 ```bash
 cp .env.example .env.local
-# MAPBOX_ACCESS_TOKEN or GOOGLE_MAPS_GEOCODING_API_KEY (required for /api/property)
+# MAPBOX_ACCESS_TOKEN or GOOGLE_MAPS_GEOCODING_API_KEY (optional — free Census/Nominatim if unset)
 # OPENROUTER_API_KEY (recommended for feasibility LLM on Vercel)
 npm install
 npm run dev

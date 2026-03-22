@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLauncher.style.display = 'none';
 
             if (!CHAT.hasGreeted) {
-                appendMsg('bot', 'Hi! Enter an address, then **Zoning consultant (OpenRouter)** (uses your Vercel `/api/feasibility` key). **Fetch open data** adds real geocode/OSM when Mapbox/Google is configured. **Demo** = offline text only, no network.');
+                appendMsg('bot', 'Hi! Enter an address, then **Zoning consultant (OpenRouter)** (uses your Vercel `/api/feasibility` key). **Fetch open data** calls `/api/property` — on the server it can geocode **without** Mapbox/Google (free U.S. Census + OSM Nominatim). **Demo** = offline text only, no network.');
                 CHAT.hasGreeted = true;
             }
         }
@@ -1110,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 appendMsg('bot',
                     '**Could not reach the property API** (' + (err.message || err) + ').\n\n' +
                     'This often happens when only static HTML is deployed (no `/api/property` on this host). ' +
-                    'Deploy the Next.js app, set `BRICKSNEXUS_API_BASE` or `<meta name="bricksnexus-api-base">` in post-opportunity.html, and ensure Mapbox/Google geocoder env vars are on the server.\n\n' +
+                    'Deploy the Next.js app and set `BRICKSNEXUS_API_BASE` or `<meta name="bricksnexus-api-base">` in post-opportunity.html so this page can reach `/api/property`. (Geocoder keys are optional: the API uses free Census/Nominatim when unset.)\n\n' +
                     'You can still use the **legacy offline wizard** below.'
                 );
                 setChatActions([
@@ -1123,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         /**
-         * Ensure CHAT.propertyIntel exists: try /api/property, else demo snapshot (so OpenRouter can run on Vercel even without geocoder).
+         * Ensure CHAT.propertyIntel exists: try /api/property, else demo snapshot (so OpenRouter can run when the property API is unreachable).
          * @returns {'cached'|'live'|'demo'|null}
          */
         async function ensurePropertyIntelForConsultant() {
@@ -1157,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function runZoningConsultant() {
             var addressText = String(chatAddressInput.value || '').trim();
             if (!addressText) {
-                appendMsg('bot', 'Type an address above, then tap **Zoning consultant** again. On Vercel, set `OPENROUTER_API_KEY`; for full open data add Mapbox or Google geocoding too.');
+                appendMsg('bot', 'Type an address above, then tap **Zoning consultant** again. On Vercel, set `OPENROUTER_API_KEY`. Open data works without paid geocoder keys (free Census/Nominatim on the server).');
                 return;
             }
 
@@ -1169,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (src === 'demo') {
                     appendMsg(
                         'bot',
-                        '_No live `/api/property` response — using a **preview snapshot** of the address. OpenRouter still runs; add geocoder env vars on the server for real parcel/OSM data._'
+                        '_No live `/api/property` response — using a **preview snapshot** of the address. OpenRouter still runs; deploy the Next app and point this page at it for real geocode/OSM/Census data (no paid geocoder required)._'
                     );
                 } else if (src === 'live') {
                     appendMsg('bot', formatCurrentStatusFromIntel(CHAT.propertyIntel));

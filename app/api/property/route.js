@@ -10,10 +10,10 @@ export async function OPTIONS() {
  * POST /api/property
  * Body: { address: string, metroOverride?: "nyc" | "boston" | "generic" }
  *
- * Open-source stack (all cities / countries where geocoder + OSM apply):
- * - Mapbox or Google geocoding (env)
- * - U.S.: Census Geocoder geographies (jurisdiction — no API key)
- * - Worldwide: OpenStreetMap Overpass (building / landuse hints — crowdsourced)
+ * Open-source stack:
+ * - Geocoding: Mapbox/Google if set; else free U.S. Census one-line (US); else OSM Nominatim; else parse-only demo (no coords)
+ * - U.S.: Census Geocoder geographies (jurisdiction — no API key) when coordinates exist
+ * - Worldwide: OpenStreetMap Overpass when coordinates exist
  * - Optional: NYC / Boston official open-data connectors when env + location match
  *
  * Legal zoning & occupancy still require local authoritative sources; see `limitations` in response.
