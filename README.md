@@ -1,3 +1,10 @@
+# BricksNexus Website
+
+- **Run locally:** `npm install` → `npm run dev` → open `http://localhost:3000/` (marketplace via `public/index.html`) and React routes e.g. `/about`, `/tokenization`, `/homeowner-feasibility`. APIs: `/api/property`, `/api/feasibility`.
+- **Static + Next migration plan:** see [`docs/MIGRATION_NEXT.md`](docs/MIGRATION_NEXT.md).
+
+---
+
 # Open property intel (all cities)
 
 There is **no single worldwide API** that returns **legal zoning districts** and **certificate-of-occupancy** status for every municipality. This package uses **open sources** that scale globally, plus **optional** city-specific open-data connectors.
