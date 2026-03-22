@@ -4,7 +4,7 @@ import FeasibilityChat from "@/components/homeowner-feasibility/FeasibilityChat"
 export const metadata = {
   title: "Homeowner feasibility · BricksNexus",
   description:
-    "Chat assistant to explore ADUs and additional housing units using property data and GPT-4o.",
+    "Chat assistant to explore ADUs and additional housing units using property data and an LLM via OpenRouter.",
 };
 
 export default function HomeownerFeasibilityPage() {
@@ -21,11 +21,13 @@ export default function HomeownerFeasibilityPage() {
           Can I add more housing on my lot?
         </h1>
         <p className="mt-2 text-slate-600">
-          This Next.js route uses <code className="rounded bg-slate-100 px-1">/api/property</code>{" "}
-          for parcel-style fields and <code className="rounded bg-slate-100 px-1">/api/feasibility</code>{" "}
-          for a GPT-4o feasibility summary. Set{" "}
-          <code className="rounded bg-slate-100 px-1">OPENAI_API_KEY</code> in{" "}
-          <code className="rounded bg-slate-100 px-1">.env.local</code>.
+          This route uses <code className="rounded bg-slate-100 px-1">/api/property</code> for
+          parcel-style fields and <code className="rounded bg-slate-100 px-1">/api/feasibility</code>{" "}
+          for the zoning consultant summary via{" "}
+          <strong>OpenRouter</strong>. Set{" "}
+          <code className="rounded bg-slate-100 px-1">OPENROUTER_API_KEY</code> in{" "}
+          <code className="rounded bg-slate-100 px-1">.env.local</code> or Vercel environment
+          variables (optional: <code className="rounded bg-slate-100 px-1">OPENROUTER_MODEL</code>).
         </p>
         <div className="mt-8">
           <FeasibilityChat />

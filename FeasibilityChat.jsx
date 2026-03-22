@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 
 /**
  * Chat UI for homeowner ADU / additional-unit feasibility.
- * Calls /api/property then /api/feasibility (GPT-4o when configured).
+ * Calls /api/property then /api/feasibility (OpenRouter or OpenAI when configured).
  */
 export default function FeasibilityChat() {
   const [address, setAddress] = useState("");
@@ -139,34 +139,34 @@ export default function FeasibilityChat() {
   };
 
   return (
-    <div className="flex h-[min(640px,70vh)] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-lg">
-      <div className="border-b border-slate-100 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--construction-teal)]">
+    <div className="flex h-[min(640px,70vh)] flex-col overflow-hidden rounded-2xl border border-red-200/90 bg-gradient-to-b from-red-50/90 to-white shadow-lg shadow-red-900/10">
+      <div className="border-b border-red-100 bg-red-50/50 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-red-600">
           Homeowner feasibility
         </p>
-        <h2 className="text-lg font-bold text-[var(--deep-navy)]">
+        <h2 className="text-lg font-bold text-red-950">
           ADU &amp; additional units
         </h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-red-900/70">
           Enter your address. We identify the city and load property fields, then
-          GPT-4o summarizes feasibility against typical zoning considerations.
+          the LLM summarizes feasibility against typical zoning considerations.
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-slate-100 px-4 py-3">
+      <div className="flex flex-wrap gap-2 border-b border-red-100 px-4 py-3">
         <input
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           placeholder="123 Main St, City, ST 12345"
-          className="min-w-[200px] flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[var(--construction-teal)]"
+          className="min-w-[200px] flex-1 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm text-red-950 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-400"
           disabled={loading}
         />
         <button
           type="button"
           onClick={fetchProperty}
           disabled={loading}
-          className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-50"
+          className="rounded-xl bg-red-900 px-4 py-2 text-sm font-semibold text-white hover:bg-red-950 disabled:opacity-50"
         >
           Look up property
         </button>
@@ -174,7 +174,7 @@ export default function FeasibilityChat() {
           type="button"
           onClick={() => runFeasibility(null)}
           disabled={loading || !property}
-          className="rounded-xl bg-[var(--construction-teal)] px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600 disabled:opacity-50"
+          className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-red-600/25 hover:bg-red-700 disabled:opacity-50"
         >
           Feasibility summary
         </button>
@@ -186,10 +186,10 @@ export default function FeasibilityChat() {
 
       <div
         ref={listRef}
-        className="flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm"
+        className="flex-1 space-y-3 overflow-y-auto bg-red-50/20 px-4 py-3 text-sm"
       >
         {messages.length === 0 ? (
-          <p className="text-slate-500">
+          <p className="text-red-900/55">
             No messages yet. Enter an address and tap <strong>Look up property</strong>,
             then <strong>Feasibility summary</strong>.
           </p>
@@ -202,8 +202,8 @@ export default function FeasibilityChat() {
               <div
                 className={`max-w-[92%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${
                   msg.role === "user"
-                    ? "bg-slate-800 text-white"
-                    : "border border-slate-100 bg-slate-50 text-slate-800"
+                    ? "bg-red-800 text-white shadow-sm"
+                    : "border border-red-200 bg-red-50 text-red-950"
                 }`}
               >
                 {msg.content}
@@ -212,12 +212,12 @@ export default function FeasibilityChat() {
           ))
         )}
         {loading ? (
-          <p className="text-xs text-slate-500">Working…</p>
+          <p className="text-xs text-red-700/70">Working…</p>
         ) : null}
       </div>
 
       <form
-        className="flex gap-2 border-t border-slate-100 px-4 py-3"
+        className="flex gap-2 border-t border-red-100 bg-white px-4 py-3"
         onSubmit={(e) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
@@ -231,13 +231,13 @@ export default function FeasibilityChat() {
           name="followup"
           type="text"
           placeholder="Ask a follow-up (e.g. ADU setbacks in my zone?)"
-          className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[var(--construction-teal)]"
+          className="flex-1 rounded-xl border border-red-200 px-3 py-2 text-sm text-red-950 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-400"
           disabled={loading || !property}
         />
         <button
           type="submit"
           disabled={loading || !property}
-          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-50"
+          className="rounded-xl border border-red-300 bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
         >
           Send
         </button>

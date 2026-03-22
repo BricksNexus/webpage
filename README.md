@@ -1,6 +1,6 @@
 # BricksNexus Website
 
-- **Run locally:** `npm install` → `npm run dev` → open `http://localhost:3000/` (marketplace via `public/index.html`) and React routes e.g. `/about`, `/tokenization`, `/homeowner-feasibility`. APIs: `/api/property`, `/api/feasibility`.
+- **Run locally:** `npm install` → `npm run dev` → open `http://localhost:3000/` (marketplace via `public/index.html`) and React routes e.g. `/about`, `/tokenization`, `/homeowner-feasibility`. APIs: `/api/property`, `/api/feasibility` (LLM via **OpenRouter** when `OPENROUTER_API_KEY` is set—see `.env.example`; use the same vars on **Vercel**).
 - **Static + Next migration plan:** see [`docs/MIGRATION_NEXT.md`](docs/MIGRATION_NEXT.md).
 
 ---

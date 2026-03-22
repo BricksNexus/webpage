@@ -663,12 +663,12 @@ body {
     }
 }
 
-/* Opportunity Explorer (chatbot) */
+/* Opportunity Explorer (chatbot) — red theme */
 .builder-opportunity-explorer {
     margin-bottom: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.35);
     border-radius: 14px;
-    background: #0f172a;
+    background: linear-gradient(160deg, #3f0d0d 0%, #1a0505 100%);
     padding: 14px;
 }
 
@@ -684,6 +684,7 @@ body {
     margin: 0;
     font-size: 16px;
     letter-spacing: 0.2px;
+    color: #fecaca;
 }
 
 .builder-explorer-head p {
@@ -722,7 +723,8 @@ body {
 }
 
 .builder-explorer-api-row .builder-btn-secondary:hover {
-    border-color: rgba(45, 156, 219, 0.55);
+    border-color: rgba(248, 113, 113, 0.75);
+    background: rgba(220, 38, 38, 0.2);
 }
 
 .builder-explorer-api-row .builder-btn-secondary:disabled {
@@ -735,8 +737,8 @@ body {
 }
 
 .builder-explorer-log {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: #111827;
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    background: #140505;
     border-radius: 12px;
     height: 220px;
     overflow: auto;
@@ -768,15 +770,15 @@ body {
 }
 
 .builder-chat-msg.bot .builder-chat-bubble {
-    background: rgba(45, 156, 219, 0.14);
-    border: 1px solid rgba(45, 156, 219, 0.28);
-    color: rgba(255, 255, 255, 0.92);
+    background: rgba(220, 38, 38, 0.22);
+    border: 1px solid rgba(248, 113, 113, 0.45);
+    color: #fee2e2;
 }
 
 .builder-chat-msg.user .builder-chat-bubble {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: rgba(255, 255, 255, 0.92);
+    background: rgba(127, 29, 29, 0.55);
+    border: 1px solid rgba(252, 165, 165, 0.35);
+    color: #fff;
 }
 
 .builder-explorer-actions {
@@ -796,13 +798,30 @@ body {
 }
 
 .builder-explorer-action:hover {
-    border-color: rgba(45, 156, 219, 0.5);
+    border-color: rgba(248, 113, 113, 0.65);
+    background: rgba(220, 38, 38, 0.15);
 }
 
 @media (max-width: 720px) {
     .builder-explorer-address-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* Primary actions inside chat panel use red (rest of builder stays blue accent) */
+.builder-opportunity-explorer .builder-btn-primary {
+    background: linear-gradient(145deg, #ef4444 0%, #b91c1c 100%);
+    border: 1px solid rgba(254, 202, 202, 0.35);
+}
+
+.builder-opportunity-explorer .builder-btn-primary:hover {
+    background: linear-gradient(145deg, #dc2626 0%, #991b1b 100%);
+}
+
+.builder-opportunity-explorer .builder-btn-primary:disabled {
+    background: #7f1d1d;
+    border-color: transparent;
+    opacity: 0.5;
 }
 
 .builder-explorer-floating {
@@ -822,14 +841,14 @@ body {
 }
 
 .builder-chatbox-prompt {
-    border: 1px solid rgba(37, 99, 235, 0.35);
-    background: #ffffff;
-    color: #1e293b;
+    border: 1px solid rgba(220, 38, 38, 0.45);
+    background: #fff5f5;
+    color: #7f1d1d;
     border-radius: 999px;
     padding: 8px 12px;
     font-size: 12px;
     font-weight: 600;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+    box-shadow: 0 8px 20px rgba(127, 29, 29, 0.2);
     cursor: pointer;
 }
 
@@ -837,17 +856,17 @@ body {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    border: none;
-    background: var(--accent);
+    border: 2px solid rgba(254, 202, 202, 0.5);
+    background: linear-gradient(145deg, #ef4444 0%, #b91c1c 100%);
     color: #fff;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.38);
+    box-shadow: 0 12px 28px rgba(185, 28, 28, 0.45);
 }
 
 .builder-chatbox-launcher:hover {
-    background: #1d4ed8;
+    background: linear-gradient(145deg, #dc2626 0%, #991b1b 100%);
 }
 
 .builder-chatbox-close {
@@ -863,7 +882,8 @@ body {
 }
 
 .builder-chatbox-close:hover {
-    border-color: rgba(45, 156, 219, 0.6);
+    border-color: rgba(248, 113, 113, 0.75);
+    background: rgba(220, 38, 38, 0.25);
 }
 
 .builder-opportunity-explorer.hidden {

@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLauncher.style.display = 'none';
 
             if (!CHAT.hasGreeted) {
-                appendMsg('bot', 'Hi! Use **Demo (no API)** anytime for a static three-section preview (no network). For live data, use **Fetch open data** + optional **Zoning consultant (GPT-4o)** when your API is deployed.');
+                appendMsg('bot', 'Hi! Use **Demo (no API)** anytime for a static three-section preview (no network). For live data, use **Fetch open data** + optional **Zoning consultant (OpenRouter)** when your API is deployed.');
                 CHAT.hasGreeted = true;
             }
         }
@@ -998,7 +998,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 lines.push('**OSM landuse:** ' + ((osm.landuseAndOpenSpace || []).join(', ') || '—'));
             }
             lines.push('');
-            lines.push('Next: **Zoning consultant (GPT-4o)** for *Potential for Growth* and *Regulatory Hurdles*, or **Apply to Opportunity** to draft the form.');
+            lines.push('Next: **Zoning consultant (OpenRouter)** for *Potential for Growth* and *Regulatory Hurdles*, or **Apply to Opportunity** to draft the form.');
             return lines.join('\n');
         }
 
@@ -1020,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 parts.push('Use/occupancy hints: ' + (intel.useAndOccupancy || '—'));
                 if (CHAT.feasibilitySummary) {
                     parts.push('');
-                    parts.push('### Zoning consultant (GPT-4o)');
+                    parts.push('### Zoning consultant (OpenRouter)');
                     parts.push(CHAT.feasibilitySummary);
                 }
                 setValue('opp-summary', parts.join('\n'));
@@ -1126,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             if (gptBtn) gptBtn.disabled = true;
-            appendMsg('user', 'Zoning consultant (GPT-4o)');
+            appendMsg('user', 'Zoning consultant (OpenRouter)');
             var base = getApiBase();
             var url = (base || '') + '/api/feasibility';
             try {

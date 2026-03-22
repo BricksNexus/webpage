@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildZoningConsultantSystemPrompt } from "@/lib/homeowner-feasibility/zoning-consultant-prompt";
 import { CORS_HEADERS } from "@/lib/api-cors";
+import { getLlmChatConfig } from "@/lib/llm-chat";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
@@ -14,7 +15,8 @@ export async function OPTIONS() {
  *   messages: { role: 'user'|'assistant', content: string }[]
  * }
  *
- * Uses OpenAI GPT-4o when OPENAI_API_KEY is set; otherwise returns a placeholder summary.
+ * Uses OpenRouter when OPENROUTER_API_KEY is set (recommended for Vercel),
+ * else OpenAI when OPENAI_API_KEY is set; otherwise returns a placeholder summary.
  */
 export async function POST(request) {
   try {
@@ -30,25 +32,25 @@ export async function POST(request) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const llm = getLlmChatConfig();
 
-    if (!apiKey) {
+    if (!llm) {
       return NextResponse.json(
         {
-        ok: true,
-        model: "none",
-        feasibilitySummary:
-          "## Current Status\n" +
-          "GPT-4o is not configured (`OPENAI_API_KEY` missing). Property JSON below is shown raw for development.\n\n" +
-          "## Potential for Growth\n" +
-          "Add `OPENAI_API_KEY` to `.env.local` and restart the dev server to enable the Zoning Consultant analysis (Current Status / Potential for Growth / Regulatory Hurdles).\n\n" +
-          "## Regulatory Hurdles\n" +
-          "Without the model, no automated comparison of use vs. max units, lot vs. minimums, or ADU eligibility is performed.\n\n" +
-          "```json\n" +
-          JSON.stringify(property, null, 2) +
-          "\n```",
-        disclaimer:
-          "Placeholder output—not a zoning determination. Configure OpenAI for full consultant formatting.",
+          ok: true,
+          model: "none",
+          feasibilitySummary:
+            "## Current Status\n" +
+            "No LLM is configured. Set `OPENROUTER_API_KEY` (OpenRouter) or `OPENAI_API_KEY` (OpenAI direct) in `.env.local` / Vercel Environment Variables.\n\n" +
+            "## Potential for Growth\n" +
+            "On Vercel: Project → Settings → Environment Variables → add `OPENROUTER_API_KEY` and optionally `OPENROUTER_MODEL` (default `openai/gpt-4o`). Optional: `OPENROUTER_SITE_URL` or `NEXT_PUBLIC_SITE_URL` for OpenRouter analytics.\n\n" +
+            "## Regulatory Hurdles\n" +
+            "Property JSON below is shown raw for development.\n\n" +
+            "```json\n" +
+            JSON.stringify(property, null, 2) +
+            "\n```",
+          disclaimer:
+            "Placeholder output—not a zoning determination. Configure OpenRouter or OpenAI for full consultant formatting.",
         },
         { headers: CORS_HEADERS }
       );
@@ -62,7 +64,7 @@ export async function POST(request) {
       "Respond using the required sections: ## Current Status, ## Potential for Growth, ## Regulatory Hurdles.",
     ].join("\n");
 
-    const openaiMessages = [
+    const chatMessages = [
       { role: "system", content: buildZoningConsultantSystemPrompt() },
       {
         role: "user",
@@ -76,15 +78,12 @@ export async function POST(request) {
         })),
     ];
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(llm.url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers: llm.headers,
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-4o",
-        messages: openaiMessages,
+        model: llm.defaultModel,
+        messages: chatMessages,
         temperature: 0.35,
         max_tokens: 2000,
       }),
@@ -93,7 +92,10 @@ export async function POST(request) {
     if (!res.ok) {
       const errText = await res.text();
       return NextResponse.json(
-        { error: "OpenAI request failed", detail: errText },
+        {
+          error: `${llm.providerLabel} request failed`,
+          detail: errText,
+        },
         { status: 502, headers: CORS_HEADERS }
       );
     }
@@ -106,7 +108,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         ok: true,
-        model: data?.model || "gpt-4o",
+        model: data?.model || llm.defaultModel,
         feasibilitySummary: text,
         disclaimer:
           "Informational only—not legal advice. Verify with your jurisdiction.",
