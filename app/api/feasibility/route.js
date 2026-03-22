@@ -30,7 +30,8 @@ export async function OPTIONS() {
  * Body: {
  *   address: string,
  *   property: object (from /api/property),
- *   messages: { role: 'user'|'assistant', content: string }[]
+ *   messages: { role: 'user'|'assistant', content: string }[],
+ *   exploreFocus?: string  // optional homeowner topic (first turn or static UI chips)
  * }
  *
  * Uses OpenRouter when OPENROUTER_API_KEY is set (recommended for Vercel),
@@ -42,6 +43,7 @@ export async function POST(request) {
     const address = String(body?.address || "").trim();
     const property = body?.property || {};
     const messages = Array.isArray(body?.messages) ? body.messages : [];
+    const exploreFocus = String(body?.exploreFocus || "").trim();
 
     if (!address) {
       return NextResponse.json(
@@ -74,12 +76,23 @@ export async function POST(request) {
       );
     }
 
+    const focusBlock =
+      exploreFocus && messages.length === 0
+        ? [
+            "",
+            "Homeowner topic to emphasize (from their selection on the page):",
+            exploreFocus,
+            "Prioritize this path in **Potential for Growth** with plain-language steps and tradeoffs; briefly mention how it differs from other common options. Still complete all three sections.",
+          ].join("\n")
+        : "";
+
     const userContext = [
       `Property address: ${address}`,
       `Structured property data (JSON):\n${JSON.stringify(property, null, 2)}`,
       "",
       "Perform the three comparisons from your instructions: (1) current use vs. typical maximum allowed dwelling units for the zone family, (2) lot size vs. minimum lot area / per-unit lot rules when data exists, (3) location and zone vs. ADU/accessory-dwelling-style feasibility per the Knowledge Base.",
       "Respond using the required sections: ## Current Status, ## Potential for Growth, ## Regulatory Hurdles.",
+      focusBlock,
     ].join("\n");
 
     const chatMessages = [

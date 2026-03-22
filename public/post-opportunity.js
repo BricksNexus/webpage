@@ -762,6 +762,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var messageInput = getInput('opp-chat-message-input');
         var applyBtn = getInput('opp-chat-apply-btn');
         var chatLog = getInput('opp-chat-log');
+        var optionsEl = getInput('opp-chat-options');
 
         if (
             !chatLauncher || !chatPrompt || !chatPanel || !chatClose ||
@@ -779,8 +780,20 @@ document.addEventListener('DOMContentLoaded', function() {
             /** @type {{ role: string, content: string }[]} */
             thread: [],
             sessionActive: false,
-            loading: false
+            loading: false,
+            exploreKey: null,
+            exploreFocusText: ''
         };
+
+        function syncOptionButtons() {
+            if (!optionsEl) return;
+            var buttons = optionsEl.querySelectorAll('.builder-explorer-option');
+            buttons.forEach(function(b) {
+                var k = b.getAttribute('data-explore-key');
+                if (k && k === CHAT.exploreKey) b.classList.add('is-selected');
+                else b.classList.remove('is-selected');
+            });
+        }
 
         function parseAddressParts(addressText) {
             var raw = String(addressText || '').trim();
@@ -858,9 +871,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 appendMsg(
                     'bot',
                     'Hi! I’m here to help you **explore adding more homes or units** at your property — in plain language, with no construction background needed.\n\n' +
-                        '**Step 1:** Type your full address below.\n' +
-                        '**Step 2:** Tap **Start** — I’ll summarize what might be possible and what to check with your town or city.\n' +
-                        '**Step 3:** Ask me anything in your own words (for example: “Could we add a rental unit in the basement?”).'
+                        '**Step 1 (optional):** Tap a **common path** below (ADU, basement apartment, subdivision, etc.) if one sounds like you.\n' +
+                        '**Step 2:** Type your full address.\n' +
+                        '**Step 3:** Tap **Start** — I’ll explain what might be possible and what to double-check locally.\n' +
+                        '**Step 4:** Keep chatting or tap another path anytime to learn more.'
                 );
                 CHAT.hasGreeted = true;
             }
@@ -884,7 +898,9 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLog.innerHTML = '';
             applyBtn.disabled = true;
             messageInput.value = '';
+            /* Keep exploreKey / exploreFocusText so a chosen topic survives a new Start */
             refreshChatControls();
+            syncOptionButtons();
         }
 
         function buildDemoPropertyIntel(addressText) {
@@ -1000,14 +1016,19 @@ document.addEventListener('DOMContentLoaded', function() {
         async function callFeasibility(messagesForApi) {
             var base = getApiBase();
             var url = (base || '') + '/api/feasibility';
+            var msgs = messagesForApi || [];
+            var payload = {
+                address: CHAT.addressText,
+                property: CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText),
+                messages: msgs
+            };
+            if (msgs.length === 0 && CHAT.exploreFocusText) {
+                payload.exploreFocus = CHAT.exploreFocusText;
+            }
             var res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    address: CHAT.addressText,
-                    property: CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText),
-                    messages: messagesForApi || []
-                })
+                body: JSON.stringify(payload)
             });
             var data = await res.json().catch(function() { return {}; });
             if (!res.ok) {
@@ -1033,7 +1054,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             resetChat();
             CHAT.addressText = addressText;
-            appendMsg('user', 'My property is at: ' + addressText);
+            var userIntro = 'My property is at: ' + addressText;
+            if (CHAT.exploreFocusText) {
+                var shortLabel = '';
+                if (optionsEl && CHAT.exploreKey) {
+                    var sel = optionsEl.querySelector('.builder-explorer-option[data-explore-key="' + CHAT.exploreKey + '"]');
+                    if (sel) shortLabel = sel.getAttribute('data-explore-label') || '';
+                }
+                userIntro +=
+                    '\n\nI want to learn more about: **' +
+                    (shortLabel || 'this type of project') +
+                    '**.';
+            }
+            appendMsg('user', userIntro);
 
             setLoading(true);
             try {
@@ -1058,13 +1091,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        async function sendFollowUp() {
+        async function postUserTurn(text) {
             if (!CHAT.sessionActive || CHAT.loading) return;
-            var text = String(messageInput.value || '').trim();
+            text = String(text || '').trim();
             if (!text) return;
 
             appendMsg('user', text);
-            messageInput.value = '';
             CHAT.thread.push({ role: 'user', content: text });
 
             setLoading(true);
@@ -1085,6 +1117,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 setLoading(false);
                 if (CHAT.sessionActive) messageInput.focus();
             }
+        }
+
+        async function sendFollowUp() {
+            if (!CHAT.sessionActive || CHAT.loading) return;
+            var text = String(messageInput.value || '').trim();
+            if (!text) return;
+            messageInput.value = '';
+            await postUserTurn(text);
         }
 
         startBtn.addEventListener('click', function() {
@@ -1113,11 +1153,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        if (optionsEl) {
+            optionsEl.addEventListener('click', function(e) {
+                var btn = e.target && e.target.closest ? e.target.closest('.builder-explorer-option') : null;
+                if (!btn || !optionsEl.contains(btn)) return;
+                var key = btn.getAttribute('data-explore-key');
+                var focus = btn.getAttribute('data-explore-focus') || '';
+                var label = btn.getAttribute('data-explore-label') || '';
+
+                if (CHAT.exploreKey === key) {
+                    CHAT.exploreKey = null;
+                    CHAT.exploreFocusText = '';
+                    syncOptionButtons();
+                    return;
+                }
+
+                CHAT.exploreKey = key;
+                CHAT.exploreFocusText = focus;
+                syncOptionButtons();
+
+                if (CHAT.sessionActive && !CHAT.loading) {
+                    var q =
+                        'I want to explore **' +
+                        label +
+                        '** for this address.\n\n' +
+                        (focus ? focus + '\n\n' : '') +
+                        'What should I know in plain language?';
+                    postUserTurn(q);
+                }
+            });
+        }
+
         chatLauncher.addEventListener('click', openChatbox);
         chatPrompt.addEventListener('click', openChatbox);
         chatClose.addEventListener('click', closeChatbox);
 
         refreshChatControls();
+        syncOptionButtons();
     })();
 
 
