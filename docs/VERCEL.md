@@ -25,3 +25,10 @@ The app is a **Next.js** project in this directory. Vercel detects it automatica
 
 - **GitHub Pages** can still deploy static files from `public/` via the workflow; **Vercel** runs the full Next app + API routes.
 - Do **not** commit `.env.local`; set secrets only in Vercel **Environment Variables**.
+
+## OpenRouter returns an error (502 / “request failed”)
+
+1. **Credits:** OpenRouter needs a positive balance or payment method — [openrouter.ai/credits](https://openrouter.ai/credits). `402` / “insufficient credits” is common on new accounts.
+2. **Key value:** Paste **only** the key (`sk-or-v1-…`), not the word `Bearer`. Our code strips an accidental `Bearer ` prefix.
+3. **Redeploy** after changing env vars.
+4. The chat UI now shows **OpenRouter’s message** (e.g. 401 invalid key, 402 credits) when `/api/feasibility` fails.

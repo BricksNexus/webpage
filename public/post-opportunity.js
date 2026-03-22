@@ -1188,7 +1188,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                 });
                 var data = await res.json().catch(function() { return {}; });
-                if (!res.ok) throw new Error(data.error || data.detail || ('HTTP ' + res.status));
+                if (!res.ok) {
+                    var errParts = [data.detail, data.error, 'HTTP ' + res.status].filter(Boolean);
+                    throw new Error(errParts[0] || 'Request failed');
+                }
                 CHAT.feasibilitySummary = data.feasibilitySummary || '';
                 appendMsg('bot', CHAT.feasibilitySummary);
             } catch (err) {

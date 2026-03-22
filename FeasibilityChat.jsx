@@ -116,7 +116,11 @@ export default function FeasibilityChat() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Feasibility request failed");
+      if (!res.ok) {
+        throw new Error(
+          data.detail || data.error || `Feasibility request failed (${res.status})`
+        );
+      }
 
       const summary = data.feasibilitySummary || "";
       const disc = data.disclaimer ? `\n\n_${data.disclaimer}_` : "";

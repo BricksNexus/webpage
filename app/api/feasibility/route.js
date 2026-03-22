@@ -3,6 +3,24 @@ import { buildZoningConsultantSystemPrompt } from "@/lib/homeowner-feasibility/z
 import { CORS_HEADERS } from "@/lib/api-cors";
 import { getLlmChatConfig } from "@/lib/llm-chat";
 
+function summarizeUpstreamLlmError(status, bodyText) {
+  const raw = String(bodyText || "").trim();
+  try {
+    const j = JSON.parse(raw);
+    const inner = j?.error;
+    const msg =
+      (typeof inner === "string" && inner) ||
+      (inner && typeof inner.message === "string" && inner.message) ||
+      (typeof j.message === "string" && j.message);
+    if (msg) return `HTTP ${status}: ${msg}`;
+  } catch {
+    /* not JSON */
+  }
+  if (!raw) return `HTTP ${status}`;
+  const short = raw.length > 1200 ? `${raw.slice(0, 1200)}…` : raw;
+  return `HTTP ${status}: ${short}`;
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
@@ -91,10 +109,12 @@ export async function POST(request) {
 
     if (!res.ok) {
       const errText = await res.text();
+      const summary = summarizeUpstreamLlmError(res.status, errText);
       return NextResponse.json(
         {
           error: `${llm.providerLabel} request failed`,
-          detail: errText,
+          detail: summary,
+          raw: errText.length < 4000 ? errText : undefined,
         },
         { status: 502, headers: CORS_HEADERS }
       );
