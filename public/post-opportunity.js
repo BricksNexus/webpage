@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLauncher.style.display = 'none';
 
             if (!CHAT.hasGreeted) {
-                appendMsg('bot', 'Hi! Use **Demo (no API)** anytime for a static three-section preview (no network). For live data, use **Fetch open data** + optional **Zoning consultant (OpenRouter)** when your API is deployed.');
+                appendMsg('bot', 'Hi! Enter an address, then **Zoning consultant (OpenRouter)** (uses your Vercel `/api/feasibility` key). **Fetch open data** adds real geocode/OSM when Mapbox/Google is configured. **Demo** = offline text only, no network.');
                 CHAT.hasGreeted = true;
             }
         }
@@ -894,7 +894,8 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLog.innerHTML = '';
             chatActions.innerHTML = '';
             applyBtn.disabled = true;
-            if (gptBtn) gptBtn.disabled = true;
+            /* Zoning consultant stays usable: it can load /api/property on click or use a preview snapshot. */
+            if (gptBtn) gptBtn.disabled = false;
         }
 
         function buildDemoPropertyIntel(addressText) {
@@ -1085,7 +1086,6 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.addressText = addressText;
             appendMsg('user', addressText);
             analyzeBtn.disabled = true;
-            if (gptBtn) gptBtn.disabled = true;
 
             var base = getApiBase();
             var url = (base || '') + '/api/property';
@@ -1116,17 +1116,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 setChatActions([
                     { key: 'offline_wizard', label: 'Start legacy offline wizard' }
                 ]);
+                /* You can still run OpenRouter: it will use a preview snapshot without /api/property. */
+                if (gptBtn) gptBtn.disabled = false;
             }
             analyzeBtn.disabled = false;
         }
 
-        async function runZoningConsultant() {
-            if (!CHAT.propertyIntel) return;
-            if (gptBtn) gptBtn.disabled = true;
-            appendMsg('user', 'Zoning consultant (OpenRouter)');
+        /**
+         * Ensure CHAT.propertyIntel exists: try /api/property, else demo snapshot (so OpenRouter can run on Vercel even without geocoder).
+         * @returns {'cached'|'live'|'demo'|null}
+         */
+        async function ensurePropertyIntelForConsultant() {
+            var addressText = String(chatAddressInput.value || '').trim();
+            if (!addressText) return null;
+            CHAT.addressText = addressText;
+            if (CHAT.propertyIntel) return 'cached';
+
             var base = getApiBase();
-            var url = (base || '') + '/api/feasibility';
+            var url = (base || '') + '/api/property';
             try {
+                var res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: addressText })
+                });
+                var data = await res.json().catch(function() { return {}; });
+                if (res.ok && data.ok && data.property) {
+                    CHAT.propertyIntel = data.property;
+                    CHAT.isDemoMode = false;
+                    return 'live';
+                }
+            } catch (e) {
+                /* fall through to preview snapshot */
+            }
+            CHAT.propertyIntel = buildDemoPropertyIntel(addressText);
+            CHAT.isDemoMode = true;
+            return 'demo';
+        }
+
+        async function runZoningConsultant() {
+            var addressText = String(chatAddressInput.value || '').trim();
+            if (!addressText) {
+                appendMsg('bot', 'Type an address above, then tap **Zoning consultant** again. On Vercel, set `OPENROUTER_API_KEY`; for full open data add Mapbox or Google geocoding too.');
+                return;
+            }
+
+            if (gptBtn) gptBtn.disabled = true;
+            try {
+                var src = await ensurePropertyIntelForConsultant();
+                if (!src) return;
+
+                if (src === 'demo') {
+                    appendMsg(
+                        'bot',
+                        '_No live `/api/property` response — using a **preview snapshot** of the address. OpenRouter still runs; add geocoder env vars on the server for real parcel/OSM data._'
+                    );
+                } else if (src === 'live') {
+                    appendMsg('bot', formatCurrentStatusFromIntel(CHAT.propertyIntel));
+                }
+
+                appendMsg('user', 'Zoning consultant (OpenRouter)');
+                var base = getApiBase();
+                var url = (base || '') + '/api/feasibility';
                 var res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1137,13 +1188,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                 });
                 var data = await res.json().catch(function() { return {}; });
-                if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+                if (!res.ok) throw new Error(data.error || data.detail || ('HTTP ' + res.status));
                 CHAT.feasibilitySummary = data.feasibilitySummary || '';
                 appendMsg('bot', CHAT.feasibilitySummary);
             } catch (err) {
                 appendMsg('bot', '**Zoning consultant failed:** ' + (err.message || err));
+            } finally {
+                if (gptBtn) gptBtn.disabled = false;
             }
-            if (gptBtn) gptBtn.disabled = false;
         }
 
         function formatMoneyK(amount) {
