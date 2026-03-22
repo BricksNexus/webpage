@@ -761,6 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var applyBtn = getInput('opp-chat-apply-btn');
         var chatLog = getInput('opp-chat-log');
         var chatActions = getInput('opp-chat-actions');
+        var gptBtn = getInput('opp-chat-gpt-btn');
 
         if (
             !chatLauncher || !chatPrompt || !chatPanel || !chatClose ||
@@ -772,9 +773,11 @@ document.addEventListener('DOMContentLoaded', function() {
             hasGreeted: false,
             state: 'idle',
             addressText: '',
-            inferred: null, // { city, region, assetTypeKey, occupancy }
-            plan: null, // { strategyKey, strategyLabel, desiredUnits, readinessLabel }
-            ready: false
+            inferred: null,
+            plan: null,
+            ready: false,
+            propertyIntel: null,
+            feasibilitySummary: ''
         };
 
         function todayISO() {
@@ -851,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLauncher.style.display = 'none';
 
             if (!CHAT.hasGreeted) {
-                appendMsg('bot', 'Hi! I can help you analyze zoning/use/occupancy possibilities and draft this opportunity for you. Start by entering an address.');
+                appendMsg('bot', 'Hi! Enter an address, tap **Fetch open data** (needs the BricksNexus API + geocoder keys on the server), then **Zoning consultant (GPT-4o)** for Current Status / Potential for Growth / Regulatory Hurdles. If the API is unavailable, use the legacy offline wizard.');
                 CHAT.hasGreeted = true;
             }
         }
@@ -883,9 +886,187 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.inferred = null;
             CHAT.plan = null;
             CHAT.ready = false;
+            CHAT.propertyIntel = null;
+            CHAT.feasibilitySummary = '';
             chatLog.innerHTML = '';
             chatActions.innerHTML = '';
             applyBtn.disabled = true;
+            if (gptBtn) gptBtn.disabled = true;
+        }
+
+        function getApiBase() {
+            if (typeof window.BRICKSNEXUS_API_BASE === 'string' && window.BRICKSNEXUS_API_BASE.length) {
+                return window.BRICKSNEXUS_API_BASE.replace(/\/$/, '');
+            }
+            var meta = document.querySelector('meta[name="bricksnexus-api-base"]');
+            if (meta && meta.getAttribute('content')) {
+                return meta.getAttribute('content').replace(/\/$/, '');
+            }
+            return '';
+        }
+
+        function formatCurrentStatusFromIntel(p) {
+            if (!p) return '';
+            var lines = [];
+            lines.push('## Current Status');
+            lines.push('(Open data: geocode + OSM + U.S. Census where available—not a legal zoning determination.)');
+            lines.push('');
+            lines.push('**Normalized:** ' + (p.geocode && p.geocode.normalized ? p.geocode.normalized : '—'));
+            lines.push('**City / region:** ' + (p.city || '—') + ' / ' + (p.region || '—'));
+            lines.push('**Zoning hint:** ' + (p.zoningDistrict || '—'));
+            lines.push('**Lot area (sq ft):** ' + (p.lotAreaSqFt != null ? p.lotAreaSqFt : '—'));
+            lines.push('**Use / occupancy hints:** ' + (p.useAndOccupancy || '—'));
+            var c = p.jurisdiction && p.jurisdiction.censusGeographies;
+            if (c && c.ok) {
+                lines.push('**Census place:** ' + (c.incorporatedPlace || '—') + ' | **County:** ' + (c.county || '—'));
+            }
+            var osm = p.openStreetMap;
+            if (osm && osm.ok) {
+                lines.push('**OSM building types:** ' + ((osm.buildingTypes || []).join(', ') || '—'));
+                lines.push('**OSM landuse:** ' + ((osm.landuseAndOpenSpace || []).join(', ') || '—'));
+            }
+            lines.push('');
+            lines.push('Next: **Zoning consultant (GPT-4o)** for *Potential for Growth* and *Regulatory Hurdles*, or **Apply to Opportunity** to draft the form.');
+            return lines.join('\n');
+        }
+
+        function applyIntelToForm() {
+            var intel = CHAT.propertyIntel;
+            if (!intel) return;
+            if (!formState.type) setSelectedType('exploring');
+            setValue('opp-address', intel.inputAddress || (intel.geocode && intel.geocode.normalized) || CHAT.addressText);
+            setValue('opp-city', intel.city || getValue('opp-city'));
+            setValue('opp-region', intel.region || getValue('opp-region'));
+            setValue('opp-title', 'Zoning & housing feasibility – ' + (intel.city || 'property'));
+            var parts = [];
+            parts.push('### From open data');
+            parts.push('Zoning hint: ' + (intel.zoningDistrict || '—'));
+            parts.push('Lot area: ' + (intel.lotAreaSqFt != null ? intel.lotAreaSqFt + ' sq ft' : '—'));
+            parts.push('Use/occupancy hints: ' + (intel.useAndOccupancy || '—'));
+            if (CHAT.feasibilitySummary) {
+                parts.push('');
+                parts.push('### Zoning consultant (GPT-4o)');
+                parts.push(CHAT.feasibilitySummary);
+            }
+            setValue('opp-summary', parts.join('\n'));
+            setValue('opp-simple-need', 'Confirm zoning with municipal GIS; assess ADU or additional units with a qualified advisor.');
+            setValue('opp-terms', 'Deliverables: official zoning map confirmation; bulk and use analysis; permit path.');
+            setValue('opp-budget', getValue('opp-budget') || 'TBD after scope');
+            updateTeamWidget();
+            clearErrors();
+            appendMsg('bot', 'Draft applied to the opportunity form.');
+        }
+
+        function handleOfflineAnalyze() {
+            var addressText = chatAddressInput.value || '';
+            addressText = String(addressText).trim();
+            if (!addressText) {
+                appendMsg('bot', 'Please enter an address to analyze.');
+                return;
+            }
+
+            resetChat();
+            CHAT.addressText = addressText;
+            appendMsg('user', addressText);
+
+            var parts = parseAddressParts(addressText);
+            var assetTypeKey = inferAssetTypeKey(addressText);
+            var occupancyAssumption = inferOccupancyLabel(addressText);
+
+            CHAT.inferred = {
+                city: parts.city,
+                region: parts.region,
+                assetTypeKey: assetTypeKey,
+                occupancy: occupancyAssumption
+            };
+
+            CHAT.state = 'occupancy';
+            CHAT.plan = null;
+
+            appendMsg('bot',
+                '**Legacy wizard.** Based on the address, I infer:\n' +
+                '- Property type (directional): ' + assetTypeKey + '\n' +
+                '- Current occupancy (assumption): ' + occupancyAssumption + '\n\n' +
+                'Which best matches the property today?'
+            );
+
+            setChatActions([
+                { key: 'occ_owner', label: 'Owner-occupied (home)' },
+                { key: 'occ_rented', label: 'Rented / multi-tenant' },
+                { key: 'occ_vacant', label: 'Vacant / underutilized' }
+            ]);
+        }
+
+        async function handleAnalyze() {
+            var addressText = chatAddressInput.value || '';
+            addressText = String(addressText).trim();
+            if (!addressText) {
+                appendMsg('bot', 'Please enter an address.');
+                return;
+            }
+            resetChat();
+            CHAT.addressText = addressText;
+            appendMsg('user', addressText);
+            analyzeBtn.disabled = true;
+            if (gptBtn) gptBtn.disabled = true;
+
+            var base = getApiBase();
+            var url = (base || '') + '/api/property';
+            try {
+                var res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: addressText })
+                });
+                var data = await res.json().catch(function() { return {}; });
+                if (!res.ok || !data.ok || !data.property) {
+                    throw new Error(data.error || ('HTTP ' + res.status));
+                }
+                CHAT.propertyIntel = data.property;
+                appendMsg('bot', formatCurrentStatusFromIntel(data.property));
+                applyBtn.disabled = false;
+                if (gptBtn) gptBtn.disabled = false;
+                setChatActions([
+                    { key: 'offline_wizard', label: 'Legacy offline wizard' }
+                ]);
+            } catch (err) {
+                appendMsg('bot',
+                    '**Could not reach the property API** (' + (err.message || err) + ').\n\n' +
+                    'This often happens when only static HTML is deployed (no `/api/property` on this host). ' +
+                    'Deploy the Next.js app, set `BRICKSNEXUS_API_BASE` or `<meta name="bricksnexus-api-base">` in post-opportunity.html, and ensure Mapbox/Google geocoder env vars are on the server.\n\n' +
+                    'You can still use the **legacy offline wizard** below.'
+                );
+                setChatActions([
+                    { key: 'offline_wizard', label: 'Start legacy offline wizard' }
+                ]);
+            }
+            analyzeBtn.disabled = false;
+        }
+
+        async function runZoningConsultant() {
+            if (!CHAT.propertyIntel) return;
+            if (gptBtn) gptBtn.disabled = true;
+            appendMsg('user', 'Zoning consultant (GPT-4o)');
+            var base = getApiBase();
+            var url = (base || '') + '/api/feasibility';
+            try {
+                var res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        address: CHAT.addressText,
+                        property: CHAT.propertyIntel,
+                        messages: []
+                    })
+                });
+                var data = await res.json().catch(function() { return {}; });
+                if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+                CHAT.feasibilitySummary = data.feasibilitySummary || '';
+                appendMsg('bot', CHAT.feasibilitySummary);
+            } catch (err) {
+                appendMsg('bot', '**Zoning consultant failed:** ' + (err.message || err));
+            }
+            if (gptBtn) gptBtn.disabled = false;
         }
 
         function formatMoneyK(amount) {
@@ -1121,48 +1302,6 @@ document.addEventListener('DOMContentLoaded', function() {
             appendMsg('bot', 'Draft applied to the opportunity form. You can now continue to the next step.');
         }
 
-        function handleAnalyze() {
-            var addressText = chatAddressInput.value || '';
-            addressText = String(addressText).trim();
-            if (!addressText) {
-                appendMsg('bot', 'Please enter an address to analyze.');
-                return;
-            }
-
-            resetChat();
-            CHAT.addressText = addressText;
-            appendMsg('user', addressText);
-
-            var parts = parseAddressParts(addressText);
-            var assetTypeKey = inferAssetTypeKey(addressText);
-
-            // Directional assumption; user can override later via fields.
-            var occupancyAssumption = inferOccupancyLabel(addressText);
-
-            CHAT.inferred = {
-                city: parts.city,
-                region: parts.region,
-                assetTypeKey: assetTypeKey,
-                occupancy: occupancyAssumption
-            };
-
-            CHAT.state = 'occupancy';
-            CHAT.plan = null;
-
-            appendMsg('bot',
-                'Thanks. Based on the address, I infer:\n' +
-                '- Property type (directional): ' + assetTypeKey + '\n' +
-                '- Current occupancy (assumption): ' + occupancyAssumption + '\n\n' +
-                'Which best matches the property today?'
-            );
-
-            setChatActions([
-                { key: 'occ_owner', label: 'Owner-occupied (home)' },
-                { key: 'occ_rented', label: 'Rented / multi-tenant' },
-                { key: 'occ_vacant', label: 'Vacant / underutilized' }
-            ]);
-        }
-
         function setOccupancyFromAction(key) {
             var occupancy = 'Owner-occupied (home)';
             if (key === 'occ_rented') occupancy = 'Rented / multi-tenant';
@@ -1266,6 +1405,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var actionKey = target.getAttribute('data-chat-action');
 
+            if (actionKey === 'offline_wizard') {
+                handleOfflineAnalyze();
+                return;
+            }
+
             if (CHAT.state === 'occupancy') {
                 handleOccupancyChoice(actionKey);
                 return;
@@ -1285,9 +1429,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         applyBtn.addEventListener('click', function() {
+            if (CHAT.propertyIntel) {
+                applyIntelToForm();
+                return;
+            }
             if (!CHAT.ready) return;
             applyAnalysisToForm();
         });
+
+        if (gptBtn) {
+            gptBtn.addEventListener('click', function() {
+                runZoningConsultant();
+            });
+        }
 
         chatLauncher.addEventListener('click', openChatbox);
         chatPrompt.addEventListener('click', openChatbox);

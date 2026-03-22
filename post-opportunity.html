@@ -10,6 +10,15 @@
     <link rel="stylesheet" href="post-opportunity.css">
 </head>
 <body>
+    <!--
+      Zoning / property API (Next.js). Static HTML on www.bricksnexus.com has no /api/* unless you proxy or host the app on the same origin.
+      Option A: Deploy Next (Vercel etc.) and set the origin below.
+      Option B: Leave unset; same-origin fetch is used when HTML and API are together.
+    -->
+    <!-- <meta name="bricksnexus-api-base" content="https://your-next-app.vercel.app"> -->
+    <script>
+        // window.BRICKSNEXUS_API_BASE = 'https://your-next-app.vercel.app';
+    </script>
     <script src="app-state.js"></script>
     <script>
         if (!window.BricksNexusApp.isAuthenticated()) {
@@ -311,11 +320,11 @@
             Chat
         </button>
 
-        <section class="builder-opportunity-explorer builder-explorer-floating hidden" id="opp-chat-panel" aria-label="Opportunity Explorer chatbot">
+        <section class="builder-opportunity-explorer builder-explorer-floating hidden" id="opp-chat-panel" aria-label="Zoning assistant chat">
             <div class="builder-explorer-head">
                 <div>
-                    <h3>Opportunity Explorer</h3>
-                    <p>Enter an address to get a draft opportunity for creating additional housing units.</p>
+                    <h3>Zoning assistant</h3>
+                    <p>Fetch open data (geocode + OSM + U.S. Census), then optional GPT-4o zoning consultant. Legacy offline wizard if the API is unavailable.</p>
                 </div>
                 <button type="button" class="builder-chatbox-close" id="opp-chat-close-btn" aria-label="Close chatbox">×</button>
             </div>
@@ -329,7 +338,12 @@
                         placeholder="e.g. 123 Main St, Austin, TX 78701"
                     />
                     <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-analyze-btn">
-                        Analyze &amp; Suggest
+                        Fetch open data
+                    </button>
+                </div>
+                <div class="builder-explorer-api-row">
+                    <button type="button" class="builder-btn builder-btn-secondary" id="opp-chat-gpt-btn" disabled>
+                        Zoning consultant (GPT-4o)
                     </button>
                 </div>
             </div>

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { fetchPropertyIntel } from "@/lib/open-property/fetch-property-intel.mjs";
+import { CORS_HEADERS } from "@/lib/api-cors";
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
 
 /**
  * POST /api/property
@@ -22,7 +27,7 @@ export async function POST(request) {
     if (!address) {
       return NextResponse.json(
         { error: "Missing `address` in request body." },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
@@ -35,11 +40,14 @@ export async function POST(request) {
             : undefined,
     });
 
-    return NextResponse.json({ ok: true, property: propertyData });
+    return NextResponse.json(
+      { ok: true, property: propertyData },
+      { headers: CORS_HEADERS }
+    );
   } catch (e) {
     return NextResponse.json(
       { error: e?.message || "Property lookup failed." },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }

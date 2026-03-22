@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { buildZoningConsultantSystemPrompt } from "@/lib/homeowner-feasibility/zoning-consultant-prompt";
+import { CORS_HEADERS } from "@/lib/api-cors";
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
 
 /**
  * POST /api/feasibility
@@ -21,14 +26,15 @@ export async function POST(request) {
     if (!address) {
       return NextResponse.json(
         { error: "Missing `address`." },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({
+      return NextResponse.json(
+        {
         ok: true,
         model: "none",
         feasibilitySummary:
@@ -43,7 +49,9 @@ export async function POST(request) {
           "\n```",
         disclaimer:
           "Placeholder output—not a zoning determination. Configure OpenAI for full consultant formatting.",
-      });
+        },
+        { headers: CORS_HEADERS }
+      );
     }
 
     const userContext = [
@@ -86,7 +94,7 @@ export async function POST(request) {
       const errText = await res.text();
       return NextResponse.json(
         { error: "OpenAI request failed", detail: errText },
-        { status: 502 }
+        { status: 502, headers: CORS_HEADERS }
       );
     }
 
@@ -95,17 +103,20 @@ export async function POST(request) {
       data?.choices?.[0]?.message?.content?.trim() ||
       "No content returned from model.";
 
-    return NextResponse.json({
-      ok: true,
-      model: data?.model || "gpt-4o",
-      feasibilitySummary: text,
-      disclaimer:
-        "Informational only—not legal advice. Verify with your jurisdiction.",
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        model: data?.model || "gpt-4o",
+        feasibilitySummary: text,
+        disclaimer:
+          "Informational only—not legal advice. Verify with your jurisdiction.",
+      },
+      { headers: CORS_HEADERS }
+    );
   } catch (e) {
     return NextResponse.json(
       { error: e?.message || "Feasibility analysis failed." },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }

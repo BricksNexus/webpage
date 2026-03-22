@@ -707,6 +707,26 @@ body {
     align-items: center;
 }
 
+.builder-explorer-api-row {
+    margin-top: 10px;
+}
+
+.builder-explorer-api-row .builder-btn-secondary {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.builder-explorer-api-row .builder-btn-secondary:hover {
+    border-color: rgba(45, 156, 219, 0.55);
+}
+
+.builder-explorer-api-row .builder-btn-secondary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 .builder-explorer-chat {
     margin-top: 10px;
 }
