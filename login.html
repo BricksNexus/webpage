@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <header class="auth-top-bar">
+        <a href="index.html">
+            <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus">
+            <span>BricksNexus</span>
+        </a>
+    </header>
+
+    <main class="auth-main">
+        <div class="auth-card">
+            <h1>Sign in</h1>
+            <p class="subtitle">Use your BricksNexus account to continue.</p>
+
+            <form class="auth-form" id="login-form">
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+                <a href="#" class="forgot">Forgot password?</a>
+                <button type="submit" class="auth-btn">Sign in</button>
+            </form>
+
+            <div class="auth-divider"></div>
+            <p class="auth-switch">
+                Don’t have an account? <a href="signup.html">Sign up</a>
+            </p>
+        </div>
+    </main>
+    <script src="app-state.js"></script>
+    <script>
+        (function() {
+            var app = window.BricksNexusApp;
+            var params = new URLSearchParams(window.location.search);
+            var returnUrl = params.get('return') || 'index.html';
+            if (returnUrl.indexOf('://') !== -1) returnUrl = 'index.html';
+
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var email = (document.getElementById('email').value || '').trim();
+                var existingUser = app.getUsers().find(function(user) {
+                    return String(user.email || '').toLowerCase() === email.toLowerCase();
+                });
+                var user = existingUser || app.upsertUser({
+                    name: '',
+                    email: email,
+                    accountType: 'individual',
+                    initials: app.getInitials('', email)
+                });
+                app.createSession(user);
+                window.location.href = returnUrl;
+            });
+        })();
+    </script>
+</body>
+</html>

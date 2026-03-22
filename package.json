@@ -1,0 +1,22 @@
+{
+  "name": "bricksnexus-tokenization-app",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "fetch-zoning": "node scripts/fetch-zoning-by-address.mjs"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-hook-form": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest"
+  }
+}

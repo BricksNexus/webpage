@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace · BricksNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="marketplace.css">
+</head>
+<body>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <img src="images/BricksNexus_simple_logo.png" alt="BricksNexus logo">
+            <span>BricksNexus</span>
+        </div>
+        <div class="top-bar-right">
+            <div class="top-bar-add">
+                <button class="icon-button" id="add-menu-toggle" aria-label="Add item" title="Add Open to Work, Service, Opportunity or Tokenization">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M12 5v14"/>
+                        <path d="M5 12h14"/>
+                    </svg>
+                </button>
+                <div class="add-menu" id="add-menu">
+                    <a href="open-to-work.html">Open to Work</a>
+                    <a href="post-service.html">Service</a>
+                    <a href="post-opportunity.html">Opportunity</a>
+                    <a href="post-tokenization.html">Tokenization</a>
+                </div>
+            </div>
+            <a href="login.html" class="icon-button top-bar-login" id="top-bar-login" aria-label="Login">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <path d="M10 17l5-5-5-5"/>
+                    <path d="M15 12H3"/>
+                </svg>
+            </a>
+            <a href="dashboard.html" class="user-avatar top-bar-avatar" id="top-bar-avatar" aria-label="My dashboard" title="My dashboard" style="display: none;"></a>
+            <div class="top-bar-add">
+                <button class="icon-button" id="more-menu-toggle" aria-label="Open menu">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M4 7h16"/>
+                        <path d="M4 12h16"/>
+                        <path d="M4 17h10"/>
+                    </svg>
+                </button>
+                <div class="add-menu" id="more-menu">
+                    <a href="about.html">About us</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-shell">
+    <!-- Left sidebar: filters -->
+    <aside class="sidebar-left">
+        <button class="filter-btn" data-filter="open-to-work">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0z"/>
+                    <path d="M12 2c-2 0-4 2-4 5v2h8V7c0-3-2-5-4-5z"/>
+                </svg>
+            </span>
+            Open to Work
+        </button>
+        <button class="filter-btn" data-filter="services">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+            </span>
+            Services
+        </button>
+        <button class="filter-btn" data-filter="opportunities">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    <path d="M9.3 17.7a1 1 0 0 0 0-1.4L7.7 14.7a1 1 0 0 0-1.4 0L2.53 18.47a6 6 0 0 1 7.94-7.94l6.91-6.91a2.12 2.12 0 0 1 3 3l-6.91 6.91a6 6 0 0 1-7.94 7.94l3.76-3.76z"/>
+                </svg>
+            </span>
+            Opportunities
+        </button>
+        <button class="filter-btn" data-filter="tokenization">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    <path d="M12 5v2M12 17v2M7.05 7.05l1.42 1.42M15.54 15.54l1.42 1.42M5 12h2M17 12h2M7.05 16.95l1.42-1.42M15.54 8.46l1.42-1.42"/>
+                </svg>
+            </span>
+            Tokenization
+        </button>
+
+        <button class="clear-filters-btn" id="clear-filters-btn" type="button">
+            Clean filters
+        </button>
+    </aside>
+
+    <!-- Central area: feed -->
+    <main class="main-content">
+        <div class="view-controls">
+            <div class="view-toggle">
+                <button type="button" class="active">List View</button>
+                <button type="button">Map View</button>
+            </div>
+            <div class="utility-btns">
+                <button type="button">Smart Filters</button>
+                <button type="button">AI Recommended</button>
+                <button type="button" id="clear-local-services" style="font-size: 0.75rem;">Clear local services</button>
+            </div>
+        </div>
+        <div class="active-filters">
+            <span>Active:</span>
+            <span class="pill">Budget: $1M+</span>
+            <span class="pill">Phase: Permitting</span>
+        </div>
+
+        <section class="feed" aria-label="Marketplace feed">
+            <!-- Opportunity card -->
+            <article class="feed-card" data-category="opportunities" data-card-id="sample-opportunity-1" data-card-type="opportunity" data-owner-name="Property Owner">
+                <div class="card-type">Opportunity</div>
+                <img class="card-image" src="images/land_infill.jpeg" alt="Urban infill opportunity">
+                <div class="card-body">
+                    <h3 class="card-title">Urban Infill Project – Downtown Revitalization</h3>
+                    <div class="card-meta">
+                        <span>Developer: Herizen Builders</span>
+                        <span class="badge badge-verified">Verified builder</span>
+                        <span class="rating">★ 4.8</span>
+                    </div>
+                    <div class="card-details">
+                        Budget: $1.2M – $2.5M · NO:02 H803-47433-843
+                    </div>
+                    <div class="card-actions">
+                        <button type="button" data-requires-auth="interest">Express Interest</button>
+                        <button type="button">Save</button>
+                        <button type="button" data-requires-auth="message">Message</button>
+                        <button type="button" class="primary" data-requires-auth="bid">Bid Now</button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Open to Work card -->
+            <article class="feed-card compact" data-category="open-to-work" data-card-id="sample-open-to-work-1" data-card-type="open-to-work" data-owner-name="Marcus T.">
+                <div class="card-type">Open to Work</div>
+                <div class="card-body">
+                    <div class="card-header-row">
+                        <div class="card-avatar">
+                            <img src="images/Marcus_GC.png" alt="Marcus T.">
+                        </div>
+                        <div>
+                            <h3 class="card-title">General contractor available – residential & light commercial</h3>
+                            <div class="card-meta">
+                                <span>Marcus T.</span>
+                                <span class="badge badge-verified">Verified</span>
+                                <span>Greater Austin area</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-details">
+                        ​15+ years experience. Licensed & insured. Available from March 2025.
+                    </div>
+                    <div class="card-actions">
+                        <button type="button">View profile</button>
+                        <button type="button" class="primary" data-requires-auth="contact">Contact</button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Sponsored service card -->
+            <article class="feed-card compact" data-category="services" data-card-id="sample-service-1" data-card-type="service" data-owner-name="BuildRight Engineering">
+                <div class="card-type">Service</div>
+                <div class="card-body">
+                    <div class="card-header-row">
+                        <div class="card-avatar">
+                            <img src="images/BuildRight_company.png" alt="BuildRight Engineering">
+                        </div>
+                        <div>
+                            <h3 class="card-title">Structural engineering & permit drawings</h3>
+                            <div class="card-meta">
+                                <span>BuildRight Engineering</span>
+                                <span class="badge badge-sponsored">Sponsored</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-details">
+                        Fast turnaround. Residential and multi-family. Free initial consultation.
+                    </div>
+                    <div class="card-actions">
+                        <button type="button">Learn more</button>
+                        <button type="button" class="primary" data-requires-auth="hire">Hire</button>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="map-view" aria-label="Opportunities map">
+            <div class="map-card">
+                <div class="map-card-header">
+                    <span><strong>Opportunities near Austin, TX</strong></span>
+                    <div class="map-legend">
+                        <span><span class="map-dot"></span> Opportunities</span>
+                        <span><span class="map-dot alt"></span> Open to work</span>
+                    </div>
+                </div>
+                <div class="map-canvas">
+                    <iframe
+                        title="BricksNexus opportunities map"
+                        src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&q=Austin,TX"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Right sidebar: industry intelligence -->
+    <aside class="sidebar-right">
+        <h2>Industry Intelligence</h2>
+
+        <div class="intel-block">
+            <h3>Material Price Index</h3>
+            <ul class="intel-list">
+                <li><span>Lumber</span><span class="trend-up">+4.5%</span></li>
+                <li><span>Steel</span><span class="trend-up">+5%</span></li>
+                <li><span>Concrete</span><span class="trend-up">+2%</span></li>
+                <li><span>Mortgage rates</span><span>1.1%</span></li>
+            </ul>
+        </div>
+
+        <div class="intel-block">
+            <h3>Market Trends</h3>
+            <div class="news-item">
+                <a href="#">Trade Show: Future of Construction – Oct 26</a>
+                <div class="date">Event</div>
+            </div>
+            <div class="news-item">
+                <a href="#">Material costs easing in key regions</a>
+                <div class="date">Nov 20 · Regional demand</div>
+            </div>
+        </div>
+
+        <div class="intel-block events-list">
+            <h3>Events</h3>
+            <div class="news-item">
+                <a href="#">Webinar: Smart Construction – Oct 26</a>
+                <div class="date">Oct 26</div>
+            </div>
+            <div class="news-item">
+                <a href="#">Estate & development summit – Nov 10</a>
+                <div class="date">Nov 10</div>
+            </div>
+        </div>
+    </aside>
+
+    <script src="app-state.js"></script>
+    <script>
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+        const addMenuToggle = document.getElementById('add-menu-toggle');
+        const addMenu = document.getElementById('add-menu');
+        const moreMenuToggle = document.getElementById('more-menu-toggle');
+        const moreMenu = document.getElementById('more-menu');
+        const app = window.BricksNexusApp;
+
+        function applyCategoryFilters() {
+            const feedCards = document.querySelectorAll('.feed-card');
+            const activeFilters = Array.from(filterButtons)
+                .filter(btn => btn.classList.contains('active'))
+                .map(btn => btn.dataset.filter);
+
+            if (!activeFilters.length) {
+                feedCards.forEach(card => {
+                    card.style.display = '';
+                });
+                return;
+            }
+
+            feedCards.forEach(card => {
+                const category = card.dataset.category;
+                if (!category || activeFilters.includes(category)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                applyCategoryFilters();
+            });
+        });
+
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                applyCategoryFilters();
+            });
+        }
+
+        if (addMenuToggle && addMenu) {
+            addMenuToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (moreMenu) moreMenu.classList.remove('open');
+                addMenu.classList.toggle('open');
+            });
+        }
+
+        if (moreMenuToggle && moreMenu) {
+            moreMenuToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (addMenu) addMenu.classList.remove('open');
+                moreMenu.classList.toggle('open');
+            });
+        }
+
+        document.addEventListener('click', () => {
+            if (addMenu) addMenu.classList.remove('open');
+            if (moreMenu) moreMenu.classList.remove('open');
+        });
+
+        const main = document.querySelector('.main-content');
+        const viewButtons = document.querySelectorAll('.view-toggle button');
+        const listButton = viewButtons[0];
+        const mapButton = viewButtons[1];
+
+        listButton.addEventListener('click', () => {
+            listButton.classList.add('active');
+            mapButton.classList.remove('active');
+            main.classList.remove('map-mode');
+        });
+
+        mapButton.addEventListener('click', () => {
+            mapButton.classList.add('active');
+            listButton.classList.remove('active');
+            main.classList.add('map-mode');
+        });
+
+        (function renderSavedOpportunities() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem('bricksnexus_opportunities') || '[]');
+            } catch (e) {
+                console.error('Failed to read opportunities from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category=\"opportunities\"]');
+
+            data.forEach(opp => {
+                const card = document.createElement('article');
+                card.className = 'feed-card';
+                card.dataset.category = 'opportunities';
+                card.dataset.cardId = String(opp.id);
+                card.dataset.cardType = 'opportunity';
+                card.dataset.ownerName = opp.creatorName || '';
+
+                const title = opp.title || 'New opportunity';
+                const summary = opp.summary || 'Details added by the owner.';
+                const city = opp.city || '';
+                const region = opp.region || '';
+                const budget = opp.budget || '';
+                const hasImage = !!opp.imageDataUrl;
+                card.innerHTML = `
+                    <div class=\"card-type\">Opportunity</div>
+                    ${hasImage
+                        ? `<img class=\"card-image\" src=\"${opp.imageDataUrl}\" alt=\"Opportunity image\">`
+                        : `<div class=\"card-image-placeholder\">New opportunity</div>`}
+                    <div class=\"card-body\">
+                        <h3 class=\"card-title\"></h3>
+                        <div class=\"card-meta\"></div>
+                        <div class=\"card-details\"></div>
+                        <div class=\"card-actions\">
+                            <button type=\"button\" data-requires-auth=\"interest\">Express interest</button>
+                            <button type=\"button\">Save</button>
+                            <button type=\"button\" data-requires-auth=\"message\">Message</button>
+                            <button type=\"button\" class=\"primary\" data-requires-auth=\"bid\">Bid</button>
+                        </div>
+                    </div>
+                `;
+
+                const titleEl = card.querySelector('.card-title');
+                const metaEl = card.querySelector('.card-meta');
+                const detailsEl = card.querySelector('.card-details');
+                if (titleEl) titleEl.textContent = title;
+                if (metaEl) {
+                    const parts = [];
+                    if (city) parts.push(city);
+                    if (region) parts.push(region);
+                    if (budget) parts.push(`Budget: ${budget}`);
+                    metaEl.textContent = parts.join(' · ');
+                }
+                if (detailsEl) detailsEl.textContent = summary;
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor.nextSibling);
+                } else {
+                    feed.insertBefore(card, feed.firstChild);
+                }
+            });
+        })();
+
+        (function renderSavedTokenization() {
+            const feed = document.querySelector('.feed');
+            if (!feed || !app) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem(app.KEYS.tokenizationSubmissions) || '[]');
+            } catch (e) {
+                console.error('Failed to read tokenization submissions from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category="opportunities"]');
+
+            data.forEach(entry => {
+                const submission = entry && entry.submissionData ? entry.submissionData : {};
+                if ((submission.status || 'published') !== 'published') return;
+                const property = submission.property || {};
+                const financials = submission.financials || {};
+                const legalCompliance = submission.legalCompliance || {};
+
+                const card = document.createElement('article');
+                card.className = 'feed-card';
+                card.dataset.category = 'tokenization';
+                card.dataset.cardId = String(entry.id || '');
+                card.dataset.cardType = 'tokenization';
+                card.dataset.ownerName = submission.creatorName || '';
+                card.dataset.ownerUserId = submission.creatorUserId || '';
+
+                const title = property.propertyName || 'New tokenization opportunity';
+                const assetType = property.assetType || 'Tokenized asset';
+                const address = property.address || '';
+                const yieldValue = financials.estimatedAnnualYield ? financials.estimatedAnnualYield + '%' : 'Yield pending';
+                const tokenPrice = financials.tokenPrice ? '$' + Number(financials.tokenPrice).toLocaleString() : 'TBD';
+                const capitalRaise = financials.totalCapitalRaise ? '$' + Number(financials.totalCapitalRaise).toLocaleString() : 'TBD';
+
+                card.innerHTML = `
+                    <div class="card-type">Tokenization</div>
+                    <div class="card-image-placeholder">${assetType}</div>
+                    <div class="card-body">
+                        <h3 class="card-title"></h3>
+                        <div class="card-meta">
+                            <span>${address}</span>
+                            <span class="badge badge-verified">${legalCompliance.regulationType || 'Verified structure'}</span>
+                            <span>${yieldValue}</span>
+                        </div>
+                        <div class="card-details"></div>
+                        <div class="card-actions">
+                            <button type="button" data-view-tokenization="true">View details</button>
+                            <button type="button">Save</button>
+                            <button type="button" class="primary" data-requires-auth="message">Message issuer</button>
+                        </div>
+                    </div>
+                `;
+
+                const titleEl = card.querySelector('.card-title');
+                const detailsEl = card.querySelector('.card-details');
+                if (titleEl) titleEl.textContent = title;
+                if (detailsEl) {
+                    detailsEl.textContent = 'Token price: ' + tokenPrice + ' · Capital raise: ' + capitalRaise;
+                }
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor.nextSibling);
+                } else {
+                    feed.insertBefore(card, feed.firstChild);
+                }
+            });
+        })();
+
+        (function renderSavedServices() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem('bricksnexus_services') || '[]');
+            } catch (e) {
+                console.error('Failed to read services from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category=\"services\"]');
+
+            data.forEach(service => {
+                const card = document.createElement('article');
+                card.className = 'feed-card compact';
+                card.dataset.category = 'services';
+                card.dataset.cardId = String(service.id);
+                card.dataset.cardType = 'service';
+                card.dataset.ownerName = service.creatorName || '';
+
+                const title = service.title || 'New service';
+                const category = service.category || 'Service';
+                const description = service.description || 'Service details added by the provider.';
+                const radius = service.radius || '';
+
+                card.innerHTML = `
+                    <div class=\"card-type\">Service</div>
+                    <div class=\"card-body\">
+                        <h3 class=\"card-title\"></h3>
+                        <div class=\"card-meta\">
+                            <span>${category}</span>
+                            ${service.consultationOffered ? '<span class=\"badge badge-sponsored\">Consultation available</span>' : ''}
+                            ${radius ? `<span>${radius}</span>` : ''}
+                        </div>
+                        <div class=\"card-details\"></div>
+                        <div class=\"card-actions\">
+                            <button type=\"button\">View details</button>
+                            <button type=\"button\" class=\"primary\" data-requires-auth=\"hire\">Hire</button>
+                        </div>
+                    </div>
+                `;
+
+                const titleEl = card.querySelector('.card-title');
+                const detailsEl = card.querySelector('.card-details');
+                if (titleEl) titleEl.textContent = title;
+                if (detailsEl) detailsEl.textContent = description;
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor.nextSibling);
+                } else {
+                    feed.appendChild(card);
+                }
+            });
+        })();
+
+        (function renderSavedOpenToWork() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem(app.KEYS.openToWork) || '[]');
+            } catch (e) {
+                console.error('Failed to read open to work cards from localStorage', e);
+                data = [];
+            }
+
+            if (!Array.isArray(data) || !data.length) return;
+
+            const anchor = feed.querySelector('article.feed-card[data-category="services"]');
+
+            data.forEach(cardData => {
+                const card = document.createElement('article');
+                card.className = 'feed-card compact';
+                card.dataset.category = 'open-to-work';
+                card.dataset.cardId = String(cardData.id);
+                card.dataset.cardType = 'open-to-work';
+                card.dataset.ownerName = cardData.creatorName || '';
+
+                const avatarMarkup = cardData.imageDataUrl
+                    ? `<img src="${cardData.imageDataUrl}" alt="${cardData.creatorName || 'Profile'}">`
+                    : `${app.getInitials(cardData.creatorName || '', cardData.creatorEmail || '')}`;
+
+                card.innerHTML = `
+                    <div class="card-type">Open to Work</div>
+                    <div class="card-body">
+                        <div class="card-header-row">
+                            <div class="card-avatar">${avatarMarkup}</div>
+                            <div>
+                                <h3 class="card-title">${cardData.roleTitle || cardData.title || 'Open to Work'}</h3>
+                                <div class="card-meta">
+                                    <span>${cardData.creatorName || 'Professional'}</span>
+                                    ${cardData.location ? `<span>${cardData.location}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-details">${cardData.summary || 'Open to Work profile posted by a BricksNexus member.'}</div>
+                        <div class="card-actions">
+                            <button type="button">View profile</button>
+                            <button type="button" class="primary" data-requires-auth="contact">Contact</button>
+                        </div>
+                    </div>
+                `;
+
+                if (anchor && anchor.parentNode) {
+                    anchor.parentNode.insertBefore(card, anchor);
+                } else {
+                    feed.appendChild(card);
+                }
+            });
+        })();
+
+        (function attachCardActionHandlers() {
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+            feed.addEventListener('click', function(e) {
+                var btn = e.target.closest('.card-actions button');
+                if (!btn) return;
+                var card = btn.closest('.feed-card');
+                if (btn.hasAttribute('data-view-tokenization') && card && card.dataset.cardId) {
+                    window.location.href = 'tokenization.html?id=' + encodeURIComponent(card.dataset.cardId);
+                    return;
+                }
+
+                var actionType = btn.getAttribute('data-requires-auth') || '';
+                var currentUser = app.getCurrentUser();
+
+                if (actionType && !currentUser) {
+                    app.requireAuth('index.html');
+                    return;
+                }
+                if (!card || !card.dataset.cardId || !actionType) return;
+
+                if (actionType === 'contact' || actionType === 'message' || actionType === 'bid' || actionType === 'hire') {
+                    var thread = app.openCardThread({
+                        cardId: card.dataset.cardId,
+                        cardType: card.dataset.cardType || 'opportunity',
+                        cardTitle: (card.querySelector('.card-title') || {}).textContent || 'Card discussion',
+                        cardLabel: (card.querySelector('.card-type') || {}).textContent || 'Opportunity',
+                        ownerUserId: card.dataset.ownerUserId || '',
+                        ownerName: card.dataset.ownerName || '',
+                        actionType: actionType
+                    });
+                    if (!thread) return;
+                    var nextUrl = 'dashboard.html?panel=messages&thread=' + encodeURIComponent(thread.id);
+                    if (actionType === 'bid') nextUrl += '&compose=bid';
+                    window.location.href = nextUrl;
+                    return;
+                }
+
+                if (actionType !== 'interest') return;
+                try {
+                    var raw = localStorage.getItem('bricksnexus_interests') || '[]';
+                    var list = JSON.parse(raw);
+                    list.push({
+                        cardId: card.dataset.cardId,
+                        cardType: card.dataset.cardType || 'opportunity',
+                        interestedBy: currentUser.initials,
+                        interestedByName: currentUser.name || currentUser.initials,
+                        interestedByEmail: currentUser.email,
+                        interestedByUserId: currentUser.id,
+                        date: new Date().toISOString()
+                    });
+                    localStorage.setItem('bricksnexus_interests', JSON.stringify(list));
+                    btn.textContent = 'Interest sent';
+                    btn.disabled = true;
+                } catch (err) {
+                    console.error('Failed to save interest', err);
+                }
+            });
+        })();
+
+        (function attachClearLocalServices() {
+            const btn = document.getElementById('clear-local-services');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (!confirm('This will clear locally saved services, opportunities and drafts in this browser. Continue?')) {
+                    return;
+                }
+                localStorage.removeItem('bricksnexus_opportunities');
+                localStorage.removeItem('bricksnexus_opportunity_drafts');
+                localStorage.removeItem('bricksnexus_services');
+                localStorage.removeItem('bricksnexus_service_drafts');
+                localStorage.removeItem(app.KEYS.tokenizationDraft);
+                localStorage.removeItem(app.KEYS.tokenizationSubmissions);
+                // Remove dynamically added cards and re-apply filters
+                document.querySelectorAll('.feed-card[data-category=\"opportunities\"]').forEach((card, index) => {
+                    if (index > 0) {
+                        card.remove();
+                    }
+                });
+                document.querySelectorAll('.feed-card[data-category=\"services\"]').forEach((card, index) => {
+                    if (index > 0) {
+                        card.remove();
+                    }
+                });
+                document.querySelectorAll('.feed-card[data-category=\"tokenization\"]').forEach(card => {
+                    card.remove();
+                });
+                applyCategoryFilters();
+            });
+        })();
+
+        (function() {
+            var currentUser = app.getCurrentUser();
+            var loginEl = document.getElementById('top-bar-login');
+            var avatarEl = document.getElementById('top-bar-avatar');
+            if (currentUser && avatarEl && loginEl) {
+                loginEl.style.display = 'none';
+                app.applySmartAvatar(avatarEl, currentUser);
+                avatarEl.style.display = 'flex';
+            }
+        })();
+    </script>
+    </div>
+</body>
+</html>
