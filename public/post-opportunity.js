@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTeamWidget();
 
     // ------------------------------
-    // Opportunity Explorer (chatbot)
+    // Explore Opportunities (chat panel) — simple address → AI conversation
     // ------------------------------
     (function initOpportunityExplorerChatbot() {
         var chatLauncher = getInput('opp-chat-launcher');
@@ -757,47 +757,30 @@ document.addEventListener('DOMContentLoaded', function() {
         var chatPanel = getInput('opp-chat-panel');
         var chatClose = getInput('opp-chat-close-btn');
         var chatAddressInput = getInput('opp-chat-address');
-        var analyzeBtn = getInput('opp-chat-analyze-btn');
+        var startBtn = getInput('opp-chat-start-btn');
+        var sendBtn = getInput('opp-chat-send-btn');
+        var messageInput = getInput('opp-chat-message-input');
         var applyBtn = getInput('opp-chat-apply-btn');
         var chatLog = getInput('opp-chat-log');
-        var chatActions = getInput('opp-chat-actions');
-        var gptBtn = getInput('opp-chat-gpt-btn');
-        var demoBtn = getInput('opp-chat-demo-btn');
 
         if (
             !chatLauncher || !chatPrompt || !chatPanel || !chatClose ||
-            !chatAddressInput || !analyzeBtn || !applyBtn || !chatLog || !chatActions
+            !chatAddressInput || !startBtn || !sendBtn || !messageInput ||
+            !applyBtn || !chatLog
         ) return;
 
         var CHAT = {
             isOpen: false,
             hasGreeted: false,
-            state: 'idle',
             addressText: '',
-            inferred: null,
-            plan: null,
-            ready: false,
             propertyIntel: null,
             feasibilitySummary: '',
-            isDemoMode: false
+            isDemoMode: false,
+            /** @type {{ role: string, content: string }[]} */
+            thread: [],
+            sessionActive: false,
+            loading: false
         };
-
-        function todayISO() {
-            var d = new Date();
-            var yyyy = d.getFullYear();
-            var mm = String(d.getMonth() + 1).padStart(2, '0');
-            var dd = String(d.getDate()).padStart(2, '0');
-            return yyyy + '-' + mm + '-' + dd;
-        }
-
-        function addMonthsToISO(plusMonths) {
-            var d = new Date();
-            d.setMonth(d.getMonth() + plusMonths);
-            var yyyy = d.getFullYear();
-            var mm = String(d.getMonth() + 1).padStart(2, '0');
-            var dd = String(d.getDate()).padStart(2, '0');
-            return yyyy + '-' + mm + '-' + dd;
-        }
 
         function parseAddressParts(addressText) {
             var raw = String(addressText || '').trim();
@@ -805,7 +788,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var parts = raw.split(',').map(function(p) { return String(p).trim(); }).filter(Boolean);
 
-            // Common format: "... , City, ST ZIP"
             var region = '';
             var city = '';
             if (parts.length >= 2) {
@@ -813,7 +795,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 var regionMatch = last.match(/\b([A-Za-z]{2})\b/);
                 region = regionMatch ? regionMatch[1].toUpperCase() : '';
 
-                // city is typically the element before the region part
                 if (parts.length >= 3) city = parts[parts.length - 2];
                 else city = parts[parts.length - 2];
             }
@@ -838,15 +819,33 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'Owner-occupied (home)';
         }
 
+        /** Safe subset of Markdown for chat bubbles */
+        function formatChatBubbleHtml(raw) {
+            var s = String(raw || '');
+            var esc = escapeHtml(s);
+            esc = esc.replace(/^## (.+)$/gm, '<strong class="builder-chat-md-h2">$1</strong>');
+            esc = esc.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            esc = esc.replace(/\n/g, '<br>');
+            return esc;
+        }
+
         function appendMsg(role, text) {
             var msg = document.createElement('div');
             msg.className = 'builder-chat-msg ' + (role === 'user' ? 'user' : 'bot');
             var bubble = document.createElement('div');
             bubble.className = 'builder-chat-bubble';
-            bubble.innerHTML = escapeHtml(text);
+            bubble.innerHTML = formatChatBubbleHtml(text);
             msg.appendChild(bubble);
             chatLog.appendChild(msg);
             chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function refreshChatControls() {
+            var active = CHAT.sessionActive;
+            var busy = CHAT.loading;
+            messageInput.disabled = !active || busy;
+            sendBtn.disabled = !active || busy;
+            startBtn.disabled = busy;
         }
 
         function openChatbox() {
@@ -856,7 +855,13 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLauncher.style.display = 'none';
 
             if (!CHAT.hasGreeted) {
-                appendMsg('bot', 'Hi! Enter an address, then **Zoning consultant (OpenRouter)** (uses your Vercel `/api/feasibility` key). **Fetch open data** calls `/api/property` — on the server it can geocode **without** Mapbox/Google (free U.S. Census + OSM Nominatim). **Demo** = offline text only, no network.');
+                appendMsg(
+                    'bot',
+                    'Hi! I’m here to help you **explore adding more homes or units** at your property — in plain language, with no construction background needed.\n\n' +
+                        '**Step 1:** Type your full address below.\n' +
+                        '**Step 2:** Tap **Start** — I’ll summarize what might be possible and what to check with your town or city.\n' +
+                        '**Step 3:** Ask me anything in your own words (for example: “Could we add a rental unit in the basement?”).'
+                );
                 CHAT.hasGreeted = true;
             }
         }
@@ -868,34 +873,18 @@ document.addEventListener('DOMContentLoaded', function() {
             chatLauncher.style.display = '';
         }
 
-        function setChatActions(actions) {
-            chatActions.innerHTML = '';
-            if (!actions || !actions.length) return;
-
-            actions.forEach(function(action) {
-                var btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'builder-explorer-action';
-                btn.textContent = action.label;
-                btn.setAttribute('data-chat-action', action.key);
-                chatActions.appendChild(btn);
-            });
-        }
-
         function resetChat() {
-            CHAT.state = 'idle';
             CHAT.addressText = '';
-            CHAT.inferred = null;
-            CHAT.plan = null;
-            CHAT.ready = false;
             CHAT.propertyIntel = null;
             CHAT.feasibilitySummary = '';
             CHAT.isDemoMode = false;
+            CHAT.thread = [];
+            CHAT.sessionActive = false;
+            CHAT.loading = false;
             chatLog.innerHTML = '';
-            chatActions.innerHTML = '';
             applyBtn.disabled = true;
-            /* Zoning consultant stays usable: it can load /api/property on click or use a preview snapshot. */
-            if (gptBtn) gptBtn.disabled = false;
+            messageInput.value = '';
+            refreshChatControls();
         }
 
         function buildDemoPropertyIntel(addressText) {
@@ -908,7 +897,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataQuality: 'client_demo_no_api',
                 city: parts.city || null,
                 region: parts.region || null,
-                zoningDistrict: '— (demo — verify on municipal GIS)',
+                zoningDistrict: '— (address only — confirm on municipal GIS)',
                 lotAreaSqFt: null,
                 useAndOccupancy: 'Heuristics from address text only (not verified). Keywords suggest: ' + asset + '; occupancy guess: ' + occ,
                 geocode: {
@@ -917,55 +906,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     context: { city: parts.city, region: parts.region }
                 },
                 jurisdiction: {
-                    censusGeographies: { ok: false, skipped: true, reason: 'Demo — no network' }
+                    censusGeographies: { ok: false, skipped: true, reason: 'Preview — full data when API is available' }
                 },
-                openStreetMap: { ok: false, skipped: true, reason: 'Demo — no network' },
-                limitations: ['Browser-only demo: no geocoder, OSM, Census, or AI.'],
+                openStreetMap: { ok: false, skipped: true, reason: 'Preview — full data when API is available' },
+                limitations: ['Address-only preview when property API is unreachable.'],
                 fetchedAt: new Date().toISOString()
             };
-        }
-
-        function buildDemoConsultantNarrative(addressText, intel) {
-            var asset = inferAssetTypeKey(addressText);
-            var occ = inferOccupancyLabel(addressText);
-            var lines = [];
-            lines.push('## Current Status');
-            lines.push('*(Static demo — zero API calls. Not a zoning determination.)*');
-            lines.push('');
-            lines.push('**Address:** ' + addressText);
-            lines.push('**Parsed city / state (from commas):** ' + (intel.city || '—') + ' / ' + (intel.region || '—'));
-            lines.push('**Keyword guesses:** building/use hint ~**' + asset + '**; occupancy guess ~**' + occ + '** (often wrong).');
-            lines.push('**Zoning, lot size, CO:** unknown here — need assessor + GIS + building department.');
-            lines.push('');
-            lines.push('## Potential for Growth');
-            lines.push('Illustrative topics to explore with a professional: ADU feasibility, conversion or addition, lot coverage, whether extra units need rezoning or special permit.');
-            lines.push('A connected product would compare **current use vs. allowed units**, **lot vs. minimums**, and **local ADU rules** using real data.');
-            lines.push('');
-            lines.push('## Regulatory Hurdles');
-            lines.push('You would still confirm: official zoning map, overlays (historic, flood), parking, housing and building code, and Certificate of Occupancy vs. intended use.');
-            lines.push('**Disclaimer:** Demo only — not legal advice.');
-            return lines.join('\n');
-        }
-
-        function handleDemoNoApi() {
-            var addressText = String(chatAddressInput.value || '').trim();
-            if (!addressText) {
-                appendMsg('bot', 'Enter an address, then tap **Demo (no API)**.');
-                return;
-            }
-            resetChat();
-            CHAT.addressText = addressText;
-            CHAT.isDemoMode = true;
-            appendMsg('user', addressText);
-            CHAT.propertyIntel = buildDemoPropertyIntel(addressText);
-            CHAT.feasibilitySummary = buildDemoConsultantNarrative(addressText, CHAT.propertyIntel);
-            appendMsg('bot', CHAT.feasibilitySummary);
-            applyBtn.disabled = false;
-            // Allow Zoning consultant (OpenRouter) after demo: server can still run /api/feasibility on demo-shaped JSON.
-            if (gptBtn) gptBtn.disabled = false;
-            setChatActions([
-                { key: 'offline_wizard', label: 'Legacy offline wizard' }
-            ]);
         }
 
         function getApiBase() {
@@ -979,31 +925,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return '';
         }
 
-        function formatCurrentStatusFromIntel(p) {
-            if (!p) return '';
-            var lines = [];
-            lines.push('## Current Status');
-            lines.push('(Open data: geocode + OSM + U.S. Census where available—not a legal zoning determination.)');
-            lines.push('');
-            lines.push('**Normalized:** ' + (p.geocode && p.geocode.normalized ? p.geocode.normalized : '—'));
-            lines.push('**City / region:** ' + (p.city || '—') + ' / ' + (p.region || '—'));
-            lines.push('**Zoning hint:** ' + (p.zoningDistrict || '—'));
-            lines.push('**Lot area (sq ft):** ' + (p.lotAreaSqFt != null ? p.lotAreaSqFt : '—'));
-            lines.push('**Use / occupancy hints:** ' + (p.useAndOccupancy || '—'));
-            var c = p.jurisdiction && p.jurisdiction.censusGeographies;
-            if (c && c.ok) {
-                lines.push('**Census place:** ' + (c.incorporatedPlace || '—') + ' | **County:** ' + (c.county || '—'));
-            }
-            var osm = p.openStreetMap;
-            if (osm && osm.ok) {
-                lines.push('**OSM building types:** ' + ((osm.buildingTypes || []).join(', ') || '—'));
-                lines.push('**OSM landuse:** ' + ((osm.landuseAndOpenSpace || []).join(', ') || '—'));
-            }
-            lines.push('');
-            lines.push('Next: **Zoning consultant (OpenRouter)** for *Potential for Growth* and *Regulatory Hurdles*, or **Apply to Opportunity** to draft the form.');
-            return lines.join('\n');
-        }
-
         function applyIntelToForm() {
             var intel = CHAT.propertyIntel;
             if (!intel) return;
@@ -1011,126 +932,45 @@ document.addEventListener('DOMContentLoaded', function() {
             setValue('opp-address', intel.inputAddress || (intel.geocode && intel.geocode.normalized) || CHAT.addressText);
             setValue('opp-city', intel.city || getValue('opp-city'));
             setValue('opp-region', intel.region || getValue('opp-region'));
-            setValue('opp-title', (intel.demo ? 'Demo: ' : '') + 'Zoning & housing feasibility – ' + (intel.city || 'property'));
-            if (intel.demo && CHAT.feasibilitySummary) {
-                setValue('opp-summary', '### Offline demo (no APIs)\n\n' + CHAT.feasibilitySummary);
+            var cityLabel = intel.city || 'your property';
+            setValue('opp-title', 'Explore more units — ' + cityLabel);
+            var parts = [];
+            if (intel.demo) {
+                parts.push('### From Explore Opportunities (address preview)');
             } else {
-                var parts = [];
-                parts.push('### From open data');
+                parts.push('### From Explore Opportunities (open data hints)');
                 parts.push('Zoning hint: ' + (intel.zoningDistrict || '—'));
                 parts.push('Lot area: ' + (intel.lotAreaSqFt != null ? intel.lotAreaSqFt + ' sq ft' : '—'));
                 parts.push('Use/occupancy hints: ' + (intel.useAndOccupancy || '—'));
-                if (CHAT.feasibilitySummary) {
-                    parts.push('');
-                    parts.push('### Zoning consultant (OpenRouter)');
-                    parts.push(CHAT.feasibilitySummary);
-                }
-                setValue('opp-summary', parts.join('\n'));
             }
-            setValue('opp-simple-need', 'Confirm zoning with municipal GIS; assess ADU or additional units with a qualified advisor.');
-            setValue('opp-terms', 'Deliverables: official zoning map confirmation; bulk and use analysis; permit path.');
+            if (CHAT.feasibilitySummary) {
+                parts.push('');
+                parts.push('### Conversation summary');
+                parts.push(CHAT.feasibilitySummary);
+            }
+            setValue('opp-summary', parts.join('\n'));
+            setValue(
+                'opp-simple-need',
+                'Help exploring whether we can add housing units (e.g. ADU, extra unit) at this address — zoning and permits to confirm locally.'
+            );
+            setValue(
+                'opp-terms',
+                'Deliverables:\n- Plain-language summary of options and constraints\n- What to verify with the city/planning office\n- Suggested next steps with a designer or permit professional'
+            );
             setValue('opp-budget', getValue('opp-budget') || 'TBD after scope');
             updateTeamWidget();
             clearErrors();
-            appendMsg('bot', 'Draft applied to the opportunity form.');
-        }
-
-        function handleOfflineAnalyze() {
-            var addressText = chatAddressInput.value || '';
-            addressText = String(addressText).trim();
-            if (!addressText) {
-                appendMsg('bot', 'Please enter an address to analyze.');
-                return;
-            }
-
-            resetChat();
-            CHAT.addressText = addressText;
-            appendMsg('user', addressText);
-
-            var parts = parseAddressParts(addressText);
-            var assetTypeKey = inferAssetTypeKey(addressText);
-            var occupancyAssumption = inferOccupancyLabel(addressText);
-
-            CHAT.inferred = {
-                city: parts.city,
-                region: parts.region,
-                assetTypeKey: assetTypeKey,
-                occupancy: occupancyAssumption
-            };
-
-            CHAT.state = 'occupancy';
-            CHAT.plan = null;
-
-            appendMsg('bot',
-                '**Legacy wizard.** Based on the address, I infer:\n' +
-                '- Property type (directional): ' + assetTypeKey + '\n' +
-                '- Current occupancy (assumption): ' + occupancyAssumption + '\n\n' +
-                'Which best matches the property today?'
-            );
-
-            setChatActions([
-                { key: 'occ_owner', label: 'Owner-occupied (home)' },
-                { key: 'occ_rented', label: 'Rented / multi-tenant' },
-                { key: 'occ_vacant', label: 'Vacant / underutilized' }
-            ]);
-        }
-
-        async function handleAnalyze() {
-            var addressText = chatAddressInput.value || '';
-            addressText = String(addressText).trim();
-            if (!addressText) {
-                appendMsg('bot', 'Please enter an address.');
-                return;
-            }
-            resetChat();
-            CHAT.addressText = addressText;
-            appendMsg('user', addressText);
-            analyzeBtn.disabled = true;
-
-            var base = getApiBase();
-            var url = (base || '') + '/api/property';
-            try {
-                var res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: addressText })
-                });
-                var data = await res.json().catch(function() { return {}; });
-                if (!res.ok || !data.ok || !data.property) {
-                    throw new Error(data.error || ('HTTP ' + res.status));
-                }
-                CHAT.propertyIntel = data.property;
-                appendMsg('bot', formatCurrentStatusFromIntel(data.property));
-                applyBtn.disabled = false;
-                if (gptBtn) gptBtn.disabled = false;
-                setChatActions([
-                    { key: 'offline_wizard', label: 'Legacy offline wizard' }
-                ]);
-            } catch (err) {
-                appendMsg('bot',
-                    '**Could not reach the property API** (' + (err.message || err) + ').\n\n' +
-                    'This often happens when only static HTML is deployed (no `/api/property` on this host). ' +
-                    'Deploy the Next.js app and set `BRICKSNEXUS_API_BASE` or `<meta name="bricksnexus-api-base">` in post-opportunity.html so this page can reach `/api/property`. (Geocoder keys are optional: the API uses free Census/Nominatim when unset.)\n\n' +
-                    'You can still use the **legacy offline wizard** below.'
-                );
-                setChatActions([
-                    { key: 'offline_wizard', label: 'Start legacy offline wizard' }
-                ]);
-                /* You can still run OpenRouter: it will use a preview snapshot without /api/property. */
-                if (gptBtn) gptBtn.disabled = false;
-            }
-            analyzeBtn.disabled = false;
+            appendMsg('bot', 'I filled in your opportunity draft. You can edit it and continue the steps below.');
         }
 
         /**
-         * Ensure CHAT.propertyIntel exists: try /api/property, else demo snapshot (so OpenRouter can run when the property API is unreachable).
-         * @returns {'cached'|'live'|'demo'|null}
+         * Load property JSON for the model (live API or address-only preview).
          */
-        async function ensurePropertyIntelForConsultant() {
+        async function ensurePropertyIntel() {
             var addressText = String(chatAddressInput.value || '').trim();
             if (!addressText) return null;
             CHAT.addressText = addressText;
-            if (CHAT.propertyIntel) return 'cached';
+            if (CHAT.propertyIntel) return true;
 
             var base = getApiBase();
             var url = (base || '') + '/api/property';
@@ -1144,455 +984,143 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (res.ok && data.ok && data.property) {
                     CHAT.propertyIntel = data.property;
                     CHAT.isDemoMode = false;
-                    return 'live';
+                    return true;
                 }
             } catch (e) {
-                /* fall through to preview snapshot */
+                /* use preview */
             }
             CHAT.propertyIntel = buildDemoPropertyIntel(addressText);
             CHAT.isDemoMode = true;
-            return 'demo';
+            return true;
         }
 
-        async function runZoningConsultant() {
+        /**
+         * POST /api/feasibility with current thread (assistant/user turns only).
+         */
+        async function callFeasibility(messagesForApi) {
+            var base = getApiBase();
+            var url = (base || '') + '/api/feasibility';
+            var res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: CHAT.addressText,
+                    property: CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText),
+                    messages: messagesForApi || []
+                })
+            });
+            var data = await res.json().catch(function() { return {}; });
+            if (!res.ok) {
+                var errParts = [data.detail, data.error, 'HTTP ' + res.status].filter(Boolean);
+                var fail = new Error(errParts[0] || 'Request failed');
+                fail.httpStatus = res.status;
+                throw fail;
+            }
+            return data;
+        }
+
+        function setLoading(loading) {
+            CHAT.loading = loading;
+            refreshChatControls();
+        }
+
+        async function startSession() {
             var addressText = String(chatAddressInput.value || '').trim();
             if (!addressText) {
-                appendMsg('bot', 'Type an address above, then tap **Zoning consultant** again. On Vercel, set `OPENROUTER_API_KEY`. Open data works without paid geocoder keys (free Census/Nominatim on the server).');
+                appendMsg('bot', 'Please type your property address first, then tap **Start**.');
                 return;
             }
 
-            if (gptBtn) gptBtn.disabled = true;
+            resetChat();
+            CHAT.addressText = addressText;
+            appendMsg('user', 'My property is at: ' + addressText);
+
+            setLoading(true);
             try {
-                var src = await ensurePropertyIntelForConsultant();
-                if (!src) return;
-
-                if (src === 'demo') {
-                    appendMsg(
-                        'bot',
-                        '_No live `/api/property` response — using a **preview snapshot** of the address. OpenRouter still runs; deploy the Next app and point this page at it for real geocode/OSM/Census data (no paid geocoder required)._'
-                    );
-                } else if (src === 'live') {
-                    appendMsg('bot', formatCurrentStatusFromIntel(CHAT.propertyIntel));
-                }
-
-                appendMsg('user', 'Zoning consultant (OpenRouter)');
-                var base = getApiBase();
-                var url = (base || '') + '/api/feasibility';
-                var res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        address: CHAT.addressText,
-                        property: CHAT.propertyIntel,
-                        messages: []
-                    })
-                });
-                var data = await res.json().catch(function() { return {}; });
-                if (!res.ok) {
-                    var errParts = [data.detail, data.error, 'HTTP ' + res.status].filter(Boolean);
-                    var fail = new Error(errParts[0] || 'Request failed');
-                    fail.httpStatus = res.status;
-                    throw fail;
-                }
+                await ensurePropertyIntel();
+                var data = await callFeasibility([]);
                 CHAT.feasibilitySummary = data.feasibilitySummary || '';
                 appendMsg('bot', CHAT.feasibilitySummary);
+                CHAT.thread.push({ role: 'assistant', content: CHAT.feasibilitySummary });
+                CHAT.sessionActive = true;
+                applyBtn.disabled = false;
+                refreshChatControls();
+                messageInput.focus();
             } catch (err) {
-                var msg = '**Zoning consultant failed:** ' + (err.message || err);
-                /* Static sites (e.g. GitHub Pages + custom domain) do not run Next.js API routes; POST to same origin returns 405. */
+                var msg = '**Something went wrong:** ' + (err.message || err);
                 if (err.httpStatus === 405 || err.httpStatus === 404) {
                     msg +=
-                        '\n\n**Why:** On **www.bricksnexus.com** the HTML is usually **static hosting** — there is no `POST /api/feasibility` on that server, so the browser gets **HTTP 405** (method not allowed).\n\n**Fix:** Deploy the Next.js app (e.g. Vercel), then point this page at it: uncomment and set `<meta name="bricksnexus-api-base" content="https://YOUR-APP.vercel.app">` in `post-opportunity.html`, or set `window.BRICKSNEXUS_API_BASE` before the script runs. Add `OPENROUTER_API_KEY` on the server.';
+                        '\n\nThis page may be on **static hosting** (no AI server here). Ask your team to set **bricksnexus-api-base** in this page to your **Vercel** (or other) URL where the app runs, and add **OPENROUTER_API_KEY** there.';
                 }
                 appendMsg('bot', msg);
             } finally {
-                if (gptBtn) gptBtn.disabled = false;
+                setLoading(false);
             }
         }
 
-        function formatMoneyK(amount) {
-            var safe = Math.max(0, Number(amount) || 0);
-            var k = Math.round(safe / 1000);
-            return '$' + k + 'k';
-        }
+        async function sendFollowUp() {
+            if (!CHAT.sessionActive || CHAT.loading) return;
+            var text = String(messageInput.value || '').trim();
+            if (!text) return;
 
-        function computeBudgetRangeUSD(assetTypeKey, strategyKey, desiredUnits) {
-            var units = Math.max(1, Number(desiredUnits) || 1);
-            var base = { low: 200000, high: 450000 };
+            appendMsg('user', text);
+            messageInput.value = '';
+            CHAT.thread.push({ role: 'user', content: text });
 
-            if (strategyKey === 'adu') base = { low: 200000, high: 450000 };
-            if (strategyKey === 'convert') base = { low: 300000, high: 650000 };
-            if (strategyKey === 'addition') base = { low: 450000, high: 950000 };
-            if (strategyKey === 'subdivision') base = { low: 150000, high: 350000 };
-
-            // Slightly different weighting for land projects (subdivision)
-            if (assetTypeKey === 'land' && strategyKey === 'subdivision') {
-                base = { low: 160000, high: 380000 };
-            }
-
-            var lowTotal = base.low * units;
-            var highTotal = base.high * units;
-
-            // Round to the nearest $25k for readability
-            var roundTo = 25000;
-            lowTotal = Math.round(lowTotal / roundTo) * roundTo;
-            highTotal = Math.round(highTotal / roundTo) * roundTo;
-
-            return formatMoneyK(lowTotal) + ' - ' + formatMoneyK(highTotal);
-        }
-
-        function getStrategyOptionsForAssetType(assetTypeKey) {
-            if (assetTypeKey === 'land') {
-                return [
-                    { key: 'subdivision', label: 'Subdivision (add new lots)' },
-                    { key: 'addition', label: 'Build additional units (if zoning allows)' }
-                ];
-            }
-            return [
-                { key: 'adu', label: 'Add an ADU / accessory unit' },
-                { key: 'convert', label: 'Convert existing space to add units' },
-                { key: 'addition', label: 'Build additional units / expansion' }
-            ];
-        }
-
-        function getHousingReadinessOptions(strategyKey) {
-            // Light UX: user can choose speed/effort, we reflect it in the summary.
-            if (strategyKey === 'subdivision') {
-                return [
-                    { key: 'permit_first', label: 'Feasibility first (permits + mapping)' },
-                    { key: 'ready_to_build', label: 'Ready to build (existing site plan)' }
-                ];
-            }
-            return [
-                { key: 'permit_first', label: 'Feasibility first (concept + permits)' },
-                { key: 'ready_to_build', label: 'Ready to build (design already underway)' }
-            ];
-        }
-
-        function summarizeForOpportunity() {
-            var inferred = CHAT.inferred;
-            var plan = CHAT.plan;
-
-            var assetLabel = inferred && inferred.assetTypeKey ? inferred.assetTypeKey.charAt(0).toUpperCase() + inferred.assetTypeKey.slice(1) : 'property';
-            var occupancy = inferred && inferred.occupancy ? inferred.occupancy : 'varies';
-            var strategyKey = plan ? plan.strategyKey : '';
-            var strategyLabel = plan ? plan.strategyLabel : 'housing expansion';
-            var desiredUnits = plan ? plan.desiredUnits : 1;
-            var readinessLabel = plan && plan.readinessLabel ? plan.readinessLabel : 'standard timeline';
-
-            var steps = [];
-            if (strategyKey === 'adu') steps = ['ADU feasibility review', 'Conceptual design + code checks', 'Permit package + inspections', 'Construction and occupancy'];
-            if (strategyKey === 'convert') steps = ['Space-use + code assessment', 'Design for unit conversion', 'Permit submissions + revisions', 'Build-out and final approvals'];
-            if (strategyKey === 'addition') steps = ['Site capacity + setback analysis', 'Permit-ready plans', 'Construction timeline + inspections', 'Delivery and closeout'];
-            if (strategyKey === 'subdivision') steps = ['Zoning/lot-splitting feasibility memo', 'Survey + infrastructure planning', 'Approvals (land use + utilities)', 'Final plat and build plan'];
-
-            return {
-                title: (desiredUnits > 1 ? desiredUnits + '-unit' : '1-unit') + ' ' + strategyLabel + ' - ' + (inferred.city || 'your area'),
-                summary:
-                    'Goal: create additional housing units based on local zoning, existing use, and occupancy.\n\n' +
-                    'Address & context:\n' +
-                    '- Asset type (inferred): ' + assetLabel + '\n' +
-                    '- Current occupancy (assumption): ' + occupancy + '\n' +
-                    '- Strategy: ' + strategyLabel + ' (' + desiredUnits + ' added unit' + (desiredUnits > 1 ? 's' : '') + ')\n\n' +
-                    'Zoning/use/occupancy analysis (directional):\n' +
-                    '- We recommend confirming allowed uses, density limits, setbacks, parking requirements, and any ADU/lot-split rules for the parcel.\n' +
-                    '- Feasibility outcomes usually depend on whether the site qualifies for an overlay/waiver and how existing structures integrate with proposed units.\n\n' +
-                    'Suggested next steps (' + readinessLabel + '):\n' +
-                    steps.map(function(s, i) { return (i + 1) + '. ' + s; }).join('\n') + '\n\n' +
-                    'Deliverables to request in this opportunity:\n' +
-                    '- Zoning/use feasibility memo\n' +
-                    '- Preliminary site plan / unit layout\n' +
-                    '- Permit package plan (what to file, when, and by whom)\n' +
-                    '- Construction schedule assumptions and cost range\n\n' +
-                    'Note: This draft is not legal advice. Use local jurisdiction guidance (planning/zoning) to validate feasibility.',
-                budget: computeBudgetRangeUSD(inferred.assetTypeKey, plan.strategyKey, plan.desiredUnits),
-                city: inferred.city || '',
-                region: inferred.region || ''
-            };
-        }
-
-        function generateNeedsAndTerms() {
-            var inferred = CHAT.inferred || {};
-            var plan = CHAT.plan || {};
-            var strategyLabel = plan.strategyLabel || 'housing expansion';
-
-            var need = 'Request a zoning/use feasibility and design permitting team to evaluate ' + strategyLabel + ' for the provided address (assessing current use/occupancy and constraints).';
-            var terms = 'Deliverables:\n- Zoning/use feasibility memo (allowed uses, density, setbacks, parking)\n- Preliminary unit layout / site plan\n- Permit roadmap (submittals, sequencing, lead disciplines)\n- High-level cost/timeline range for the proposed unit(s)';
-
-            return { need: need, terms: terms };
-        }
-
-        function suggestTeamForProject() {
-            var plan = CHAT.plan || {};
-            var strategyKey = plan.strategyKey || 'adu';
-            var inferred = CHAT.inferred || {};
-
-            var base = ['Project Manager', 'General Contractor', 'Architect', 'Civil Engineer', 'Real Estate Lawyer'];
-
-            if (strategyKey === 'subdivision') {
-                return ['Surveyor', 'Civil Engineer', 'Real Estate Lawyer', 'Project Manager', 'General Contractor', 'Architect'];
-            }
-
-            if (inferred.assetTypeKey === 'apartment' || inferred.assetTypeKey === 'house') {
-                base = base.concat(['Plumber', 'Electrician']);
-            }
-            if (strategyKey === 'adu') {
-                return base.concat(['Plumber', 'Electrician']);
-            }
-            if (strategyKey === 'convert') {
-                return base.concat(['Plumber', 'Electrician']);
-            }
-            if (strategyKey === 'addition') {
-                return base.concat(['Plumber', 'Electrician']);
-            }
-            return base;
-        }
-
-        function applyAnalysisToForm() {
-            var inferred = CHAT.inferred;
-            var plan = CHAT.plan;
-            if (!inferred || !plan) return;
-
-            // If the user hasn't selected an opportunity type yet, infer it.
-            // "Feasibility/permitting first" maps to a lighter "Exploring" posting,
-            // while "Ready to build" maps to the full "Project" builder flow.
-            if (!formState.type) {
-                var inferredType = 'project';
-                var readinessText = String(plan.readinessLabel || '');
-                if (readinessText.toLowerCase().indexOf('feasibility') >= 0) inferredType = 'exploring';
-                setSelectedType(inferredType);
-                appendMsg('bot', 'I set your opportunity type to: ' + inferredType.charAt(0).toUpperCase() + inferredType.slice(1) + '.');
-            }
-
-            var result = summarizeForOpportunity();
-            setValue('opp-title', result.title);
-            setValue('opp-summary', result.summary);
-            // If parsing failed, don't overwrite any existing values.
-            setValue('opp-city', result.city || getValue('opp-city'));
-            setValue('opp-region', result.region || getValue('opp-region'));
-            setValue('opp-budget', result.budget);
-            setValue('opp-address', CHAT.addressText || getValue('opp-address'));
-
-            // Fill needs step hints so non-project flows can continue.
-            var needs = generateNeedsAndTerms();
-            setValue('opp-simple-need', needs.need);
-            setValue('opp-terms', needs.terms);
-
-            // If user is on the full Project flow, also suggest property scopes, team, and a basic chronogram/financing.
-            if (formState.type === 'project') {
-                var assetTypeKey = inferred.assetTypeKey;
-                setValue('opp-property-type', assetTypeKey);
-
-                // Choose a few relevant property scope tags.
-                var scopes = [];
-                if (plan.strategyKey === 'subdivision') {
-                    scopes = ['Sub-division', 'Rezoning', 'Land Clearing'];
-                } else if (plan.strategyKey === 'adu' || plan.strategyKey === 'convert') {
-                    scopes = ['Kitchen/Bath Remodel', 'Interior Design', 'Structural Repair'];
-                    if (assetTypeKey === 'house' || assetTypeKey === 'apartment') scopes.unshift('Full Renovation');
-                } else if (plan.strategyKey === 'addition') {
-                    scopes = ['Structural Repair', 'Interior Design', 'Full Renovation'];
+            setLoading(true);
+            try {
+                var data = await callFeasibility(CHAT.thread);
+                var reply = data.feasibilitySummary || '';
+                CHAT.feasibilitySummary = reply;
+                appendMsg('bot', reply);
+                CHAT.thread.push({ role: 'assistant', content: reply });
+            } catch (err) {
+                CHAT.thread.pop();
+                var msg = '**Message not sent:** ' + (err.message || err);
+                if (err.httpStatus === 405 || err.httpStatus === 404) {
+                    msg += '\n\nCheck that **bricksnexus-api-base** points to your deployed app.';
                 }
-
-                // Filter to valid options based on property type (PROPERTY_SCOPE_MAP).
-                scopes = (PROPERTY_SCOPE_MAP[assetTypeKey] || []).filter(function(opt) {
-                    return scopes.indexOf(opt) >= 0;
-                });
-
-                formState.projectScopes = scopes.slice();
-                renderPropertyChecklist();
-
-                formState.selectedProfessions = suggestTeamForProject();
-                renderTeamChecklist();
-                updateTeamWidget();
-
-                // Basic chronogram suggestions (validateStep requires full rows for project flow).
-                formState.chronogramRows = [
-                    {
-                        id: String(Date.now() + 1),
-                        task_name: 'Zoning/use feasibility & constraints',
-                        start_date: addMonthsToISO(0),
-                        end_date: addMonthsToISO(2),
-                        status: 'Pending'
-                    },
-                    {
-                        id: String(Date.now() + 2),
-                        task_name: 'Design + permit package preparation',
-                        start_date: addMonthsToISO(2),
-                        end_date: addMonthsToISO(4),
-                        status: 'Pending'
-                    },
-                    {
-                        id: String(Date.now() + 3),
-                        task_name: 'Construction & inspections',
-                        start_date: addMonthsToISO(4),
-                        end_date: addMonthsToISO(10),
-                        status: 'Pending'
-                    }
-                ];
-                renderChronogramRows();
-
-                // Financing model is required for the Project flow.
-                setValue('opp-financing-model', 'hybrid');
+                appendMsg('bot', msg);
+            } finally {
+                setLoading(false);
+                if (CHAT.sessionActive) messageInput.focus();
             }
-
-            // Keep the right-side tag/widget in sync for both project and non-project flows.
-            updateTeamWidget();
-            clearErrors();
-
-            appendMsg('bot', 'Draft applied to the opportunity form. You can now continue to the next step.');
         }
 
-        function setOccupancyFromAction(key) {
-            var occupancy = 'Owner-occupied (home)';
-            if (key === 'occ_rented') occupancy = 'Rented / multi-tenant';
-            if (key === 'occ_vacant') occupancy = 'Vacant / underutilized';
-            CHAT.inferred.occupancy = occupancy;
-        }
+        startBtn.addEventListener('click', function() {
+            startSession();
+        });
 
-        function handleOccupancyChoice(actionKey) {
-            setOccupancyFromAction(actionKey);
-            appendMsg('bot',
-                'Got it. For this occupancy, the most likely paths depend on zoning/land-use rules and whether the site can support additional units.\n\n' +
-                'How would you like to expand housing?'
-            );
-            CHAT.state = 'strategy';
-
-            var strategyOptions = getStrategyOptionsForAssetType(CHAT.inferred.assetTypeKey);
-            var mapped = strategyOptions.map(function(opt) {
-                // Ensure we use strategy keys consistent with our budget/team logic.
-                var keyMap = { 'subdivision': 'subdivision', 'addition': 'addition', 'adu': 'adu', 'convert': 'convert' };
-                // Normalize label -> key if needed.
-                if (opt.key === 'subdivision' || opt.key === 'addition' || opt.key === 'adu' || opt.key === 'convert') return opt;
-                return { key: keyMap[opt.key] || opt.key, label: opt.label };
-            });
-            setChatActions(mapped);
-        }
-
-        function strategyLabelForKey(strategyKey) {
-            if (strategyKey === 'adu') return 'ADU / accessory unit';
-            if (strategyKey === 'convert') return 'conversion-based unit addition';
-            if (strategyKey === 'addition') return 'expansion-based unit addition';
-            if (strategyKey === 'subdivision') return 'subdivision housing';
-            return 'housing expansion';
-        }
-
-        function handleStrategyChoice(strategyKey) {
-            var strategyLabel = strategyLabelForKey(strategyKey);
-            CHAT.plan = {
-                strategyKey: strategyKey,
-                strategyLabel: strategyLabel,
-                desiredUnits: 1,
-                readinessLabel: 'standard timeline'
-            };
-
-            appendMsg('bot',
-                'Great. Next, how many additional unit(s) are you aiming for?'
-            );
-            CHAT.state = 'units';
-
-            setChatActions([
-                { key: 'units_1', label: '1 unit' },
-                { key: 'units_2', label: '2 units' },
-                { key: 'units_3', label: '3 units' },
-                { key: 'units_4p', label: '4+ units' }
-            ]);
-        }
-
-        function handleUnitsChoice(unitsKey) {
-            if (!CHAT.plan) return;
-            var units = 1;
-            if (unitsKey === 'units_2') units = 2;
-            if (unitsKey === 'units_3') units = 3;
-            if (unitsKey === 'units_4p') units = 4;
-            CHAT.plan.desiredUnits = units;
-
-            // Readiness: small extra question to make output feel more “zoning-realistic”.
-            appendMsg('bot', 'Do you want to start with feasibility/permitting first, or are you ready to build based on existing work?');
-            CHAT.state = 'readiness';
-
-            setChatActions(getHousingReadinessOptions(CHAT.plan.strategyKey));
-        }
-
-        function handleReadinessChoice(readinessKey) {
-            if (!CHAT.plan) return;
-            if (readinessKey === 'ready_to_build') CHAT.plan.readinessLabel = 'ready-to-build assumptions';
-            else CHAT.plan.readinessLabel = 'feasibility + permitting first';
-
-            CHAT.ready = true;
-            var result = summarizeForOpportunity();
-            appendMsg('bot',
-                'I prepared a draft based on your choices.\n' +
-                '- Suggested budget: ' + result.budget + '\n' +
-                '- Suggested title: ' + result.title + '\n\n' +
-                'Click “Apply to Opportunity” to fill the form.'
-            );
-            applyBtn.disabled = false;
-            CHAT.state = 'ready';
-        }
-
-        analyzeBtn.addEventListener('click', handleAnalyze);
         chatAddressInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                handleAnalyze();
+                startSession();
             }
         });
 
-        chatActions.addEventListener('click', function(e) {
-            var target = e.target;
-            if (!target || !target.getAttribute) return;
-            if (!target.getAttribute('data-chat-action')) return;
-
-            var actionKey = target.getAttribute('data-chat-action');
-
-            if (actionKey === 'offline_wizard') {
-                handleOfflineAnalyze();
-                return;
-            }
-
-            if (CHAT.state === 'occupancy') {
-                handleOccupancyChoice(actionKey);
-                return;
-            }
-            if (CHAT.state === 'strategy') {
-                handleStrategyChoice(actionKey);
-                return;
-            }
-            if (CHAT.state === 'units') {
-                handleUnitsChoice(actionKey);
-                return;
-            }
-            if (CHAT.state === 'readiness') {
-                handleReadinessChoice(actionKey);
-                return;
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFollowUp();
             }
         });
+
+        sendBtn.addEventListener('click', sendFollowUp);
 
         applyBtn.addEventListener('click', function() {
-            if (CHAT.propertyIntel) {
+            if (CHAT.propertyIntel && CHAT.feasibilitySummary) {
                 applyIntelToForm();
-                return;
             }
-            if (!CHAT.ready) return;
-            applyAnalysisToForm();
         });
-
-        if (gptBtn) {
-            gptBtn.addEventListener('click', function() {
-                runZoningConsultant();
-            });
-        }
-
-        if (demoBtn) {
-            demoBtn.addEventListener('click', function() {
-                handleDemoNoApi();
-            });
-        }
 
         chatLauncher.addEventListener('click', openChatbox);
         chatPrompt.addEventListener('click', openChatbox);
         chatClose.addEventListener('click', closeChatbox);
+
+        refreshChatControls();
     })();
+
+
 
     openStep('type');
     refreshPublishState();

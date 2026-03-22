@@ -317,44 +317,49 @@
         <button type="button" class="builder-chatbox-prompt" id="opp-chat-help-prompt">
             Need help creating an opportunity?
         </button>
-        <button type="button" class="builder-chatbox-launcher" id="opp-chat-launcher" aria-label="Open Opportunity Explorer chatbox">
+        <button type="button" class="builder-chatbox-launcher" id="opp-chat-launcher" aria-label="Open Explore Opportunities chat">
             Chat
         </button>
 
-        <section class="builder-opportunity-explorer builder-explorer-floating hidden" id="opp-chat-panel" aria-label="Zoning assistant chat">
+        <section class="builder-opportunity-explorer builder-explorer-floating hidden" id="opp-chat-panel" aria-label="Explore Opportunities chat">
             <div class="builder-explorer-head">
                 <div>
-                    <h3>Zoning assistant</h3>
-                    <p><strong>Zoning consultant</strong> works with just an address (loads open data when possible, else a preview). <strong>Fetch open data</strong> needs the Next.js <code>/api/property</code> (free U.S. Census + Nominatim geocoding if you skip Mapbox/Google). <strong>Demo</strong> is offline-only text.</p>
+                    <h3>Explore Opportunities</h3>
                 </div>
                 <button type="button" class="builder-chatbox-close" id="opp-chat-close-btn" aria-label="Close chatbox">×</button>
             </div>
 
             <div class="builder-explorer-address">
-                <label for="opp-chat-address">Address</label>
+                <label for="opp-chat-address">Your property address</label>
                 <div class="builder-explorer-address-row">
                     <input
                         id="opp-chat-address"
                         type="text"
-                        placeholder="e.g. 123 Main St, Austin, TX 78701"
+                        placeholder="e.g. 123 Main St, Boston, MA 02108"
+                        autocomplete="street-address"
                     />
-                    <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-analyze-btn">
-                        Fetch open data
-                    </button>
-                </div>
-                <div class="builder-explorer-api-row">
-                    <button type="button" class="builder-btn builder-btn-secondary" id="opp-chat-gpt-btn">
-                        Zoning consultant (OpenRouter)
-                    </button>
-                    <button type="button" class="builder-btn builder-btn-secondary builder-demo-btn" id="opp-chat-demo-btn">
-                        Demo (no API)
+                    <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-start-btn">
+                        Start
                     </button>
                 </div>
             </div>
 
             <div class="builder-explorer-chat">
                 <div class="builder-explorer-log" id="opp-chat-log" aria-live="polite"></div>
-                <div class="builder-explorer-actions" id="opp-chat-actions"></div>
+                <div class="builder-explorer-compose">
+                    <label class="builder-visually-hidden" for="opp-chat-message-input">Your reply</label>
+                    <div class="builder-explorer-compose-row">
+                        <textarea
+                            id="opp-chat-message-input"
+                            rows="2"
+                            placeholder="Ask a follow-up question… (Enter to send, Shift+Enter for new line)"
+                            disabled
+                        ></textarea>
+                        <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-send-btn" disabled>
+                            Send
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-apply-btn" disabled>
