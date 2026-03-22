@@ -14,7 +14,7 @@ The app is a **Next.js** project in this directory. Vercel detects it automatica
    |----------|----------------|
    | `OPENROUTER_API_KEY` | `/api/feasibility` (zoning consultant) |
    | `ZONING_CONSULTANT_API_KEY` | Same as above if you prefer that name (alias) |
-   | `OPENROUTER_MODEL` | Optional; default `openai/gpt-4o` on OpenRouter |
+   | `OPENROUTER_MODEL` | Optional; default **`openrouter/free`** (no credits). Use e.g. `openai/gpt-4o` if you buy credits |
    | `OPENROUTER_SITE_URL` or `NEXT_PUBLIC_SITE_URL` | Optional referer for OpenRouter |
    | `MAPBOX_ACCESS_TOKEN` or `GOOGLE_MAPS_GEOCODING_API_KEY` | `/api/property` geocoding |
    | NYC / Boston keys | Optional city enrichers (see `.env.example`) |
@@ -28,7 +28,7 @@ The app is a **Next.js** project in this directory. Vercel detects it automatica
 
 ## OpenRouter returns an error (502 / “request failed”)
 
-1. **Credits:** OpenRouter needs a positive balance or payment method — [openrouter.ai/credits](https://openrouter.ai/credits). `402` / “insufficient credits” is common on new accounts.
+1. **Credits:** Paid models need balance — [openrouter.ai/credits](https://openrouter.ai/credits). This app defaults to **`openrouter/free`** ($0 router). If you set `OPENROUTER_MODEL` to a paid model, add credits or you’ll get `402`.
 2. **Key value:** Paste **only** the key (`sk-or-v1-…`), not the word `Bearer`. Our code strips an accidental `Bearer ` prefix.
 3. **Redeploy** after changing env vars.
 4. The chat UI now shows **OpenRouter’s message** (e.g. 401 invalid key, 402 credits) when `/api/feasibility` fails.

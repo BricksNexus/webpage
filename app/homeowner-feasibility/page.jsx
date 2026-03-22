@@ -27,7 +27,8 @@ export default function HomeownerFeasibilityPage() {
           <strong>OpenRouter</strong>. Set{" "}
           <code className="rounded bg-slate-100 px-1">OPENROUTER_API_KEY</code> in{" "}
           <code className="rounded bg-slate-100 px-1">.env.local</code> or Vercel environment
-          variables (optional: <code className="rounded bg-slate-100 px-1">OPENROUTER_MODEL</code>).
+          variables. Default model is <code className="rounded bg-slate-100 px-1">openrouter/free</code> (no credits); override with{" "}
+          <code className="rounded bg-slate-100 px-1">OPENROUTER_MODEL</code>.
         </p>
         <div className="mt-8">
           <FeasibilityChat />

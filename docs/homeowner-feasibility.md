@@ -35,7 +35,7 @@ lib/
 cp .env.example .env.local
 # MAPBOX_ACCESS_TOKEN or GOOGLE_MAPS_GEOCODING_API_KEY (required for /api/property)
 # OPENROUTER_API_KEY (recommended for /api/feasibility on Vercel)
-# Optional: OPENROUTER_MODEL=openai/gpt-4o
+# Optional: OPENROUTER_MODEL=openrouter/free (default in app) or openai/gpt-4o if you use paid credits
 npm install
 npm run dev
 ```
