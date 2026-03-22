@@ -186,7 +186,7 @@ export default function FeasibilityChat() {
 
       <div
         ref={listRef}
-        className="flex-1 space-y-3 overflow-y-auto bg-red-50/20 px-4 py-3 text-sm"
+        className="flex-1 select-text space-y-3 overflow-y-auto bg-red-50/20 px-4 py-3 text-sm"
       >
         {messages.length === 0 ? (
           <p className="text-red-900/55">
@@ -200,7 +200,7 @@ export default function FeasibilityChat() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[92%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${
+                className={`max-w-[92%] cursor-text select-text whitespace-pre-wrap rounded-2xl px-3 py-2 ${
                   msg.role === "user"
                     ? "bg-red-800 text-white shadow-sm"
                     : "border border-red-200 bg-red-50 text-red-950"

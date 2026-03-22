@@ -960,7 +960,8 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.feasibilitySummary = buildDemoConsultantNarrative(addressText, CHAT.propertyIntel);
             appendMsg('bot', CHAT.feasibilitySummary);
             applyBtn.disabled = false;
-            if (gptBtn) gptBtn.disabled = true;
+            // Allow Zoning consultant (OpenRouter) after demo: server can still run /api/feasibility on demo-shaped JSON.
+            if (gptBtn) gptBtn.disabled = false;
             setChatActions([
                 { key: 'offline_wizard', label: 'Legacy offline wizard' }
             ]);
@@ -1121,10 +1122,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function runZoningConsultant() {
             if (!CHAT.propertyIntel) return;
-            if (CHAT.isDemoMode) {
-                appendMsg('bot', 'GPT is disabled in **Demo** mode. Use **Fetch open data** + API for a live consultant, or rely on the demo text above.');
-                return;
-            }
             if (gptBtn) gptBtn.disabled = true;
             appendMsg('user', 'Zoning consultant (OpenRouter)');
             var base = getApiBase();

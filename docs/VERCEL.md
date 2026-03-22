@@ -13,6 +13,7 @@ The app is a **Next.js** project in this directory. Vercel detects it automatica
    | Variable | Required for |
    |----------|----------------|
    | `OPENROUTER_API_KEY` | `/api/feasibility` (zoning consultant) |
+   | `ZONING_CONSULTANT_API_KEY` | Same as above if you prefer that name (alias) |
    | `OPENROUTER_MODEL` | Optional; default `openai/gpt-4o` on OpenRouter |
    | `OPENROUTER_SITE_URL` or `NEXT_PUBLIC_SITE_URL` | Optional referer for OpenRouter |
    | `MAPBOX_ACCESS_TOKEN` or `GOOGLE_MAPS_GEOCODING_API_KEY` | `/api/property` geocoding |

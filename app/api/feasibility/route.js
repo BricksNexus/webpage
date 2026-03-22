@@ -41,9 +41,9 @@ export async function POST(request) {
           model: "none",
           feasibilitySummary:
             "## Current Status\n" +
-            "No LLM is configured. Set `OPENROUTER_API_KEY` (OpenRouter) or `OPENAI_API_KEY` (OpenAI direct) in `.env.local` / Vercel Environment Variables.\n\n" +
+            "No LLM is configured. Set `OPENROUTER_API_KEY` (or alias `ZONING_CONSULTANT_API_KEY`) or `OPENAI_API_KEY` in `.env.local` / Vercel.\n\n" +
             "## Potential for Growth\n" +
-            "On Vercel: Project → Settings → Environment Variables → add `OPENROUTER_API_KEY` and optionally `OPENROUTER_MODEL` (default `openai/gpt-4o`). Optional: `OPENROUTER_SITE_URL` or `NEXT_PUBLIC_SITE_URL` for OpenRouter analytics.\n\n" +
+            "Vercel hides env values after save (not copyable). Use **Reveal** or paste a new key from OpenRouter. Optional: `OPENROUTER_MODEL`, `OPENROUTER_SITE_URL` / `NEXT_PUBLIC_SITE_URL`.\n\n" +
             "## Regulatory Hurdles\n" +
             "Property JSON below is shown raw for development.\n\n" +
             "```json\n" +

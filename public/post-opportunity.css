@@ -732,6 +732,11 @@ body {
     cursor: not-allowed;
 }
 
+/* Secondary actions stay visibly disabled only when no property context */
+#opp-chat-gpt-btn:not(:disabled) {
+    cursor: pointer;
+}
+
 .builder-explorer-chat {
     margin-top: 10px;
 }
@@ -744,6 +749,9 @@ body {
     overflow: auto;
     padding: 10px;
     margin-bottom: 10px;
+    /* Ensure chat text can be selected / copied (some browsers or parents block this). */
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 .builder-chat-msg {
@@ -767,6 +775,9 @@ body {
     line-height: 1.35;
     white-space: pre-wrap;
     word-break: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .builder-chat-msg.bot .builder-chat-bubble {
