@@ -1190,12 +1190,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 var data = await res.json().catch(function() { return {}; });
                 if (!res.ok) {
                     var errParts = [data.detail, data.error, 'HTTP ' + res.status].filter(Boolean);
-                    throw new Error(errParts[0] || 'Request failed');
+                    var fail = new Error(errParts[0] || 'Request failed');
+                    fail.httpStatus = res.status;
+                    throw fail;
                 }
                 CHAT.feasibilitySummary = data.feasibilitySummary || '';
                 appendMsg('bot', CHAT.feasibilitySummary);
             } catch (err) {
-                appendMsg('bot', '**Zoning consultant failed:** ' + (err.message || err));
+                var msg = '**Zoning consultant failed:** ' + (err.message || err);
+                /* Static sites (e.g. GitHub Pages + custom domain) do not run Next.js API routes; POST to same origin returns 405. */
+                if (err.httpStatus === 405 || err.httpStatus === 404) {
+                    msg +=
+                        '\n\n**Why:** On **www.bricksnexus.com** the HTML is usually **static hosting** — there is no `POST /api/feasibility` on that server, so the browser gets **HTTP 405** (method not allowed).\n\n**Fix:** Deploy the Next.js app (e.g. Vercel), then point this page at it: uncomment and set `<meta name="bricksnexus-api-base" content="https://YOUR-APP.vercel.app">` in `post-opportunity.html`, or set `window.BRICKSNEXUS_API_BASE` before the script runs. Add `OPENROUTER_API_KEY` on the server.';
+                }
+                appendMsg('bot', msg);
             } finally {
                 if (gptBtn) gptBtn.disabled = false;
             }

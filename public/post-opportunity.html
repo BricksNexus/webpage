@@ -11,9 +11,10 @@
 </head>
 <body>
     <!--
-      Zoning / property API (Next.js). Static HTML on www.bricksnexus.com has no /api/* unless you proxy or host the app on the same origin.
-      Option A: Deploy Next (Vercel etc.) and set the origin below.
-      Option B: Leave unset; same-origin fetch is used when HTML and API are together.
+      Zoning / property API (Next.js).
+      Static HTML on www.bricksnexus.com cannot handle POST /api/feasibility — you get HTTP 405 (Method Not Allowed).
+      Option A: Deploy Next (Vercel etc.) and set the meta or script below to that origin (no trailing slash).
+      Option B: Leave unset only when this HTML is served by the same Next host (e.g. localhost:3000 or Vercel with both page + API).
     -->
     <!-- <meta name="bricksnexus-api-base" content="https://your-next-app.vercel.app"> -->
     <script>
