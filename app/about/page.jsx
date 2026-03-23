@@ -146,14 +146,16 @@ export default function AboutPage() {
               <div className="about-founder-block">
                 <h3>What We Will Build Together</h3>
                 <p><strong>BricksNexus</strong> is a digital ecosystem connecting people, projects, and trusted execution across construction and real estate development.</p>
-                <p><strong>Mission:</strong> Build a trusted digital ecosystem that connects people, projects, and decisions across the construction lifecycle with greater speed, clarity, and accountability.</p>
-                <p><strong>Vision:</strong> Become the operating layer for modern development where opportunity discovery, execution, and long-term value creation happen in one connected platform.</p>
-                <p><strong>Values:</strong></p>
-                <ul>
-                  <li><strong>Transparency:</strong> Clear data, visible progress, and aligned expectations.</li>
-                  <li><strong>Execution Excellence:</strong> Practical tools that help teams move from planning to delivery.</li>
-                  <li><strong>Innovation with Purpose:</strong> Use technology, AI, and emerging infrastructure responsibly to improve real-world outcomes.</li>
-                </ul>
+                <div className="about-founder-mvv">
+                  <p><strong>Mission:</strong> Build a trusted digital ecosystem that connects people, projects, and decisions across the construction lifecycle with greater speed, clarity, and accountability.</p>
+                  <p><strong>Vision:</strong> Become the operating layer for modern development where opportunity discovery, execution, and long-term value creation happen in one connected platform.</p>
+                  <p><strong>Values:</strong></p>
+                  <ul>
+                    <li><strong>Transparency:</strong> Clear data, visible progress, and aligned expectations.</li>
+                    <li><strong>Execution Excellence:</strong> Practical tools that help teams move from planning to delivery.</li>
+                    <li><strong>Innovation with Purpose:</strong> Use technology, AI, and emerging infrastructure responsibly to improve real-world outcomes.</li>
+                  </ul>
+                </div>
               </div>
 
               <div className="about-founder-block">
