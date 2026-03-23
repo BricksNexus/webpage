@@ -392,6 +392,10 @@ body {
     color: var(--about-highlight);
 }
 
+.about-founder-block .about-primary-btn {
+    margin-top: 0.9rem;
+}
+
 
 @keyframes about-fade-up {
     to {
@@ -418,6 +422,10 @@ body {
 }
 
 @media (max-width: 640px) {
+    .about-founder-block .about-primary-btn {
+        width: 100%;
+    }
+
     .about-header {
         padding: 0.9rem 1rem;
         flex-wrap: wrap;

@@ -1,0 +1,55 @@
+/* Shared mobile baseline for all static pages */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+input,
+textarea,
+select,
+button {
+    max-width: 100%;
+    font: inherit;
+}
+
+table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 900px) {
+    [class*="grid"],
+    [class*="shell"],
+    [class*="layout"] {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        min-width: 0;
+    }
+
+    input,
+    textarea,
+    select {
+        font-size: 16px;
+    }
+
+    button,
+    [class*="btn"] {
+        min-height: 44px;
+    }
+}

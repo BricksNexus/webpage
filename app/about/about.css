@@ -379,6 +379,10 @@
     color: var(--about-highlight);
 }
 
+.about-page-root .about-founder-block .about-primary-btn {
+    margin-top: 0.9rem;
+}
+
 
 @keyframes about-fade-up {
     to {
@@ -408,6 +412,10 @@
 }
 
 @media (max-width: 640px) {
+    .about-page-root .about-founder-block .about-primary-btn {
+        width: 100%;
+    }
+
     .about-page-root .about-intra-nav {
         padding: 0.65rem 1rem;
     }
