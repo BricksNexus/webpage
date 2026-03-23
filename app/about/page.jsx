@@ -12,6 +12,7 @@ export default function AboutPage() {
         <a href="#mission">Mission</a>
         <a href="#pillars">Three Pillars</a>
         <a href="#future">Future</a>
+        <a href="#founder">Who I Am</a>
         <Link href="/signup.html" className="about-intra-nav-cta">
           Register
         </Link>
@@ -114,6 +115,74 @@ export default function AboutPage() {
               </ul>
             </div>
           </div>
+        </section>
+
+        <section id="founder" className="about-section about-founder about-reveal">
+          <div className="about-section-heading">
+            <p className="about-eyebrow">Founder Profile</p>
+            <h2>Who I Am</h2>
+          </div>
+          <article className="about-founder-card">
+            <div className="about-founder-grid">
+              <img src="/images/flavia-beppler.png" alt="Flavia Beppler" className="about-founder-image" />
+              <div className="about-founder-copy">
+                <p><strong>Flavia Beppler, ENV SP</strong></p>
+                <p>
+                  I am a results-driven Civil Engineer and Project Specialist with over ten years of
+                  experience managing complex infrastructure projects in the United States and Brazil.
+                  Throughout my career, I have worked at the intersection of technical engineering,
+                  strategic execution, and data organization.
+                </p>
+                <p>
+                  I have coordinated real estate and engineering for the <strong>$6B+ Second Avenue
+                  Subway</strong> and the <strong>$19B+ Hudson Tunnel Project</strong>. Now, I am
+                  applying that experience in process optimization and stakeholder management to
+                  transform how the construction industry connects and executes.
+                </p>
+              </div>
+            </div>
+
+            <div className="about-founder-sections">
+              <div className="about-founder-block">
+                <h3>What We Will Build Together</h3>
+                <p>
+                  I am developing <strong>BricksNexus</strong>, a marketplace ecosystem designed to
+                  solve fragmentation in construction procurement and logistics.
+                </p>
+                <ul>
+                  <li><strong>Transparency:</strong> Real-time tracking and standardized quality control.</li>
+                  <li><strong>Efficiency:</strong> Digitizing technical documentation and budget tracking.</li>
+                  <li><strong>Sustainability:</strong> Applying Envision standards to support strong environmental and social performance.</li>
+                </ul>
+                <p>This is a transition from physical infrastructure to the digital backbone that supports it.</p>
+              </div>
+
+              <div className="about-founder-block">
+                <h3>Who You Are (The Ideal CTO)</h3>
+                <p>I am looking for a technical co-founder ready to help disrupt a multi-trillion-dollar global industry. You are:</p>
+                <ul>
+                  <li><strong>A full-stack visionary:</strong> Able to build and scale a robust marketplace MVP.</li>
+                  <li><strong>Data-obsessed:</strong> Skilled in SQL, Power BI, or AI/ML to turn industry data into clear decisions.</li>
+                  <li><strong>Growth-minded:</strong> Proactive about leading with AI and disruptive innovation.</li>
+                  <li><strong>A partner:</strong> Ready to co-lead, hire a team, and shape the BricksNexus technical roadmap.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="about-founder-contact">
+              <h3>Let's Connect</h3>
+              <ul className="about-contact-info">
+                <li>Email: <a href="mailto:flaviabeppler@gmail.com">flaviabeppler@gmail.com</a></li>
+                <li>Phone: (929) 416-8862</li>
+                <li>LinkedIn: <a href="https://www.linkedin.com/in/flavia-beppler-7179bb38/" target="_blank" rel="noreferrer">Flavia Beppler</a></li>
+              </ul>
+              <a href="mailto:flaviabeppler@gmail.com" className="about-primary-btn">Apply to Join as CTO</a>
+              <div className="about-founder-qr">
+                <p>Scan to view my LinkedIn profile:</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.linkedin.com/in/flavia-beppler-7179bb38/" alt="LinkedIn QR code" />
+              </div>
+            </div>
+          </article>
         </section>
 
         <section className="about-cta about-reveal">
