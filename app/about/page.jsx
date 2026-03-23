@@ -126,7 +126,7 @@ export default function AboutPage() {
             <div className="about-founder-grid">
               <img src="/images/flavia-beppler.png" alt="Flavia Beppler" className="about-founder-image" />
               <div className="about-founder-copy">
-                <p><strong>Flavia Beppler, ENV SP</strong></p>
+                <p><strong>Flavia Beppler</strong></p>
                 <p>
                   I am a results-driven Civil Engineer and Project Specialist with over ten years of
                   experience managing complex infrastructure projects in the United States and Brazil.
@@ -145,16 +145,14 @@ export default function AboutPage() {
             <div className="about-founder-sections">
               <div className="about-founder-block">
                 <h3>What We Will Build Together</h3>
-                <p>
-                  I am developing <strong>BricksNexus</strong>, a marketplace ecosystem designed to
-                  solve fragmentation in construction procurement and logistics.
-                </p>
+                <p><strong>Mission:</strong> Build a trusted digital ecosystem that connects people, projects, and decisions across the construction lifecycle with greater speed, clarity, and accountability.</p>
+                <p><strong>Vision:</strong> Become the operating layer for modern development where opportunity discovery, execution, and long-term value creation happen in one connected platform.</p>
+                <p><strong>Values:</strong></p>
                 <ul>
-                  <li><strong>Transparency:</strong> Real-time tracking and standardized quality control.</li>
-                  <li><strong>Efficiency:</strong> Digitizing technical documentation and budget tracking.</li>
-                  <li><strong>Sustainability:</strong> Applying Envision standards to support strong environmental and social performance.</li>
+                  <li><strong>Transparency:</strong> Clear data, visible progress, and aligned expectations.</li>
+                  <li><strong>Execution Excellence:</strong> Practical tools that help teams move from planning to delivery.</li>
+                  <li><strong>Innovation with Purpose:</strong> Use technology, AI, and emerging infrastructure responsibly to improve real-world outcomes.</li>
                 </ul>
-                <p>This is a transition from physical infrastructure to the digital backbone that supports it.</p>
               </div>
 
               <div className="about-founder-block">
@@ -177,10 +175,6 @@ export default function AboutPage() {
                 <li>LinkedIn: <a href="https://www.linkedin.com/in/flavia-beppler-7179bb38/" target="_blank" rel="noreferrer">Flavia Beppler</a></li>
               </ul>
               <a href="mailto:flaviabeppler@gmail.com" className="about-primary-btn">Apply to Join as CTO</a>
-              <div className="about-founder-qr">
-                <p>Scan to view my LinkedIn profile:</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.linkedin.com/in/flavia-beppler-7179bb38/" alt="LinkedIn QR code" />
-              </div>
             </div>
           </article>
         </section>

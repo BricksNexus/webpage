@@ -375,19 +375,6 @@
     color: var(--about-highlight);
 }
 
-.about-page-root .about-founder-qr {
-    margin-top: 1rem;
-    text-align: center;
-}
-
-.about-page-root .about-founder-qr img {
-    width: 150px;
-    height: 150px;
-    border-radius: 12px;
-    border: 1px solid var(--about-border);
-    background: #fff;
-    padding: 0.45rem;
-}
 
 @keyframes about-fade-up {
     to {
