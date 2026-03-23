@@ -145,6 +145,7 @@ export default function AboutPage() {
             <div className="about-founder-sections">
               <div className="about-founder-block">
                 <h3>What We Will Build Together</h3>
+                <p><strong>BricksNexus</strong> is a digital ecosystem connecting people, projects, and trusted execution across construction and real estate development.</p>
                 <p><strong>Mission:</strong> Build a trusted digital ecosystem that connects people, projects, and decisions across the construction lifecycle with greater speed, clarity, and accountability.</p>
                 <p><strong>Vision:</strong> Become the operating layer for modern development where opportunity discovery, execution, and long-term value creation happen in one connected platform.</p>
                 <p><strong>Values:</strong></p>
@@ -160,7 +161,7 @@ export default function AboutPage() {
                 <p>I am looking for a technical co-founder ready to help disrupt a multi-trillion-dollar global industry. You are:</p>
                 <ul>
                   <li><strong>A full-stack visionary:</strong> Able to build and scale a robust marketplace MVP.</li>
-                  <li><strong>Data-obsessed:</strong> Skilled in SQL, Power BI, or AI/ML to turn industry data into clear decisions.</li>
+                  <li><strong>Data-obsessed:</strong> Skilled in SQL and AI/ML to turn industry data into clear decisions, with blockchain fluency to support our future tokenization layer.</li>
                   <li><strong>Growth-minded:</strong> Proactive about leading with AI and disruptive innovation.</li>
                   <li><strong>A partner:</strong> Ready to co-lead, hire a team, and shape the BricksNexus technical roadmap.</li>
                 </ul>
