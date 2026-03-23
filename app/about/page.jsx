@@ -173,11 +173,9 @@ export default function AboutPage() {
             <div className="about-founder-contact">
               <h3>Let's Connect</h3>
               <ul className="about-contact-info">
-                <li>Email: <a href="mailto:flaviabeppler@gmail.com">flaviabeppler@gmail.com</a></li>
-                <li>Phone: (929) 416-8862</li>
                 <li>LinkedIn: <a href="https://www.linkedin.com/in/flavia-beppler-7179bb38/" target="_blank" rel="noreferrer">Flavia Beppler</a></li>
               </ul>
-              <a href="mailto:flaviabeppler@gmail.com" className="about-primary-btn">Apply to Join as CTO</a>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLScRItMKaVUasiJxDTrB1rq2q6maPZUZJfeXDotzgzbmJlQc8g/viewform?usp=header" target="_blank" rel="noreferrer" className="about-primary-btn">I am interested</a>
             </div>
           </article>
         </section>
