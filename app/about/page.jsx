@@ -167,6 +167,7 @@ export default function AboutPage() {
                   <li><strong>Growth-minded:</strong> Proactive about leading with AI and disruptive innovation.</li>
                   <li><strong>A partner:</strong> Ready to co-lead, hire a team, and shape the BricksNexus technical roadmap.</li>
                 </ul>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScRItMKaVUasiJxDTrB1rq2q6maPZUZJfeXDotzgzbmJlQc8g/viewform?usp=header" target="_blank" rel="noreferrer" className="about-primary-btn">I am interested</a>
               </div>
             </div>
 
@@ -175,7 +176,6 @@ export default function AboutPage() {
               <ul className="about-contact-info">
                 <li>LinkedIn: <a href="https://www.linkedin.com/in/flavia-beppler-7179bb38/" target="_blank" rel="noreferrer">Flavia Beppler</a></li>
               </ul>
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLScRItMKaVUasiJxDTrB1rq2q6maPZUZJfeXDotzgzbmJlQc8g/viewform?usp=header" target="_blank" rel="noreferrer" className="about-primary-btn">I am interested</a>
             </div>
           </article>
         </section>
