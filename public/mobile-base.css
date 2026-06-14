@@ -13,11 +13,6 @@ iframe {
     max-width: 100%;
 }
 
-/* Default responsive height for content images only — not header logos */
-img:not(.site-logo):not(.card-image) {
-    height: auto;
-}
-
 .site-logo,
 .top-bar-left img,
 .top-bar-logo img,
@@ -25,10 +20,18 @@ img:not(.site-logo):not(.card-image) {
 .landing-brand img,
 .auth-top-bar img,
 .token-brand img {
-    height: 2rem;
+    height: 36px;
     width: auto;
-    max-width: 120px;
+    max-width: 40px;
+    max-height: 36px;
+    object-fit: contain;
     flex-shrink: 0;
+}
+
+.feed-card img,
+.card-image,
+.main-content img:not(.site-logo) {
+    height: auto;
 }
 
 input,

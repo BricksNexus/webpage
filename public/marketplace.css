@@ -56,10 +56,15 @@ body {
     gap: 0.9rem;
 }
 
-.top-bar-left img {
-    height: 42px;
+.top-bar-left img,
+.top-bar-left .site-logo {
+    height: 36px;
     width: auto;
+    max-width: 40px;
+    max-height: 36px;
+    object-fit: contain;
     display: block;
+    flex-shrink: 0;
 }
 
 .top-bar-left span {
@@ -677,8 +682,11 @@ a.user-avatar {
         gap: 0.5rem;
     }
 
-    .top-bar-left img {
-        height: 34px;
+    .top-bar-left img,
+    .top-bar-left .site-logo {
+        height: 32px;
+        max-width: 36px;
+        max-height: 32px;
     }
 
     .top-bar-left span {

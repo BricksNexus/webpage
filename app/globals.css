@@ -28,18 +28,21 @@ iframe {
   max-width: 100%;
 }
 
-img:not(.site-logo):not(.card-image) {
-  height: auto;
-}
-
 .site-logo,
 .site-chrome img.site-logo,
 .top-bar-left img,
 .top-bar-logo img {
-  height: 2rem;
+  height: 36px;
   width: auto;
-  max-width: 120px;
+  max-width: 40px;
+  max-height: 36px;
+  object-fit: contain;
   flex-shrink: 0;
+}
+
+.feed-card img,
+.card-image {
+  height: auto;
 }
 
 input,
