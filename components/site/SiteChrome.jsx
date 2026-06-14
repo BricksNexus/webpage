@@ -8,6 +8,7 @@ const NAV = [
   { href: "/about", label: "About" },
   { href: "/tokenization", label: "Tokenization" },
   { href: "/homeowner-feasibility", label: "Feasibility" },
+  { href: "/opportunity-report", label: "Opportunity Report" },
 ];
 
 function isActive(pathname, href) {
