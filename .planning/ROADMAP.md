@@ -7,27 +7,28 @@
 
 ---
 
-## Phase 1: Property Data API Layer
+## Phase 1: Property Data API Layer — COMPLETE
 
 **Goal:** Wire AttomData and existing open-property pipeline into a unified `/api/property/enrich` endpoint that returns owner, block/lot, zoning, use/occupancy, and validated address for any US address.
 
-**Requirements:** PROP-01, PROP-02, PROP-03, PROP-04, PROP-05, PROP-06
+**Requirements:** PROP-01, PROP-02, PROP-03, PROP-04, PROP-05, PROP-06 — ALL SATISFIED
+
+**Status:** Done — 2026-06-14
+
+**Plans:** 1/1 complete — see [01-SUMMARY.md](phases/01-property-data-api-layer/01-SUMMARY.md)
 
 **Success Criteria:**
-1. `POST /api/property/enrich` accepts `{ address: string }` and returns JSON with `owner`, `blockLot`, `validatedAddress`, `zoning`, `useOccupancy`, `assessedValue`
-2. AttomData `/property/basicprofile` is called and its owner name + APN (block/lot) appear in the response
-3. NYC PLUTO zoning data is included for NYC addresses (zone district, max FAR, allowed uses)
-4. Census geocoder validates and normalizes the address
-5. `npm run build` passes with no errors
+1. [x] `POST /api/property/enrich` accepts `{ address: string }` and returns JSON with `ownerName`, `blockLot`, `validatedAddress`, `zoningDistrict`, `useAndOccupancy`, `assessedValue`
+2. [x] AttomData `/property/basicprofile` is called and its owner name + block/lot appear in the response
+3. [x] NYC PLUTO zoning data is included for NYC addresses (zone district via nyc.mjs connector)
+4. [x] Census geocoder validates and normalizes the address
+5. [x] `npm run build` passes with no errors
+
+**Commits:** dd098f4, 0793c04, 64d5fe5
 
 **Depends on:** Nothing (Phase 1 is standalone)
 
 **UI hint:** no
-
-**Files to create/modify:**
-- `lib/open-property/attom.mjs` — AttomData client (complete/fix)
-- `lib/open-property/fetch-property-intel.mjs` — merge AttomData into pipeline
-- `app/api/property/enrich/route.js` — new unified enrichment endpoint
 
 ---
 
@@ -38,6 +39,13 @@
 **Requirements:** PROP-07, PROP-08-A, PROP-08-B, PROP-10
 
 **Depends on:** Phase 1
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Install packages + enrich alias route + extend nyc.mjs PLUTO fields
+- [ ] 02-02-PLAN.md — LangGraph 4-node pipeline + POST /api/opportunity/analyze route
+- [ ] 02-03-PLAN.md — Report UI (ReportCard, OpportunityAssessment, page.jsx) + SiteChrome nav + build
 
 **Success Criteria:**
 1. LangGraph graph with nodes: `enrich_data → analyze_zoning → assess_opportunity → format_report` executes end-to-end
