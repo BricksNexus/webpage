@@ -789,7 +789,8 @@ document.addEventListener('DOMContentLoaded', function() {
             loading: false,
             exploreKey: null,
             exploreFocusText: '',
-            reportId: null
+            reportId: null,
+            reportData: null
         };
 
         function buildClientFallbackCardDraft() {
@@ -1054,6 +1055,7 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.sessionActive = false;
             CHAT.loading = false;
             CHAT.reportId = null;
+            CHAT.reportData = null;
             chatLog.innerHTML = '';
             applyBtn.disabled = true;
             if (reportBtn) reportBtn.classList.add('hidden');
@@ -1240,7 +1242,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 CHAT.reportId = data.reportId || null;
+                CHAT.reportData = data;
                 CHAT.propertyIntel = data.property || null;
+
+                if (CHAT.reportId) {
+                    try {
+                        sessionStorage.setItem(
+                            'bricksnexus_opp_report_' + CHAT.reportId,
+                            JSON.stringify(data)
+                        );
+                    } catch (storageErr) {
+                        /* quota or private mode — modal may still fetch if KV works */
+                    }
+                }
 
                 // Build a short text summary for the chat log from the analysis
                 var analysis = data.analysis || {};
@@ -1361,7 +1375,10 @@ document.addEventListener('DOMContentLoaded', function() {
             reportBtn.addEventListener('click', function() {
                 if (!CHAT.reportId) return;
                 window.dispatchEvent(new CustomEvent('opp:open-report', {
-                    detail: { reportId: CHAT.reportId }
+                    detail: {
+                        reportId: CHAT.reportId,
+                        report: CHAT.reportData || null
+                    }
                 }));
             });
         }

@@ -351,13 +351,35 @@ function ReportView({ report }) {
 
 // ── Modal shell ───────────────────────────────────────────────────────────
 
-function Modal({ reportId, onClose }) {
+function readCachedReport(reportId) {
+  if (!reportId) return null;
+  try {
+    var raw = sessionStorage.getItem('bricksnexus_opp_report_' + reportId);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function Modal({ reportId, initialReport, onClose }) {
   var _s = useState({ status: 'loading', report: null, error: null });
   var state = _s[0];
   var setState = _s[1];
 
   useEffect(function() {
     if (!reportId) return;
+
+    if (initialReport) {
+      setState({ status: 'ready', report: initialReport, error: null });
+      return;
+    }
+
+    var cached = readCachedReport(reportId);
+    if (cached) {
+      setState({ status: 'ready', report: cached, error: null });
+      return;
+    }
+
     setState({ status: 'loading', report: null, error: null });
 
     fetch('/api/opportunity-report/' + reportId)
@@ -369,9 +391,16 @@ function Modal({ reportId, onClose }) {
         setState({ status: 'ready', report: data, error: null });
       })
       .catch(function(err) {
-        setState({ status: 'error', report: null, error: err.message });
+        var message = err.message || 'Request failed';
+        if (message.indexOf('404') >= 0) {
+          message +=
+            ' — the report was generated but could not be retrieved from storage. ' +
+            'Add Upstash Redis on Vercel (UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN), ' +
+            'or run a new analysis and open the report immediately in this browser session.';
+        }
+        setState({ status: 'error', report: null, error: message });
       });
-  }, [reportId]);
+  }, [reportId, initialReport]);
 
   useEffect(function() {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
@@ -431,18 +460,27 @@ export default function OpportunityReportModal() {
   var _s = useState(null);
   var reportId = _s[0];
   var setReportId = _s[1];
+  var _r = useState(null);
+  var initialReport = _r[0];
+  var setInitialReport = _r[1];
 
-  var close = useCallback(function() { setReportId(null); }, []);
+  var close = useCallback(function() {
+    setReportId(null);
+    setInitialReport(null);
+  }, []);
 
   useEffect(function() {
     function handler(e) {
       var id = e && e.detail && e.detail.reportId;
-      if (id) setReportId(id);
+      var report = e && e.detail && e.detail.report;
+      if (!id) return;
+      setInitialReport(report || readCachedReport(id));
+      setReportId(id);
     }
     window.addEventListener('opp:open-report', handler);
     return function() { window.removeEventListener('opp:open-report', handler); };
   }, []);
 
   if (!reportId) return null;
-  return h(Modal, { reportId: reportId, onClose: close });
+  return h(Modal, { reportId: reportId, initialReport: initialReport, onClose: close });
 }
