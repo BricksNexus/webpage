@@ -10,12 +10,12 @@
 
 ### Property Data Enrichment
 
-- [ ] **PROP-01**: User can submit a street address via a web form and trigger property analysis
-- [ ] **PROP-02**: System retrieves owner name from AttomData by address
-- [ ] **PROP-03**: System retrieves block and lot number from AttomData by address
-- [ ] **PROP-04**: System validates and normalizes the input address (Census geocoder)
-- [ ] **PROP-05**: System retrieves zoning classification and buildable area from city data (NYC PLUTO or equivalent)
-- [ ] **PROP-06**: System retrieves use & occupancy data from AttomData (property use code, occupancy status, assessed value)
+- [x] **PROP-01**: User can submit a street address via a web form and trigger property analysis
+- [x] **PROP-02**: System retrieves owner name from AttomData by address
+- [x] **PROP-03**: System retrieves block and lot number from AttomData by address
+- [x] **PROP-04**: System validates and normalizes the input address (Census geocoder)
+- [x] **PROP-05**: System retrieves zoning classification and buildable area from city data (NYC PLUTO or equivalent)
+- [x] **PROP-06**: System retrieves use & occupancy data from AttomData (property use code, occupancy status, assessed value)
 
 ### AI Analysis
 
@@ -58,12 +58,12 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| PROP-01 | Phase 1 | Pending |
-| PROP-02 | Phase 1 | Pending |
-| PROP-03 | Phase 1 | Pending |
-| PROP-04 | Phase 1 | Pending |
-| PROP-05 | Phase 1 | Pending |
-| PROP-06 | Phase 1 | Pending |
+| PROP-01 | Phase 1 | Complete |
+| PROP-02 | Phase 1 | Complete |
+| PROP-03 | Phase 1 | Complete |
+| PROP-04 | Phase 1 | Complete |
+| PROP-05 | Phase 1 | Complete |
+| PROP-06 | Phase 1 | Complete |
 | PROP-07 | Phase 2 | Pending |
 | PROP-08-A | Phase 2 | Pending |
 | PROP-08-B | Phase 2 | Pending |

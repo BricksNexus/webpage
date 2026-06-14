@@ -15,7 +15,7 @@
 
 **Status:** Done — 2026-06-14
 
-**Plans:** 1/1 complete — see [01-SUMMARY.md](phases/01-property-data-api-layer/01-SUMMARY.md)
+**Plans:** 1/1 plans complete
 
 **Success Criteria:**
 1. [x] `POST /api/property/enrich` accepts `{ address: string }` and returns JSON with `ownerName`, `blockLot`, `validatedAddress`, `zoningDistrict`, `useAndOccupancy`, `assessedValue`
