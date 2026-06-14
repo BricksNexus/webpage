@@ -40,7 +40,7 @@ export default function SiteChrome() {
           alt=""
           width={120}
           height={32}
-          className="h-8 w-auto"
+          style={{ height: "32px", width: "auto" }}
         />
         <span className={isAbout ? "text-white" : "text-[var(--deep-navy)]"}>BricksNexus</span>
       </Link>
