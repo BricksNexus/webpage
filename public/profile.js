@@ -219,19 +219,42 @@
 
     function renderOpportunityCard(item) {
         var parts = [];
-        if (item.city) parts.push(escapeHtml(item.city));
-        if (item.region) parts.push(escapeHtml(item.region));
-        if (item.budget) parts.push('Budget: ' + escapeHtml(item.budget));
+        if (item.address) parts.push(escapeHtml(item.address));
+        else {
+            if (item.city) parts.push(escapeHtml(item.city));
+            if (item.region) parts.push(escapeHtml(item.region));
+        }
+        if (item.budget) parts.push('Est. cost: ' + escapeHtml(item.budget));
+        if (item.estimatedTimeline) parts.push('Est. time: ' + escapeHtml(item.estimatedTimeline));
+
+        var workers = Array.isArray(item.myTeam) ? item.myTeam : [];
+        var workersHtml = workers.length
+            ? '<div class="profile-card-workers"><p class="profile-card-label">What do you need</p><ul class="profile-card-tags">'
+                + workers.map(function(w) { return '<li>' + escapeHtml(w) + '</li>'; }).join('')
+                + '</ul></div>'
+            : (item.simpleNeed
+                ? '<div class="profile-card-workers"><p class="profile-card-label">What do you need</p><p class="profile-card-need">' + escapeHtml(item.simpleNeed) + '</p></div>'
+                : '');
+
+        var badge = item.fromChatAnalysis || item.analysisSnapshot
+            ? '<span class="profile-card-badge">From analysis</span>'
+            : '';
+        var editHref = 'post-opportunity.html?edit=' + encodeURIComponent(item.id) + (item.status === 'draft' ? '&draft=1' : '');
+
         var article = document.createElement('article');
-        article.className = 'feed-card';
+        article.className = 'feed-card profile-opportunity-card';
         article.innerHTML = ''
-            + '<div class="card-type">' + escapeHtml(item.status === 'draft' ? 'Opportunity Draft' : 'Opportunity') + '</div>'
+            + '<div class="card-type">' + escapeHtml(item.status === 'draft' ? 'Opportunity Draft' : 'Opportunity') + badge + '</div>'
             + (item.imageDataUrl ? '<img class="card-image" src="' + escapeHtml(item.imageDataUrl) + '" alt="">' : '<div class="card-image-placeholder">Opportunity</div>')
             + '<div class="card-body">'
             + '<h3 class="card-title">' + escapeHtml(item.title || 'Opportunity') + '</h3>'
             + '<div class="card-meta">' + (parts.length ? parts.join(' · ') : '') + '</div>'
             + '<div class="card-details">' + escapeHtml(item.summary || 'No details added yet.') + '</div>'
+            + workersHtml
             + renderInterestBlock(item.id)
+            + '<div class="profile-card-actions">'
+            + '<a class="profile-card-edit-btn" href="' + escapeHtml(editHref) + '">Edit opportunity</a>'
+            + '</div>'
             + '</div>';
         return article;
     }

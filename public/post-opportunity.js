@@ -435,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
             equity: getValue('opp-equity'),
             roi: getValue('opp-roi'),
             address: getValue('opp-address'),
+            estimatedTimeline: getValue('opp-estimated-timeline'),
             opportunityKind: formState.type,
             propertyType: getValue('opp-property-type'),
             propertyChecklist: formState.projectScopes.slice(),
@@ -541,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setValue('opp-simple-need', editingRecord.simpleNeed);
         setValue('opp-financing-model', editingRecord.financingModel);
         setValue('opp-capital-gap', editingRecord.capitalGap);
+        setValue('opp-estimated-timeline', editingRecord.estimatedTimeline || '');
 
         formState.type = editingRecord.opportunityKind || 'project';
         formState.projectScopes = Array.isArray(editingRecord.propertyChecklist) ? editingRecord.propertyChecklist.slice() : [];
@@ -776,6 +778,9 @@ document.addEventListener('DOMContentLoaded', function() {
             addressText: '',
             propertyIntel: null,
             feasibilitySummary: '',
+            cardDraft: null,
+            savedDraftId: null,
+            savedDraftCreatedAt: null,
             isDemoMode: false,
             /** @type {{ role: string, content: string }[]} */
             thread: [],
@@ -784,6 +789,154 @@ document.addEventListener('DOMContentLoaded', function() {
             exploreKey: null,
             exploreFocusText: ''
         };
+
+        function buildClientFallbackCardDraft() {
+            var intel = CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText);
+            var city = intel.city || parseAddressParts(CHAT.addressText).city || 'your area';
+            var focus = CHAT.exploreFocusText || '';
+            return {
+                opportunityTitle: focus
+                    ? ('Explore units — ' + city)
+                    : ('Explore adding units — ' + city),
+                jobDescription: String(CHAT.feasibilitySummary || '').slice(0, 500) ||
+                    'Opportunity explored via chat — review and edit details before publishing.',
+                workersNeeded: ['Architect', 'General Contractor', 'Real Estate Lawyer', 'Project Manager'],
+                estimatedCost: '$75,000 – $350,000+ (typical range — verify with local quotes)',
+                estimatedTimeline: '6–18 months (design, permits, and construction)',
+                projectScopes: focus ? [focus.split('.')[0].slice(0, 80)] : ['ADU / accessory unit exploration']
+            };
+        }
+
+        function resolveCardDraft(data) {
+            return (data && data.cardDraft) ? data.cardDraft : buildClientFallbackCardDraft();
+        }
+
+        function mapWorkersToTeam(workersNeeded) {
+            var raw = Array.isArray(workersNeeded) ? workersNeeded : [];
+            var known = TEAM_OPTIONS.slice();
+            var mapped = [];
+            raw.forEach(function(label) {
+                var text = String(label || '').trim();
+                if (!text) return;
+                var match = known.find(function(k) {
+                    return k.toLowerCase() === text.toLowerCase();
+                });
+                if (match) {
+                    if (mapped.indexOf(match) < 0) mapped.push(match);
+                    return;
+                }
+                var partial = known.find(function(k) {
+                    return text.toLowerCase().indexOf(k.toLowerCase()) >= 0 ||
+                        k.toLowerCase().indexOf(text.toLowerCase()) >= 0;
+                });
+                var value = partial || text;
+                if (mapped.indexOf(value) < 0) mapped.push(value);
+            });
+            return mapped.length ? mapped : ['Architect', 'General Contractor', 'Project Manager'];
+        }
+
+        function formatSimpleNeed(cardDraft) {
+            var workers = mapWorkersToTeam(cardDraft && cardDraft.workersNeeded);
+            var lines = workers.map(function(w) { return '• ' + w; });
+            if (cardDraft && cardDraft.projectScopes && cardDraft.projectScopes.length) {
+                lines.push('');
+                lines.push('Scope: ' + cardDraft.projectScopes.join(', '));
+            }
+            return lines.join('\n');
+        }
+
+        function buildAnalysisSummaryText(intel) {
+            var parts = [];
+            if (intel.demo) {
+                parts.push('### From Explore Opportunities (address preview)');
+            } else {
+                parts.push('### From Explore Opportunities (open data hints)');
+                parts.push('Zoning hint: ' + (intel.zoningDistrict || '—'));
+                parts.push('Lot area: ' + (intel.lotAreaSqFt != null ? intel.lotAreaSqFt + ' sq ft' : '—'));
+                parts.push('Use/occupancy hints: ' + (intel.useAndOccupancy || '—'));
+            }
+            if (CHAT.feasibilitySummary) {
+                parts.push('');
+                parts.push('### Conversation summary');
+                parts.push(CHAT.feasibilitySummary);
+            }
+            return parts.join('\n');
+        }
+
+        function buildAnalyzedOpportunityPayload(cardDraft) {
+            var intel = CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText);
+            var draft = cardDraft || CHAT.cardDraft || {};
+            var parts = parseAddressParts(CHAT.addressText);
+            var id = CHAT.savedDraftId || Date.now();
+            var workers = mapWorkersToTeam(draft.workersNeeded);
+            var createdAt = CHAT.savedDraftCreatedAt || new Date().toISOString();
+
+            return {
+                id: id,
+                title: draft.opportunityTitle || ('Explore more units — ' + (intel.city || parts.city || 'your property')),
+                summary: draft.jobDescription || CHAT.feasibilitySummary || 'Opportunity explored via chat.',
+                city: intel.city || parts.city || '',
+                region: intel.region || parts.region || '',
+                budget: draft.estimatedCost || 'TBD — verify with local quotes',
+                estimatedTimeline: draft.estimatedTimeline || 'TBD — depends on permits and scope',
+                terms: 'Deliverables:\n- Plain-language summary of options and constraints\n- What to verify with the city/planning office\n- Suggested next steps with a designer or permit professional',
+                equity: '',
+                roi: '',
+                address: intel.inputAddress || (intel.geocode && intel.geocode.normalized) || CHAT.addressText,
+                opportunityKind: 'exploring',
+                propertyType: inferAssetTypeKey(CHAT.addressText),
+                propertyChecklist: Array.isArray(draft.projectScopes) ? draft.projectScopes.slice() : [],
+                myTeam: workers,
+                simpleNeed: formatSimpleNeed(draft),
+                financingModel: '',
+                capitalGap: '',
+                chronogram: [],
+                documents: [],
+                imageDataUrl: '',
+                createdAt: createdAt,
+                updatedAt: new Date().toISOString(),
+                status: 'draft',
+                fromChatAnalysis: true,
+                analysisSnapshot: {
+                    analyzedAt: new Date().toISOString(),
+                    address: CHAT.addressText,
+                    exploreKey: CHAT.exploreKey,
+                    exploreFocusText: CHAT.exploreFocusText,
+                    feasibilitySummary: CHAT.feasibilitySummary,
+                    cardDraft: draft,
+                    isDemoMode: CHAT.isDemoMode
+                },
+                creatorUserId: currentUser.id,
+                creatorId: currentUser.initials,
+                creatorName: currentUser.name,
+                creatorEmail: currentUser.email
+            };
+        }
+
+        function saveAnalyzedOpportunityToProfile(cardDraft) {
+            if (!CHAT.addressText || !CHAT.feasibilitySummary) return null;
+            if (cardDraft) CHAT.cardDraft = cardDraft;
+
+            var payload = buildAnalyzedOpportunityPayload(CHAT.cardDraft);
+            if (!CHAT.savedDraftId) {
+                CHAT.savedDraftId = payload.id;
+                CHAT.savedDraftCreatedAt = payload.createdAt;
+            } else {
+                payload.id = CHAT.savedDraftId;
+                payload.createdAt = CHAT.savedDraftCreatedAt || payload.createdAt;
+            }
+
+            var list = app.readJson(app.KEYS.opportunityDrafts, []);
+            var index = list.findIndex(function(item) {
+                return String(item.id) === String(payload.id);
+            });
+            if (index >= 0) list[index] = payload;
+            else list.unshift(payload);
+            app.writeJson(app.KEYS.opportunityDrafts, list);
+
+            CHAT.savedDraftId = payload.id;
+            return payload;
+        }
 
         function syncOptionButtons() {
             if (!optionsEl) return;
@@ -891,6 +1044,9 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.addressText = '';
             CHAT.propertyIntel = null;
             CHAT.feasibilitySummary = '';
+            CHAT.cardDraft = null;
+            CHAT.savedDraftId = null;
+            CHAT.savedDraftCreatedAt = null;
             CHAT.isDemoMode = false;
             CHAT.thread = [];
             CHAT.sessionActive = false;
@@ -944,39 +1100,43 @@ document.addEventListener('DOMContentLoaded', function() {
         function applyIntelToForm() {
             var intel = CHAT.propertyIntel;
             if (!intel) return;
+            var draft = CHAT.cardDraft || {};
             if (!formState.type) setSelectedType('exploring');
             setValue('opp-address', intel.inputAddress || (intel.geocode && intel.geocode.normalized) || CHAT.addressText);
             setValue('opp-city', intel.city || getValue('opp-city'));
             setValue('opp-region', intel.region || getValue('opp-region'));
-            var cityLabel = intel.city || 'your property';
-            setValue('opp-title', 'Explore more units — ' + cityLabel);
-            var parts = [];
-            if (intel.demo) {
-                parts.push('### From Explore Opportunities (address preview)');
+            setValue('opp-title', draft.opportunityTitle || ('Explore more units — ' + (intel.city || 'your property')));
+            var summaryText = draft.jobDescription || '';
+            if (summaryText && CHAT.feasibilitySummary) {
+                summaryText = summaryText + '\n\n---\n\n' + buildAnalysisSummaryText(intel);
             } else {
-                parts.push('### From Explore Opportunities (open data hints)');
-                parts.push('Zoning hint: ' + (intel.zoningDistrict || '—'));
-                parts.push('Lot area: ' + (intel.lotAreaSqFt != null ? intel.lotAreaSqFt + ' sq ft' : '—'));
-                parts.push('Use/occupancy hints: ' + (intel.useAndOccupancy || '—'));
+                summaryText = buildAnalysisSummaryText(intel);
             }
-            if (CHAT.feasibilitySummary) {
-                parts.push('');
-                parts.push('### Conversation summary');
-                parts.push(CHAT.feasibilitySummary);
+            setValue('opp-summary', summaryText);
+            formState.selectedProfessions = mapWorkersToTeam(draft.workersNeeded);
+            renderTeamChecklist();
+            setValue('opp-simple-need', formatSimpleNeed(draft));
+            setValue('opp-budget', draft.estimatedCost || getValue('opp-budget') || 'TBD after scope');
+            setValue('opp-estimated-timeline', draft.estimatedTimeline || '');
+            if (Array.isArray(draft.projectScopes) && draft.projectScopes.length) {
+                formState.projectScopes = draft.projectScopes.slice();
+                renderPropertyChecklist();
             }
-            setValue('opp-summary', parts.join('\n'));
-            setValue(
-                'opp-simple-need',
-                'Help exploring whether we can add housing units (e.g. ADU, extra unit) at this address — zoning and permits to confirm locally.'
-            );
             setValue(
                 'opp-terms',
                 'Deliverables:\n- Plain-language summary of options and constraints\n- What to verify with the city/planning office\n- Suggested next steps with a designer or permit professional'
             );
-            setValue('opp-budget', getValue('opp-budget') || 'TBD after scope');
             updateTeamWidget();
             clearErrors();
             appendMsg('bot', 'I filled in your opportunity draft. You can edit it and continue the steps below.');
+        }
+
+        function notifyProfileSaved(isUpdate) {
+            var verb = isUpdate ? 'Updated' : 'Saved';
+            appendMsg(
+                'bot',
+                '**' + verb + ' to My Opportunities** on your profile. Open **Profile → My Opportunities** to review, or tap **Apply to Opportunity** here to keep editing in the builder.'
+            );
         }
 
         /**
@@ -1073,17 +1233,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 await ensurePropertyIntel();
                 var data = await callFeasibility([]);
                 CHAT.feasibilitySummary = data.feasibilitySummary || '';
+                CHAT.cardDraft = resolveCardDraft(data);
                 appendMsg('bot', CHAT.feasibilitySummary);
                 CHAT.thread.push({ role: 'assistant', content: CHAT.feasibilitySummary });
                 CHAT.sessionActive = true;
                 applyBtn.disabled = false;
+                saveAnalyzedOpportunityToProfile(CHAT.cardDraft);
+                notifyProfileSaved(false);
                 refreshChatControls();
                 messageInput.focus();
             } catch (err) {
                 var msg = '**Something went wrong:** ' + (err.message || err);
                 if (err.httpStatus === 405 || err.httpStatus === 404) {
                     msg +=
-                        '\n\nThis page may be on **static hosting** (no AI server here). Ask your team to set **bricksnexus-api-base** in this page to your **Vercel** (or other) URL where the app runs, and add **OPENROUTER_API_KEY** there.';
+                        '\n\nThis page may be on **static hosting** (no AI server here). Ask your team to set **bricksnexus-api-base** in this page to your **Vercel** (or other) URL where the app runs, and add **GEMINI_API_KEY** (Google AI Studio) there.';
                 }
                 appendMsg('bot', msg);
             } finally {
@@ -1104,8 +1267,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 var data = await callFeasibility(CHAT.thread);
                 var reply = data.feasibilitySummary || '';
                 CHAT.feasibilitySummary = reply;
+                CHAT.cardDraft = resolveCardDraft(data);
                 appendMsg('bot', reply);
                 CHAT.thread.push({ role: 'assistant', content: reply });
+                saveAnalyzedOpportunityToProfile(CHAT.cardDraft);
+                notifyProfileSaved(true);
             } catch (err) {
                 CHAT.thread.pop();
                 var msg = '**Message not sent:** ' + (err.message || err);
@@ -1150,6 +1316,13 @@ document.addEventListener('DOMContentLoaded', function() {
         applyBtn.addEventListener('click', function() {
             if (CHAT.propertyIntel && CHAT.feasibilitySummary) {
                 applyIntelToForm();
+                if (CHAT.savedDraftId) {
+                    var drafts = app.readJson(app.KEYS.opportunityDrafts, []);
+                    editingRecord = drafts.find(function(item) {
+                        return String(item.id) === String(CHAT.savedDraftId);
+                    }) || { id: CHAT.savedDraftId };
+                    editingStorageKey = app.KEYS.opportunityDrafts;
+                }
             }
         });
 
