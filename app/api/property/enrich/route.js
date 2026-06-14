@@ -2,7 +2,7 @@
  * POST /api/property/enrich
  * Alias for /api/property — unified property enrichment endpoint.
  * Accepts: { address: string, metroOverride?: "nyc" | "boston" | "generic" }
- * Returns: { ok: true, property: { ownerName, blockLot, streetLine, zoningDistrict, useAndOccupancy, attomData, ... } }
+ * Returns: { ok: true, property: { ownerName, blockLot, validatedAddress, zoningDistrict, useAndOccupancy, localRecords, ... } }
  */
 import { NextResponse } from "next/server";
 import { fetchPropertyIntel } from "@/lib/open-property/fetch-property-intel.mjs";
@@ -38,22 +38,23 @@ export async function POST(request) {
       {
         ok: true,
         property: {
-          ownerName: property.ownerName ?? null,
-          blockLot: property.blockLot ?? null,
-          validatedAddress: property.streetLine ?? null,
-          zoningDistrict: property.zoningDistrict ?? null,
-          zoningConfidence: property.derivedSummary?.zoningConfidence ?? null,
-          useAndOccupancy: property.useAndOccupancy ?? null,
-          lotAreaSqFt: property.lotAreaSqFt ?? null,
-          assessedValue: property.attomData?.assessedValue ?? null,
-          yearBuilt: property.attomData?.yearBuilt ?? null,
-          buildingSqFt: property.attomData?.buildingSqFt ?? null,
-          city: property.city ?? null,
-          region: property.region ?? null,
-          geocode: property.geocode ?? null,
-          localRecords: property.localRecords ?? null,
-          dataQuality: property.dataQuality ?? null,
-          limitations: property.limitations ?? [],
+          ownerName:          property.ownerName ?? null,
+          blockLot:           property.blockLot ?? null,
+          validatedAddress:   property.streetLine ?? null,
+          zoningDistrict:     property.zoningDistrict ?? null,
+          zoningConfidence:   property.derivedSummary?.zoningConfidence ?? null,
+          useAndOccupancy:    property.useAndOccupancy ?? null,
+          lotAreaSqFt:        property.lotAreaSqFt ?? null,
+          assessedValue:      property.attomData?.assessedValue ?? null,
+          yearBuilt:          property.attomData?.yearBuilt ?? null,
+          buildingSqFt:       property.attomData?.buildingSqFt ?? null,
+          stories:            property.attomData?.stories ?? null,
+          city:               property.city ?? null,
+          region:             property.region ?? null,
+          geocode:            property.geocode ?? null,
+          localRecords:       property.localRecords ?? null,
+          dataQuality:        property.dataQuality ?? null,
+          limitations:        property.limitations ?? [],
         },
       },
       { headers: CORS_HEADERS }
