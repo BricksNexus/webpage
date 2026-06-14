@@ -402,13 +402,24 @@
                 </div>
             </div>
 
-            <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-apply-btn" disabled>
-                Apply to Opportunity
-            </button>
+            <div class="builder-explorer-actions">
+                <button type="button" class="builder-btn builder-btn-primary" id="opp-chat-apply-btn" disabled>
+                    Apply to Opportunity
+                </button>
+                <button type="button" class="builder-btn builder-btn-report hidden" id="opp-chat-report-btn">
+                    View Opportunity Report
+                </button>
+            </div>
         </section>
     </div>
 
+    <!-- React mount point for the full-window report modal -->
+    <div id="opp-report-root"></div>
+
     <script src="post-opportunity.js"></script>
+    <script src="https://unpkg.com/react@19/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="opportunity-report-modal.js"></script>
 </body>
 </html>
 
