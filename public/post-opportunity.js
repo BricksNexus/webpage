@@ -749,26 +749,33 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTeamWidget();
 
     // ------------------------------
-    // Explore Opportunities (chat panel) — simple address → AI conversation
+    // AI Opportunity Builder — expandable floating chatbot with inline form steps
     // ------------------------------
     (function initOpportunityExplorerChatbot() {
-        var chatLauncher = getInput('opp-chat-launcher');
-        var chatPrompt = getInput('opp-chat-help-prompt');
+        var widget = getInput('opp-chat-widget');
         var chatPanel = getInput('opp-chat-panel');
         var chatClose = getInput('opp-chat-close-btn');
+        var chatExpandBtn = getInput('opp-chat-expand-btn');
+        var chatLauncher = getInput('opp-chat-launcher');
+        var chatPrompt = getInput('opp-chat-help-prompt');
         var chatAddressInput = getInput('opp-chat-address');
+        var chatAddressSection = getInput('opp-chat-address-section');
         var startBtn = getInput('opp-chat-start-btn');
         var sendBtn = getInput('opp-chat-send-btn');
         var messageInput = getInput('opp-chat-message-input');
         var applyBtn = getInput('opp-chat-apply-btn');
         var chatLog = getInput('opp-chat-log');
         var optionsEl = getInput('opp-chat-options');
+        var progressPips = document.querySelectorAll('#opp-chat-progress .chat-progress-pip');
+        var panelTitle = getInput('opp-chat-panel-title');
 
         if (
-            !chatLauncher || !chatPrompt || !chatPanel || !chatClose ||
+            !widget || !chatPanel || !chatClose ||
             !chatAddressInput || !startBtn || !sendBtn || !messageInput ||
             !applyBtn || !chatLog
         ) return;
+
+        var isExpanded = false;
 
         var CHAT = {
             isOpen: false,
@@ -777,41 +784,69 @@ document.addEventListener('DOMContentLoaded', function() {
             propertyIntel: null,
             feasibilitySummary: '',
             isDemoMode: false,
-            /** @type {{ role: string, content: string }[]} */
             thread: [],
             sessionActive: false,
             loading: false,
             exploreKey: null,
-            exploreFocusText: ''
+            exploreFocusText: '',
+            // inline builder state
+            inlineStep: null,   // 'type' | 'details' | 'team' | 'done'
+            inlineData: {
+                type: '',
+                title: '',
+                summary: '',
+                city: '',
+                region: '',
+                budget: '',
+                address: '',
+                team: []
+            }
         };
 
-        function syncOptionButtons() {
-            if (!optionsEl) return;
-            var buttons = optionsEl.querySelectorAll('.builder-explorer-option');
-            buttons.forEach(function(b) {
-                var k = b.getAttribute('data-explore-key');
-                if (k && k === CHAT.exploreKey) b.classList.add('is-selected');
-                else b.classList.remove('is-selected');
+        // ---- expand / collapse ----
+        function setExpanded(expand) {
+            isExpanded = expand;
+            widget.classList.toggle('is-expanded', expand);
+            if (chatExpandBtn) {
+                chatExpandBtn.innerHTML = expand
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H3v-6M21 3h-6M3 21l7-7M21 3l-7 7"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+                chatExpandBtn.title = expand ? 'Collapse' : 'Expand';
+            }
+        }
+
+        // ---- progress pips ----
+        var PIP_STEPS = ['address', 'type', 'details', 'team', 'done'];
+        function setProgressPip(stepName) {
+            var idx = PIP_STEPS.indexOf(stepName);
+            progressPips.forEach(function(pip, i) {
+                pip.classList.remove('active', 'done');
+                if (i < idx) pip.classList.add('done');
+                else if (i === idx) pip.classList.add('active');
             });
         }
 
+        // ---- option pill sync ----
+        function syncOptionButtons() {
+            if (!optionsEl) return;
+            optionsEl.querySelectorAll('.builder-explorer-option').forEach(function(b) {
+                var k = b.getAttribute('data-explore-key');
+                b.classList.toggle('is-selected', k === CHAT.exploreKey);
+            });
+        }
+
+        // ---- address parsing helpers ----
         function parseAddressParts(addressText) {
             var raw = String(addressText || '').trim();
             if (!raw) return { city: '', region: '' };
-
-            var parts = raw.split(',').map(function(p) { return String(p).trim(); }).filter(Boolean);
-
-            var region = '';
-            var city = '';
+            var parts = raw.split(',').map(function(p) { return p.trim(); }).filter(Boolean);
+            var region = '', city = '';
             if (parts.length >= 2) {
                 var last = parts[parts.length - 1];
-                var regionMatch = last.match(/\b([A-Za-z]{2})\b/);
-                region = regionMatch ? regionMatch[1].toUpperCase() : '';
-
-                if (parts.length >= 3) city = parts[parts.length - 2];
-                else city = parts[parts.length - 2];
+                var m = last.match(/\b([A-Za-z]{2})\b/);
+                region = m ? m[1].toUpperCase() : '';
+                city = parts.length >= 3 ? parts[parts.length - 2] : parts[parts.length - 2];
             }
-
             city = city ? city.replace(/\s*[\d-].*$/, '').trim() : '';
             return { city: city, region: region };
         }
@@ -832,27 +867,472 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'Owner-occupied (home)';
         }
 
-        /** Safe subset of Markdown for chat bubbles */
+        // ---- markdown-lite formatter ----
         function formatChatBubbleHtml(raw) {
-            var s = String(raw || '');
-            var esc = escapeHtml(s);
-            esc = esc.replace(/^## (.+)$/gm, '<strong class="builder-chat-md-h2">$1</strong>');
-            esc = esc.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            esc = esc.replace(/\n/g, '<br>');
-            return esc;
+            var s = escapeHtml(String(raw || ''));
+            s = s.replace(/^## (.+)$/gm, '<strong class="builder-chat-md-h2">$1</strong>');
+            s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            s = s.replace(/\n/g, '<br>');
+            return s;
         }
 
+        // ---- message renderers ----
         function appendMsg(role, text) {
-            var msg = document.createElement('div');
-            msg.className = 'builder-chat-msg ' + (role === 'user' ? 'user' : 'bot');
+            var wrap = document.createElement('div');
+            wrap.className = 'builder-chat-msg ' + (role === 'user' ? 'user' : 'bot');
             var bubble = document.createElement('div');
             bubble.className = 'builder-chat-bubble';
             bubble.innerHTML = formatChatBubbleHtml(text);
-            msg.appendChild(bubble);
-            chatLog.appendChild(msg);
+            wrap.appendChild(bubble);
+            chatLog.appendChild(wrap);
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
+        function appendLoadingDots() {
+            var wrap = document.createElement('div');
+            wrap.className = 'builder-chat-msg bot';
+            wrap.id = 'chat-loading-indicator';
+            var bubble = document.createElement('div');
+            bubble.className = 'builder-chat-bubble chat-loading-dots';
+            bubble.innerHTML = '<div class="chat-loading-dot"></div><div class="chat-loading-dot"></div><div class="chat-loading-dot"></div>';
+            wrap.appendChild(bubble);
+            chatLog.appendChild(wrap);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            return wrap;
+        }
+
+        function removeLoadingDots() {
+            var el = document.getElementById('chat-loading-indicator');
+            if (el) el.remove();
+        }
+
+        function appendStepDivider(label) {
+            var div = document.createElement('div');
+            div.className = 'chat-step-divider';
+            div.textContent = label;
+            chatLog.appendChild(div);
+        }
+
+        // ---- NYC building class descriptions ----
+        var BLDG_CLASS_DESC = {
+            'A': 'One Family Dwelling', 'B': 'Two Family Dwelling', 'C': 'Walk-Up Apartment',
+            'C0': 'Walk-Up Apt (3-4 Families)', 'C1': 'Walk-Up Apt (5 Families)', 'C2': 'Walk-Up Apt (5+ Families)',
+            'C3': 'Walk-Up Apt (Converted)', 'C4': 'Walk-Up Apt (Old Law)', 'C5': 'Walk-Up Apt (Converted Old Law)',
+            'C6': 'Walk-Up Apt (Six Families)', 'C7': 'Walk-Up Apt. Over Six Families With Stores',
+            'C8': 'Walk-Up Apt (Converted Store)', 'C9': 'Walk-Up Apt (Garden)', 'D': 'Elevator Apartment',
+            'D0': 'Elevator Apt (Semi-Fireproof)', 'D1': 'Elevator Apt (Semi-Fireproof with Stores)',
+            'D2': 'Elevator Apt (Artists)', 'D3': 'Elevator Apt (Fireproof with Stores)',
+            'D4': 'Elevator Apt (Cooperative)', 'D5': 'Elevator Apt (Converted)', 'D6': 'Elevator Apt (Fireproof)',
+            'D7': 'Elevator Apt (Fireproof, 2 Stairs)', 'D8': 'Elevator Apt (Luxury)',
+            'D9': 'Elevator Apt (Undergoing Alterations)', 'E': 'Warehouse / Factory / Industrial',
+            'F': 'Factory / Industrial', 'G': 'Garage', 'H': 'Hotel', 'I': 'Hospital / Health',
+            'J': 'Theatre', 'K': 'Store Building', 'L': 'Loft', 'M': 'Religious / Educational',
+            'N': 'Asylums / Homes', 'O': 'Office Building', 'P': 'Indoor Public Assembly',
+            'Q': 'Outdoor Recreation', 'R': 'Condo', 'RR': 'Condo (Residential)', 'S': 'Mixed Residential & Commercial',
+            'T': 'Transportation Facility', 'U': 'Utility', 'V': 'Vacant Land', 'W': 'Educational / Cultural',
+            'Y': 'Government', 'Z': 'Misc.'
+        };
+        function bldgClassLabel(code) {
+            if (!code) return '';
+            var uc = String(code).toUpperCase();
+            return BLDG_CLASS_DESC[uc] || ('Class ' + uc);
+        }
+
+        // ---- property report card ----
+        function appendPropertyReport(intel) {
+            var pluto = intel && intel.localRecords && intel.localRecords.nyc && intel.localRecords.nyc.pluto;
+            if (!pluto || !pluto.ok) return;
+
+            // Resolve borough from BBL prefix
+            var boroughMap = { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' };
+            var boroughCode = pluto.bbl ? String(pluto.bbl)[0] : '';
+            var borough = boroughMap[boroughCode] || '';
+
+            var bldgClass = pluto.buildingClass || '';
+            var bldgDesc = bldgClassLabel(bldgClass);
+            var bldgLabel = bldgClass ? (bldgClass + (bldgDesc ? ' - ' + bldgDesc.toUpperCase() : '')) : '';
+
+            var taxClass = pluto.taxClass || (intel.attomData && intel.attomData.taxClass) || '';
+            var yearBuilt = pluto.yearBuiltPluto || (intel.attomData && intel.attomData.yearBuilt) || '';
+            var stories = pluto.numFloors || (intel.attomData && intel.attomData.stories) || '';
+            var numBldgs = pluto.numBuildings != null ? pluto.numBuildings : '';
+            var totalArea = pluto.totalBuildingArea != null ? Number(pluto.totalBuildingArea).toLocaleString() : '';
+            var totalUnits = pluto.totalUnits != null ? pluto.totalUnits : '';
+            var resArea = pluto.residentialArea != null ? Number(pluto.residentialArea).toLocaleString() : '';
+            var resUnits = pluto.residentialUnits != null ? pluto.residentialUnits : '';
+            var comArea = pluto.commercialArea != null ? Number(pluto.commercialArea).toLocaleString() : '';
+            var comUnits = (totalUnits && resUnits) ? (Number(totalUnits) - Number(resUnits)) : '';
+            var bldgStyle = pluto.buildingStyle || '';
+            var bldgFront = pluto.buildingFrontage != null ? pluto.buildingFrontage : '';
+            var bldgDepth = pluto.buildingDepth != null ? pluto.buildingDepth : '';
+            var constructType = pluto.constructionType || '';
+            var lotFront = pluto.lotFrontage != null ? pluto.lotFrontage : '';
+            var lotDepth = pluto.lotDepth != null ? pluto.lotDepth : '';
+            var lotArea = pluto.lotAreaSqFt != null ? Number(pluto.lotAreaSqFt).toLocaleString() : '';
+            var zoning = pluto.zoningDistrict || intel.zoningDistrict || '';
+            var ownerName = intel.ownerName || pluto.ownerName || '';
+            var block = pluto.block || '';
+            var lot = pluto.lot || '';
+            var address = intel.streetLine || intel.inputAddress || '';
+
+            function row(label, val) {
+                if (val === '' || val == null) return '';
+                return '<tr><td class="rpt-label">' + escapeHtml(String(label)) + '</td><td class="rpt-val">' + escapeHtml(String(val)) + '</td></tr>';
+            }
+
+            var card = document.createElement('div');
+            card.className = 'chat-form-card chat-report-card';
+            card.id = 'chat-card-report';
+            card.innerHTML =
+                '<div class="rpt-header">' +
+                    '<div class="rpt-badge">Opportunity Report</div>' +
+                    (address ? '<div class="rpt-address">' + escapeHtml(address.toUpperCase()) + '</div>' : '') +
+                '</div>' +
+                '<div class="rpt-section-title">Property Information</div>' +
+                '<table class="rpt-table">' +
+                    (borough ? row('Borough', borough) : '') +
+                    (block ? row('Block', block) : '') +
+                    (lot ? row('Lot', lot) : '') +
+                    (ownerName ? row('Property Owner', ownerName) : '') +
+                    (bldgLabel ? row('Type', bldgLabel) : '') +
+                    (taxClass ? row('Tax Class', taxClass) : '') +
+                    (numBldgs !== '' ? row('Number of Buildings', numBldgs) : '') +
+                    (yearBuilt ? row('Year Built', yearBuilt) : '') +
+                    (stories !== '' ? row('Number of Stories', stories) : '') +
+                    (totalArea ? row('Total Area', totalArea + ' sq ft') : '') +
+                    (totalUnits !== '' ? row('Total Units', totalUnits) : '') +
+                    (resArea ? row('Residential Area', resArea + ' sq ft') : '') +
+                    (resUnits !== '' ? row('Residential Units', resUnits) : '') +
+                    (comArea ? row('Commercial Area', comArea + ' sq ft') : '') +
+                    (comUnits !== '' ? row('Commercial Units', comUnits) : '') +
+                    (bldgStyle ? row('Building Style', bldgStyle) : '') +
+                    (bldgFront !== '' ? row('Building Frontage', bldgFront + ' ft') : '') +
+                    (bldgDepth !== '' ? row('Building Depth', bldgDepth + ' ft') : '') +
+                    (constructType ? row('Construction Type', constructType) : '') +
+                '</table>' +
+                '<div class="rpt-section-title">Land Information</div>' +
+                '<table class="rpt-table">' +
+                    (lotFront !== '' ? row('Land Frontage', lotFront + ' ft') : '') +
+                    (lotDepth !== '' ? row('Land Depth', lotDepth + ' ft') : '') +
+                    (lotArea ? row('Land Area', lotArea + ' sq ft') : '') +
+                    (zoning ? row('Zoning', zoning) : '') +
+                '</table>';
+            chatLog.appendChild(card);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // ---- inline form card builders ----
+        function appendTypeCard() {
+            appendStepDivider('Step 1 — Opportunity Type');
+            var card = document.createElement('div');
+            card.className = 'chat-form-card';
+            card.id = 'chat-card-type';
+            card.innerHTML =
+                '<div class="chat-form-card-title">What kind of opportunity is this?</div>' +
+                '<div class="chat-type-grid">' +
+                    ['hiring', 'services', 'project', 'exploring'].map(function(k) {
+                        var labels = { hiring: 'Hiring', services: 'Services', project: 'Project', exploring: 'Exploring' };
+                        var descs = {
+                            hiring: 'Role, job description, location & budget.',
+                            services: 'Hire service providers or contractors.',
+                            project: 'Full project with team, timeline & docs.',
+                            exploring: 'Early-stage — gauge interest & partners.'
+                        };
+                        return '<button type="button" class="chat-type-btn" data-type="' + k + '">' +
+                            '<strong>' + labels[k] + '</strong>' +
+                            '<span>' + descs[k] + '</span>' +
+                        '</button>';
+                    }).join('') +
+                '</div>';
+            chatLog.appendChild(card);
+
+            card.querySelectorAll('.chat-type-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    card.querySelectorAll('.chat-type-btn').forEach(function(b) { b.classList.remove('selected'); });
+                    btn.classList.add('selected');
+                    CHAT.inlineData.type = btn.getAttribute('data-type');
+                    var label = btn.querySelector('strong').textContent;
+                    setTimeout(function() {
+                        appendMsg('user', 'Type: ' + label);
+                        card.style.opacity = '0.5';
+                        card.style.pointerEvents = 'none';
+                        setProgressPip('details');
+                        if (panelTitle) panelTitle.textContent = 'Details';
+                        setTimeout(function() { appendDetailsCard(); }, 300);
+                    }, 200);
+                });
+            });
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function appendDetailsCard() {
+            appendMsg('bot', 'Great choice. Now fill in the key details:');
+            appendStepDivider('Step 2 — Details');
+
+            var cityVal = CHAT.inlineData.city || (CHAT.propertyIntel && CHAT.propertyIntel.city) || '';
+            var regionVal = CHAT.inlineData.region || (CHAT.propertyIntel && CHAT.propertyIntel.region) || '';
+            var addrVal = CHAT.inlineData.address || CHAT.addressText || '';
+
+            var card = document.createElement('div');
+            card.className = 'chat-form-card';
+            card.id = 'chat-card-details';
+            card.innerHTML =
+                '<div class="chat-form-card-title">Project details</div>' +
+                '<div class="chat-field">' +
+                    '<label>Opportunity title *</label>' +
+                    '<input type="text" id="ci-title" placeholder="e.g. ADU design & permitting, Austin TX" value="' + escapeHtml(CHAT.inlineData.title) + '">' +
+                '</div>' +
+                '<div class="chat-field">' +
+                    '<label>Project brief / description *</label>' +
+                    '<textarea id="ci-summary" rows="3" placeholder="Describe scope, stage, urgency and expected deliverables.">' + escapeHtml(CHAT.inlineData.summary) + '</textarea>' +
+                '</div>' +
+                '<div class="chat-form-grid-2">' +
+                    '<div class="chat-field"><label>City *</label><input type="text" id="ci-city" placeholder="Austin" value="' + escapeHtml(cityVal) + '"></div>' +
+                    '<div class="chat-field"><label>State / Region</label><input type="text" id="ci-region" placeholder="TX" value="' + escapeHtml(regionVal) + '"></div>' +
+                '</div>' +
+                '<div class="chat-form-grid-2">' +
+                    '<div class="chat-field"><label>Budget</label><input type="text" id="ci-budget" placeholder="$50k – $200k" value="' + escapeHtml(CHAT.inlineData.budget) + '"></div>' +
+                    '<div class="chat-field"><label>Address / site note</label><input type="text" id="ci-address" placeholder="Street or landmark" value="' + escapeHtml(addrVal) + '"></div>' +
+                '</div>' +
+                '<div class="chat-card-actions">' +
+                    '<button type="button" class="chat-card-btn chat-card-btn-primary" id="ci-details-confirm">Continue →</button>' +
+                    '<button type="button" class="chat-card-btn chat-card-btn-secondary" id="ci-details-skip">Skip for now</button>' +
+                '</div>';
+            chatLog.appendChild(card);
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            function confirmDetails(skip) {
+                if (!skip) {
+                    CHAT.inlineData.title = card.querySelector('#ci-title').value.trim();
+                    CHAT.inlineData.summary = card.querySelector('#ci-summary').value.trim();
+                    CHAT.inlineData.city = card.querySelector('#ci-city').value.trim();
+                    CHAT.inlineData.region = card.querySelector('#ci-region').value.trim();
+                    CHAT.inlineData.budget = card.querySelector('#ci-budget').value.trim();
+                    CHAT.inlineData.address = card.querySelector('#ci-address').value.trim();
+
+                    if (!skip && !CHAT.inlineData.title) {
+                        card.querySelector('#ci-title').style.borderColor = 'rgba(239,68,68,0.7)';
+                        card.querySelector('#ci-title').focus();
+                        return;
+                    }
+
+                    var summary = CHAT.inlineData.title + (CHAT.inlineData.city ? ' · ' + CHAT.inlineData.city : '');
+                    appendMsg('user', 'Details: ' + summary);
+                }
+                card.style.opacity = '0.5';
+                card.style.pointerEvents = 'none';
+                setProgressPip('team');
+                if (panelTitle) panelTitle.textContent = 'Team';
+                setTimeout(function() { appendTeamCard(); }, 300);
+            }
+
+            card.querySelector('#ci-details-confirm').addEventListener('click', function() { confirmDetails(false); });
+            card.querySelector('#ci-details-skip').addEventListener('click', function() { confirmDetails(true); });
+        }
+
+        var TEAM_OPTS = [
+            'Architect', 'Civil Engineer', 'General Contractor', 'Electrician',
+            'Plumber', 'Project Manager', 'Surveyor', 'Real Estate Lawyer'
+        ];
+
+        function appendTeamCard() {
+            appendMsg('bot', 'Almost there — who do you need on this project? (Select all that apply)');
+            appendStepDivider('Step 3 — Team');
+
+            var card = document.createElement('div');
+            card.className = 'chat-form-card';
+            card.id = 'chat-card-team';
+            card.innerHTML =
+                '<div class="chat-form-card-title">Professionals needed</div>' +
+                '<div class="chat-profession-grid">' +
+                TEAM_OPTS.map(function(name) {
+                    return '<button type="button" class="chat-profession-chip" data-prof="' + escapeHtml(name) + '">' + escapeHtml(name) + '</button>';
+                }).join('') +
+                '</div>' +
+                '<div class="chat-field" style="margin-top:12px;">' +
+                    '<label>Or describe what you need</label>' +
+                    '<textarea id="ci-need" rows="2" placeholder="e.g. I need a zoning attorney and a residential architect."></textarea>' +
+                '</div>' +
+                '<div class="chat-card-actions">' +
+                    '<button type="button" class="chat-card-btn chat-card-btn-primary" id="ci-team-confirm">Finish & Apply →</button>' +
+                    '<button type="button" class="chat-card-btn chat-card-btn-secondary" id="ci-team-skip">Skip</button>' +
+                '</div>';
+            chatLog.appendChild(card);
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            card.querySelectorAll('.chat-profession-chip').forEach(function(chip) {
+                chip.addEventListener('click', function() {
+                    chip.classList.toggle('selected');
+                    var name = chip.getAttribute('data-prof');
+                    var idx = CHAT.inlineData.team.indexOf(name);
+                    if (chip.classList.contains('selected')) {
+                        if (idx === -1) CHAT.inlineData.team.push(name);
+                    } else {
+                        if (idx !== -1) CHAT.inlineData.team.splice(idx, 1);
+                    }
+                });
+            });
+
+            function finishTeam(skip) {
+                if (!skip) {
+                    var needText = card.querySelector('#ci-need').value.trim();
+                    CHAT.inlineData.simpleNeed = needText;
+                }
+                card.style.opacity = '0.5';
+                card.style.pointerEvents = 'none';
+                setProgressPip('done');
+                if (panelTitle) panelTitle.textContent = 'Ready';
+                applyInlineToForm();
+            }
+
+            card.querySelector('#ci-team-confirm').addEventListener('click', function() { finishTeam(false); });
+            card.querySelector('#ci-team-skip').addEventListener('click', function() { finishTeam(true); });
+        }
+
+        // ---- apply inline data to the real form ----
+        function applyInlineToForm() {
+            var d = CHAT.inlineData;
+            var intel = CHAT.propertyIntel;
+
+            if (d.type) setSelectedType(d.type);
+            else if (!formState.type) setSelectedType('exploring');
+
+            if (d.title) setValue('opp-title', d.title);
+            if (d.city) setValue('opp-city', d.city);
+            else if (intel && intel.city) setValue('opp-city', intel.city);
+            if (d.region) setValue('opp-region', d.region);
+            else if (intel && intel.region) setValue('opp-region', intel.region);
+            if (d.budget) setValue('opp-budget', d.budget);
+            if (d.address) setValue('opp-address', d.address);
+            else if (CHAT.addressText) setValue('opp-address', CHAT.addressText);
+
+            var summaryParts = [];
+            if (d.summary) summaryParts.push(d.summary);
+            if (CHAT.feasibilitySummary) {
+                summaryParts.push('');
+                summaryParts.push('--- AI Analysis ---');
+                summaryParts.push(CHAT.feasibilitySummary);
+            }
+            if (summaryParts.length) setValue('opp-summary', summaryParts.join('\n'));
+
+            if (d.team && d.team.length) {
+                formState.selectedProfessions = d.team.slice();
+                renderTeamChecklist();
+                updateTeamWidget();
+            }
+
+            var simpleNeed = d.simpleNeed ||
+                'Help with: ' + (d.type || 'development project') + (CHAT.addressText ? ' at ' + CHAT.addressText : '');
+            setValue('opp-simple-need', simpleNeed);
+
+            if (!getValue('opp-terms')) {
+                setValue('opp-terms', 'Deliverables to be confirmed with selected professionals.');
+            }
+
+            clearErrors();
+            applyBtn.disabled = false;
+            CHAT.sessionActive = true;
+
+            appendMsg('bot',
+                'All done! ✓ Your opportunity form has been filled in.\n\n' +
+                '**Tap "Apply to Opportunity Form"** below to transfer everything, ' +
+                'then continue through the remaining steps (Chronogram, Financing, Documents) before publishing.'
+            );
+            refreshChatControls();
+        }
+
+        // ---- apply button transfers data and scrolls to form ----
+        function applyIntelToForm() {
+            applyInlineToForm();
+        }
+
+        // ---- API helpers ----
+        function buildDemoPropertyIntel(addressText) {
+            var parts = parseAddressParts(addressText);
+            var asset = inferAssetTypeKey(addressText);
+            var occ = inferOccupancyLabel(addressText);
+            return {
+                demo: true,
+                inputAddress: addressText,
+                dataQuality: 'client_demo_no_api',
+                city: parts.city || null,
+                region: parts.region || null,
+                zoningDistrict: '— (confirm on municipal GIS)',
+                lotAreaSqFt: null,
+                useAndOccupancy: 'Heuristics only. Suggests: ' + asset + '; occupancy: ' + occ,
+                geocode: { normalized: addressText, provider: 'none', context: { city: parts.city, region: parts.region } },
+                limitations: ['Address-only preview.'],
+                fetchedAt: new Date().toISOString()
+            };
+        }
+
+        function getApiBase() {
+            if (typeof window.BRICKSNEXUS_API_BASE === 'string' && window.BRICKSNEXUS_API_BASE.length) {
+                return window.BRICKSNEXUS_API_BASE.replace(/\/$/, '');
+            }
+            var meta = document.querySelector('meta[name="bricksnexus-api-base"]');
+            if (meta && meta.getAttribute('content')) return meta.getAttribute('content').replace(/\/$/, '');
+            return '';
+        }
+
+        async function ensurePropertyIntel() {
+            var addressText = String(chatAddressInput.value || '').trim();
+            if (!addressText) return null;
+            CHAT.addressText = addressText;
+            CHAT.inlineData.address = addressText;
+            if (CHAT.propertyIntel) return true;
+
+            var base = getApiBase();
+            try {
+                var res = await fetch((base || '') + '/api/property', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: addressText })
+                });
+                var data = await res.json().catch(function() { return {}; });
+                if (res.ok && data.ok && data.property) {
+                    CHAT.propertyIntel = data.property;
+                    CHAT.isDemoMode = false;
+                    // pre-fill city/region from intel
+                    if (data.property.city) CHAT.inlineData.city = data.property.city;
+                    if (data.property.region) CHAT.inlineData.region = data.property.region;
+                    return true;
+                }
+            } catch (e) { /* fall through to demo */ }
+
+            CHAT.propertyIntel = buildDemoPropertyIntel(addressText);
+            CHAT.isDemoMode = true;
+            var parsed = parseAddressParts(addressText);
+            if (parsed.city) CHAT.inlineData.city = parsed.city;
+            if (parsed.region) CHAT.inlineData.region = parsed.region;
+            return true;
+        }
+
+        async function callFeasibility(msgs) {
+            var base = getApiBase();
+            var payload = {
+                address: CHAT.addressText,
+                property: CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText),
+                messages: msgs || []
+            };
+            if ((!msgs || !msgs.length) && CHAT.exploreFocusText) {
+                payload.exploreFocus = CHAT.exploreFocusText;
+            }
+            var res = await fetch((base || '') + '/api/feasibility', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            var data = await res.json().catch(function() { return {}; });
+            if (!res.ok) {
+                var fail = new Error([data.detail, data.error, 'HTTP ' + res.status].filter(Boolean)[0] || 'Request failed');
+                fail.httpStatus = res.status;
+                throw fail;
+            }
+            return data;
+        }
+
+        // ---- controls ----
         function refreshChatControls() {
             var active = CHAT.sessionActive;
             var busy = CHAT.loading;
@@ -864,27 +1344,25 @@ document.addEventListener('DOMContentLoaded', function() {
         function openChatbox() {
             CHAT.isOpen = true;
             chatPanel.classList.remove('hidden');
-            chatPrompt.style.display = 'none';
-            chatLauncher.style.display = 'none';
+            if (chatLauncher) chatLauncher.style.display = 'none';
+            if (chatPrompt) chatPrompt.style.display = 'none';
 
             if (!CHAT.hasGreeted) {
-                appendMsg(
-                    'bot',
-                    'Hi! I’m here to help you **explore adding more homes or units** at your property — in plain language, with no construction background needed.\n\n' +
-                        '**Step 1 (optional):** Tap a **common path** below (ADU, basement apartment, subdivision, etc.) if one sounds like you.\n' +
-                        '**Step 2:** Type your full address.\n' +
-                        '**Step 3:** Tap **Start** — I’ll explain what might be possible and what to double-check locally.\n' +
-                        '**Step 4:** Keep chatting or tap another path anytime to learn more.'
-                );
                 CHAT.hasGreeted = true;
+                appendMsg('bot',
+                    'Hi! I\'ll guide you through building your opportunity step-by-step.\n\n' +
+                    'Optionally enter your **property address** above for AI-powered zoning insights, ' +
+                    'then tap **Start** — or leave it blank to jump straight into the form.'
+                );
             }
         }
 
         function closeChatbox() {
             CHAT.isOpen = false;
             chatPanel.classList.add('hidden');
-            chatPrompt.style.display = '';
-            chatLauncher.style.display = '';
+            if (chatLauncher) chatLauncher.style.display = '';
+            if (chatPrompt) chatPrompt.style.display = '';
+            setExpanded(false);
         }
 
         function resetChat() {
@@ -895,202 +1373,93 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.thread = [];
             CHAT.sessionActive = false;
             CHAT.loading = false;
+            CHAT.inlineStep = null;
+            CHAT.inlineData = { type: '', title: '', summary: '', city: '', region: '', budget: '', address: '', team: [] };
             chatLog.innerHTML = '';
             applyBtn.disabled = true;
             messageInput.value = '';
-            /* Keep exploreKey / exploreFocusText so a chosen topic survives a new Start */
+            setProgressPip('address');
+            if (panelTitle) panelTitle.textContent = 'Build with AI';
             refreshChatControls();
             syncOptionButtons();
         }
 
-        function buildDemoPropertyIntel(addressText) {
-            var parts = parseAddressParts(addressText);
-            var asset = inferAssetTypeKey(addressText);
-            var occ = inferOccupancyLabel(addressText);
-            return {
-                demo: true,
-                inputAddress: addressText,
-                dataQuality: 'client_demo_no_api',
-                city: parts.city || null,
-                region: parts.region || null,
-                zoningDistrict: '— (address only — confirm on municipal GIS)',
-                lotAreaSqFt: null,
-                useAndOccupancy: 'Heuristics from address text only (not verified). Keywords suggest: ' + asset + '; occupancy guess: ' + occ,
-                geocode: {
-                    normalized: addressText,
-                    provider: 'none',
-                    context: { city: parts.city, region: parts.region }
-                },
-                jurisdiction: {
-                    censusGeographies: { ok: false, skipped: true, reason: 'Preview — full data when API is available' }
-                },
-                openStreetMap: { ok: false, skipped: true, reason: 'Preview — full data when API is available' },
-                limitations: ['Address-only preview when property API is unreachable.'],
-                fetchedAt: new Date().toISOString()
-            };
-        }
-
-        function getApiBase() {
-            if (typeof window.BRICKSNEXUS_API_BASE === 'string' && window.BRICKSNEXUS_API_BASE.length) {
-                return window.BRICKSNEXUS_API_BASE.replace(/\/$/, '');
-            }
-            var meta = document.querySelector('meta[name="bricksnexus-api-base"]');
-            if (meta && meta.getAttribute('content')) {
-                return meta.getAttribute('content').replace(/\/$/, '');
-            }
-            return '';
-        }
-
-        function applyIntelToForm() {
-            var intel = CHAT.propertyIntel;
-            if (!intel) return;
-            if (!formState.type) setSelectedType('exploring');
-            setValue('opp-address', intel.inputAddress || (intel.geocode && intel.geocode.normalized) || CHAT.addressText);
-            setValue('opp-city', intel.city || getValue('opp-city'));
-            setValue('opp-region', intel.region || getValue('opp-region'));
-            var cityLabel = intel.city || 'your property';
-            setValue('opp-title', 'Explore more units — ' + cityLabel);
-            var parts = [];
-            if (intel.demo) {
-                parts.push('### From Explore Opportunities (address preview)');
-            } else {
-                parts.push('### From Explore Opportunities (open data hints)');
-                parts.push('Zoning hint: ' + (intel.zoningDistrict || '—'));
-                parts.push('Lot area: ' + (intel.lotAreaSqFt != null ? intel.lotAreaSqFt + ' sq ft' : '—'));
-                parts.push('Use/occupancy hints: ' + (intel.useAndOccupancy || '—'));
-            }
-            if (CHAT.feasibilitySummary) {
-                parts.push('');
-                parts.push('### Conversation summary');
-                parts.push(CHAT.feasibilitySummary);
-            }
-            setValue('opp-summary', parts.join('\n'));
-            setValue(
-                'opp-simple-need',
-                'Help exploring whether we can add housing units (e.g. ADU, extra unit) at this address — zoning and permits to confirm locally.'
-            );
-            setValue(
-                'opp-terms',
-                'Deliverables:\n- Plain-language summary of options and constraints\n- What to verify with the city/planning office\n- Suggested next steps with a designer or permit professional'
-            );
-            setValue('opp-budget', getValue('opp-budget') || 'TBD after scope');
-            updateTeamWidget();
-            clearErrors();
-            appendMsg('bot', 'I filled in your opportunity draft. You can edit it and continue the steps below.');
-        }
-
-        /**
-         * Load property JSON for the model (live API or address-only preview).
-         */
-        async function ensurePropertyIntel() {
-            var addressText = String(chatAddressInput.value || '').trim();
-            if (!addressText) return null;
-            CHAT.addressText = addressText;
-            if (CHAT.propertyIntel) return true;
-
-            var base = getApiBase();
-            var url = (base || '') + '/api/property';
-            try {
-                var res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: addressText })
-                });
-                var data = await res.json().catch(function() { return {}; });
-                if (res.ok && data.ok && data.property) {
-                    CHAT.propertyIntel = data.property;
-                    CHAT.isDemoMode = false;
-                    return true;
-                }
-            } catch (e) {
-                /* use preview */
-            }
-            CHAT.propertyIntel = buildDemoPropertyIntel(addressText);
-            CHAT.isDemoMode = true;
-            return true;
-        }
-
-        /**
-         * POST /api/feasibility with current thread (assistant/user turns only).
-         */
-        async function callFeasibility(messagesForApi) {
-            var base = getApiBase();
-            var url = (base || '') + '/api/feasibility';
-            var msgs = messagesForApi || [];
-            var payload = {
-                address: CHAT.addressText,
-                property: CHAT.propertyIntel || buildDemoPropertyIntel(CHAT.addressText),
-                messages: msgs
-            };
-            if (msgs.length === 0 && CHAT.exploreFocusText) {
-                payload.exploreFocus = CHAT.exploreFocusText;
-            }
-            var res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            var data = await res.json().catch(function() { return {}; });
-            if (!res.ok) {
-                var errParts = [data.detail, data.error, 'HTTP ' + res.status].filter(Boolean);
-                var fail = new Error(errParts[0] || 'Request failed');
-                fail.httpStatus = res.status;
-                throw fail;
-            }
-            return data;
-        }
-
-        function setLoading(loading) {
-            CHAT.loading = loading;
-            refreshChatControls();
-        }
-
+        // ---- start session ----
         async function startSession() {
             var addressText = String(chatAddressInput.value || '').trim();
-            if (!addressText) {
-                appendMsg('bot', 'Please type your property address first, then tap **Start**.');
-                return;
-            }
 
             resetChat();
-            CHAT.addressText = addressText;
-            var userIntro = 'My property is at: ' + addressText;
-            if (CHAT.exploreFocusText) {
-                var shortLabel = '';
-                if (optionsEl && CHAT.exploreKey) {
-                    var sel = optionsEl.querySelector('.builder-explorer-option[data-explore-key="' + CHAT.exploreKey + '"]');
-                    if (sel) shortLabel = sel.getAttribute('data-explore-label') || '';
-                }
-                userIntro +=
-                    '\n\nI want to learn more about: **' +
-                    (shortLabel || 'this type of project') +
-                    '**.';
-            }
-            appendMsg('user', userIntro);
+            // Auto-expand when starting
+            setExpanded(true);
 
-            setLoading(true);
+            // Hide address section — it's now in the chat flow
+            if (chatAddressSection) chatAddressSection.style.display = 'none';
+
+            if (addressText) {
+                CHAT.addressText = addressText;
+                appendMsg('user', 'My property: ' + addressText);
+            } else {
+                appendMsg('user', 'I\'d like to create a new opportunity.');
+            }
+
+            setProgressPip('type');
+            if (panelTitle) panelTitle.textContent = 'Type';
+
+            var loadingEl = appendLoadingDots();
+            CHAT.loading = true;
+            refreshChatControls();
+
             try {
-                await ensurePropertyIntel();
-                var data = await callFeasibility([]);
-                CHAT.feasibilitySummary = data.feasibilitySummary || '';
-                appendMsg('bot', CHAT.feasibilitySummary);
-                CHAT.thread.push({ role: 'assistant', content: CHAT.feasibilitySummary });
-                CHAT.sessionActive = true;
-                applyBtn.disabled = false;
-                refreshChatControls();
-                messageInput.focus();
-            } catch (err) {
-                var msg = '**Something went wrong:** ' + (err.message || err);
-                if (err.httpStatus === 405 || err.httpStatus === 404) {
-                    msg +=
-                        '\n\nThis page may be on **static hosting** (no AI server here). Ask your team to set **bricksnexus-api-base** in this page to your **Vercel** (or other) URL where the app runs, and add **OPENROUTER_API_KEY** there.';
+                if (addressText) {
+                    await ensurePropertyIntel();
                 }
-                appendMsg('bot', msg);
+
+                removeLoadingDots();
+
+                if (CHAT.propertyIntel && !CHAT.propertyIntel.demo) {
+                    appendPropertyReport(CHAT.propertyIntel);
+                    appendMsg('bot', 'Property data pulled. Now let\'s build your opportunity posting — what type is this?');
+                } else if (addressText) {
+                    appendMsg('bot', 'Got it! Let\'s build your opportunity.\n\nWhat type of posting is this?');
+                } else {
+                    appendMsg('bot', 'Let\'s build your opportunity.\n\nWhat type of posting is this?');
+                }
+
+                // If there's an explore focus, do a quick AI feasibility call and show it first
+                if (addressText && CHAT.exploreFocusText) {
+                    var dotsEl2 = appendLoadingDots();
+                    try {
+                        var feasData = await callFeasibility([]);
+                        CHAT.feasibilitySummary = feasData.feasibilitySummary || '';
+                        removeLoadingDots();
+                        if (CHAT.feasibilitySummary) {
+                            appendMsg('bot', CHAT.feasibilitySummary);
+                            CHAT.thread.push({ role: 'assistant', content: CHAT.feasibilitySummary });
+                        }
+                    } catch (e) {
+                        removeLoadingDots();
+                    }
+                }
+
+                CHAT.sessionActive = true;
+                setTimeout(function() { appendTypeCard(); }, 200);
+
+            } catch (err) {
+                removeLoadingDots();
+                var errMsg = '**Couldn\'t load property data:** ' + (err.message || err);
+                if (err.httpStatus === 405 || err.httpStatus === 404) {
+                    errMsg += '\n\nNo problem — let\'s build your opportunity without it.';
+                }
+                appendMsg('bot', errMsg);
+                CHAT.sessionActive = true;
+                setTimeout(function() { appendTypeCard(); }, 200);
             } finally {
-                setLoading(false);
+                CHAT.loading = false;
+                refreshChatControls();
             }
         }
 
+        // ---- follow-up chat (after session) ----
         async function postUserTurn(text) {
             if (!CHAT.sessionActive || CHAT.loading) return;
             text = String(text || '').trim();
@@ -1099,22 +1468,28 @@ document.addEventListener('DOMContentLoaded', function() {
             appendMsg('user', text);
             CHAT.thread.push({ role: 'user', content: text });
 
-            setLoading(true);
+            CHAT.loading = true;
+            refreshChatControls();
+            var loadEl = appendLoadingDots();
+
             try {
                 var data = await callFeasibility(CHAT.thread);
                 var reply = data.feasibilitySummary || '';
                 CHAT.feasibilitySummary = reply;
+                removeLoadingDots();
                 appendMsg('bot', reply);
                 CHAT.thread.push({ role: 'assistant', content: reply });
             } catch (err) {
                 CHAT.thread.pop();
-                var msg = '**Message not sent:** ' + (err.message || err);
+                removeLoadingDots();
+                var errMsg = '**Message not sent:** ' + (err.message || err);
                 if (err.httpStatus === 405 || err.httpStatus === 404) {
-                    msg += '\n\nCheck that **bricksnexus-api-base** points to your deployed app.';
+                    errMsg += '\n\nCheck that **bricksnexus-api-base** points to your deployed app.';
                 }
-                appendMsg('bot', msg);
+                appendMsg('bot', errMsg);
             } finally {
-                setLoading(false);
+                CHAT.loading = false;
+                refreshChatControls();
                 if (CHAT.sessionActive) messageInput.focus();
             }
         }
@@ -1127,30 +1502,39 @@ document.addEventListener('DOMContentLoaded', function() {
             await postUserTurn(text);
         }
 
-        startBtn.addEventListener('click', function() {
-            startSession();
+        // ---- event listeners ----
+        if (chatLauncher) chatLauncher.addEventListener('click', openChatbox);
+        if (chatPrompt) chatPrompt.addEventListener('click', openChatbox);
+        chatClose.addEventListener('click', closeChatbox);
+
+        if (chatExpandBtn) {
+            chatExpandBtn.addEventListener('click', function() {
+                setExpanded(!isExpanded);
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isExpanded) setExpanded(false);
         });
 
+        startBtn.addEventListener('click', startSession);
+
         chatAddressInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                startSession();
-            }
+            if (e.key === 'Enter') { e.preventDefault(); startSession(); }
         });
 
         messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendFollowUp();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFollowUp(); }
         });
 
         sendBtn.addEventListener('click', sendFollowUp);
 
         applyBtn.addEventListener('click', function() {
-            if (CHAT.propertyIntel && CHAT.feasibilitySummary) {
-                applyIntelToForm();
-            }
+            applyInlineToForm();
+            // Scroll to form after applying
+            var formEl = document.getElementById('opportunity-builder-form');
+            if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            closeChatbox();
         });
 
         if (optionsEl) {
@@ -1167,29 +1551,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     syncOptionButtons();
                     return;
                 }
-
                 CHAT.exploreKey = key;
                 CHAT.exploreFocusText = focus;
                 syncOptionButtons();
 
                 if (CHAT.sessionActive && !CHAT.loading) {
-                    var q =
-                        'I want to explore **' +
-                        label +
-                        '** for this address.\n\n' +
-                        (focus ? focus + '\n\n' : '') +
-                        'What should I know in plain language?';
+                    var q = 'I want to explore **' + label + '** for this address.\n\n' +
+                        (focus ? focus + '\n\n' : '') + 'What should I know in plain language?';
                     postUserTurn(q);
                 }
             });
         }
 
-        chatLauncher.addEventListener('click', openChatbox);
-        chatPrompt.addEventListener('click', openChatbox);
-        chatClose.addEventListener('click', closeChatbox);
-
         refreshChatControls();
         syncOptionButtons();
+        setProgressPip('address');
     })();
 
 

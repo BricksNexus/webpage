@@ -314,7 +314,7 @@
         <button type="button" class="builder-btn builder-btn-primary" id="opp-submit" disabled>Publish</button>
     </footer>
 
-    <div class="builder-chatbox-widget" aria-live="polite">
+    <div class="builder-chatbox-widget" id="opp-chat-widget" aria-live="polite">
         <button type="button" class="builder-chatbox-prompt" id="opp-chat-help-prompt">
             Need help creating an opportunity?
         </button>
@@ -327,7 +327,10 @@
                 <div>
                     <h3>Explore Opportunities</h3>
                 </div>
-                <button type="button" class="builder-chatbox-close" id="opp-chat-close-btn" aria-label="Close chatbox">×</button>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <button type="button" class="builder-chatbox-close" id="opp-chat-expand-btn" aria-label="Expand to fullscreen" title="Expand">⛶</button>
+                    <button type="button" class="builder-chatbox-close" id="opp-chat-close-btn" aria-label="Close chatbox">×</button>
+                </div>
             </div>
 
             <div class="builder-explorer-address">
