@@ -1,3 +1,4 @@
+// SiteChrome — global nav + page shell. Context: COMPONENTS.md (SiteChrome) | CLAUDE.md
 "use client";
 
 import Link from "next/link";

@@ -1,42 +1,94 @@
-# BricksNexus — CLAUDE.md
+# BricksNexus — AI Navigator
 
-## Project
-Next.js app (App Router, JSX not TSX). Real estate/construction marketplace + AI feasibility assistant.
-Stack: Next.js latest, React, Tailwind CSS, `react-hook-form`, `lucide-react`. No TypeScript — plain JS/JSX.
+> This file is the **router**. Read it first. Follow the links to get exact context before touching anything.
 
-## Structure
-```
-app/           # Next.js App Router pages + API routes
-components/    # Shared UI components (site/, homeowner-feasibility/, tokenization/)
-lib/           # Utilities (api-cors.js, llm-chat.js, token-data.js, open-property/)
-scripts/       # Node CLI scripts (fetch-zoning-by-address.mjs, etc.)
-public/        # Static assets
-*.jsx          # Loose component files at root (legacy — prefer app/ or components/)
-*.mjs          # Standalone Node scripts (geocode, zoning, census, OSM)
-```
+---
+
+## What This Project Is
+
+Next.js App Router + plain JSX (no TypeScript). Real estate intelligence platform:
+- Address in → property enrichment (AttomData + PLUTO + Census) → LangGraph AI pipeline → Opportunity Report
+- Users publish reports to a browsable Marketplace
+
+Stack: Next.js, React, Tailwind CSS, `react-hook-form`, `lucide-react`, `@langchain/langgraph`, `@langchain/google-genai`
+
+---
+
+## Context Files — Read These Before Editing
+
+| File | What's in it | When to read |
+|------|-------------|--------------|
+| [`CODEBASE.md`](CODEBASE.md) | Every file, what it does, what it imports/exports | Before creating or editing any file |
+| [`API.md`](API.md) | Every API route, request/response shapes, env vars, external APIs | Before touching `app/api/` or calling external services |
+| [`COMPONENTS.md`](COMPONENTS.md) | Every component, its props, which page uses it | Before building or editing UI |
+| [`STATE.md`](STATE.md) | Build status, phase progress, open todos, known issues | Before starting any new work |
+
+---
+
+## Hard Rules
+
+- **JSX only. No TypeScript.** Never introduce `.ts` or `.tsx`.
+- Run `npm run build` after multi-file changes before reporting done.
+- New components → `components/<subdirectory>/` not root-level `.jsx`.
+- API routes → `app/api/`. Always use `lib/api-cors.js` for CORS headers.
+- LLM calls → `lib/llm-chat.js` only. Do not call Gemini/OpenAI directly.
+- Secrets → `.env.local` only. Never commit. Keys: `ATTOMDATA_API_KEY`, `GOOGLE_API_KEY`, `GEMINI_MODEL`.
+- Property data entry point → `lib/open-property/fetch-property-intel.mjs`. Do not duplicate its logic.
+- Git: commit frequently, prefer named files over `git add -A`.
+
+---
 
 ## Dev Commands
+
 ```bash
-npm run dev          # local dev server
-npm run build        # production build — run after multi-file changes
+npm run dev          # start local dev server (run from /webpage)
+npm run build        # production build — always run before done
 node scripts/fetch-zoning-by-address.mjs  # zoning CLI
 ```
 
-## Rules
-- JSX, not TSX. No TypeScript. Keep it that way.
-- Run `npm run build` after multi-file changes before reporting done.
-- API routes live in `app/api/`. Use `lib/api-cors.js` for CORS headers.
-- LLM calls go through `lib/llm-chat.js` (OpenRouter-compatible).
-- Secrets in `.env.local` — never commit.
-- New UI goes in `components/` under the relevant subdirectory, not root-level `.jsx` files.
-- Git: commit frequently, prefer named files over `git add -A`.
-you have accses t 
-# AttomData and Gemmni API in the API docs
+---
 
-API DOCS: https://api.developer.attomdata.com/docs
+## Architecture
 
+```
+Address Input
+  └─▶ POST /api/property/enrich          # census geocode + PLUTO + AttomData
+        └─▶ POST /api/opportunity/analyze # LangGraph pipeline (4 nodes)
+              └─▶ /opportunity-report     # ReportCard + OpportunityAssessment UI
+                    └─▶ POST /api/marketplace  # publish → data/marketplace.json
+                          └─▶ /marketplace     # listing page
+```
 
-You also have accses to  
+---
 
-https://github.com/langchain-ai/deepagents I want you to use this as well
+## External APIs
 
+| API | Key | Docs |
+|-----|-----|------|
+| AttomData | `ATTOMDATA_API_KEY` in `.env.local` | https://api.developer.attomdata.com/docs |
+| Google Gemini | `GOOGLE_API_KEY` in `.env.local` | via `@langchain/google-genai` |
+| NYC PLUTO | no key (Socrata public) | dataset `64uk-42ks` |
+| Census Geocoder | no key | `geocode.census.gov` |
+| OSM Overpass | no key | public |
+
+---
+
+## Phase Status (update STATE.md when this changes)
+
+| Phase | Name | Status |
+|-------|------|--------|
+| 1 | Property Data API Layer | ✅ Complete |
+| 2 | LangGraph AI Pipeline + Report Page | ✅ Complete |
+| 3 | Marketplace | ⬜ Not started |
+
+---
+
+## Update Protocol
+
+**Every time you create or modify a file**, update the matching context file:
+- New/edited file → update `CODEBASE.md`
+- New/changed API route or env var → update `API.md`
+- New/changed component → update `COMPONENTS.md`
+- Phase progress or build issue → update `STATE.md`
+
+This keeps the context files accurate so the next AI session doesn't have to re-search.

@@ -3,6 +3,7 @@
  * Alias for /api/property — unified property enrichment endpoint.
  * Accepts: { address: string, metroOverride?: "nyc" | "boston" | "generic" }
  * Returns: { ok: true, property: { ownerName, blockLot, validatedAddress, zoningDistrict, useAndOccupancy, localRecords, ... } }
+ * Context: API.md (POST /api/property/enrich) | CODEBASE.md (API Routes section)
  */
 import { NextResponse } from "next/server";
 import { fetchPropertyIntel } from "@/lib/open-property/fetch-property-intel.mjs";

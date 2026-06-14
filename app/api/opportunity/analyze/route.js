@@ -3,6 +3,7 @@
  * Triggers the LangGraph 4-node property opportunity pipeline.
  * Input:  { address: string }
  * Output: { ok: true, report: { address, ownerName, zoningDistrict, aiAssessment, ... } }
+ * Context: API.md (POST /api/opportunity/analyze) | CODEBASE.md (API Routes section)
  */
 import { NextResponse } from "next/server";
 import { propertyPipeline } from "@/lib/langgraph/property-pipeline.mjs";

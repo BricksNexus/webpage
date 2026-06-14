@@ -2,6 +2,7 @@
  * ReportCard — Property Information + Land Information
  * Props:
  *   report: the full report object from /api/opportunity/analyze
+ * Context: COMPONENTS.md (ReportCard) | API.md (POST /api/opportunity/analyze response shape)
  */
 
 function FieldRow({ label, value }) {
