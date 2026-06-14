@@ -53,7 +53,7 @@ A property analysis and opportunity marketplace layered on top of the existing B
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| LangGraph for AI pipeline | User specified; enables multi-step stateful graph for data enrichment → analysis | Pending implementation |
+| LangGraph for AI pipeline | User specified; enables multi-step stateful graph for data enrichment → analysis. Reference: deepagents repo for multi-agent patterns | Pending implementation |
 | AttomData for owner/block/lot | API key already provisioned; covers US nationwide | Confirmed |
 | Gemini 2.5 Flash for AI analysis | Already configured in env; fast and capable | Confirmed |
 | Marketplace stored in JSON file | No database — keep it simple for v1 | Pending confirmation |

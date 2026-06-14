@@ -48,11 +48,17 @@
 
 **UI hint:** yes
 
+**Reference repos:**
+- https://github.com/langchain-ai/langgraph.git — LangGraph framework
+- https://github.com/langchain-ai/deepagents.git — multi-agent patterns reference
+
 **Files to create/modify:**
-- `lib/langgraph/property-pipeline.mjs` — LangGraph graph definition
-- `app/opportunity-report/page.jsx` — report display page
-- `components/property/ReportCard.jsx` — report UI component
-- `app/api/opportunity/analyze/route.js` — API route triggering LangGraph pipeline
+- `lib/langgraph/property-pipeline.mjs` — LangGraph 4-node graph (enrich→zoning→analyze→format)
+- `lib/open-property/cities/nyc.mjs` — extend PLUTO connector with all report fields
+- `app/opportunity-report/page.jsx` — address form + two-column report display
+- `components/property/ReportCard.jsx` — Property Info + Land Info two-column layout
+- `components/property/OpportunityAssessment.jsx` — structured AI output display
+- `app/api/opportunity/analyze/route.js` — POST handler triggering LangGraph pipeline
 
 ---
 
