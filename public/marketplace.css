@@ -58,10 +58,9 @@ body {
 
 .top-bar-left img,
 .top-bar-left .site-logo {
-    height: 36px;
+    height: 42px;
     width: auto;
-    max-width: 40px;
-    max-height: 36px;
+    max-height: 42px;
     object-fit: contain;
     display: block;
     flex-shrink: 0;
@@ -684,9 +683,8 @@ a.user-avatar {
 
     .top-bar-left img,
     .top-bar-left .site-logo {
-        height: 32px;
-        max-width: 36px;
-        max-height: 32px;
+        height: 34px;
+        max-height: 34px;
     }
 
     .top-bar-left span {

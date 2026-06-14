@@ -13,6 +13,12 @@ iframe {
     max-width: 100%;
 }
 
+/* Content images — keep cards/layout as before */
+img:not(.site-logo):not(.card-image) {
+    height: auto;
+}
+
+/* Header logos only */
 .site-logo,
 .top-bar-left img,
 .top-bar-logo img,
@@ -20,18 +26,12 @@ iframe {
 .landing-brand img,
 .auth-top-bar img,
 .token-brand img {
-    height: 36px;
+    height: 42px;
     width: auto;
-    max-width: 40px;
-    max-height: 36px;
+    max-width: 120px;
+    max-height: 42px;
     object-fit: contain;
     flex-shrink: 0;
-}
-
-.feed-card img,
-.card-image,
-.main-content img:not(.site-logo) {
-    height: auto;
 }
 
 input,

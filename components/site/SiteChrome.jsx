@@ -39,7 +39,7 @@ export default function SiteChrome() {
           alt=""
           width={120}
           height={32}
-          className="site-logo h-8 w-auto max-h-8 max-w-10 shrink-0 object-contain"
+          className="site-logo h-[42px] w-auto max-h-[42px] shrink-0 object-contain"
         />
         <span className={isAbout ? "text-white" : "text-[var(--deep-navy)]"}>BricksNexus</span>
       </Link>
