@@ -632,6 +632,87 @@
     margin: 0;
 }
 
+.profile-opportunity-card .card-type {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.profile-card-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.profile-card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted, #6b7280);
+    margin: 0 0 0.35rem;
+}
+
+.profile-card-workers {
+    margin-top: 0.75rem;
+}
+
+.profile-card-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.profile-card-tags li {
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    font-size: 0.8rem;
+}
+
+.profile-card-need {
+    margin: 0;
+    font-size: 0.875rem;
+    white-space: pre-line;
+    color: var(--text-secondary, #374151);
+}
+
+.profile-card-actions {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.profile-card-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: #fff;
+    background: #2563eb;
+}
+
+.profile-card-edit-btn:hover {
+    background: #1d4ed8;
+}
+
+.profile-content[data-view="public"] .profile-card-actions {
+    display: none;
+}
+
 /* Responsive: stack sidebar above content on small screens */
 @media (max-width: 768px) {
     .profile-layout {

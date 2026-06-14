@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { buildZoningConsultantSystemPrompt } from "@/lib/homeowner-feasibility/zoning-consultant-prompt";
+import {
+  buildFallbackCardDraft,
+  extractCardDraftFromFeasibility,
+} from "@/lib/homeowner-feasibility/extract-card-draft";
 import { CORS_HEADERS } from "@/lib/api-cors";
 import { getLlmChatConfig } from "@/lib/llm-chat";
 
@@ -34,8 +38,8 @@ export async function OPTIONS() {
  *   exploreFocus?: string  // optional homeowner topic (first turn or static UI chips)
  * }
  *
- * Uses OpenRouter when OPENROUTER_API_KEY is set (recommended for Vercel),
- * else OpenAI when OPENAI_API_KEY is set; otherwise returns a placeholder summary.
+ * Uses Google Gemini when GEMINI_API_KEY (or GOOGLE_API_KEY) is set,
+ * else OpenRouter or OpenAI; otherwise returns a placeholder summary.
  */
 export async function POST(request) {
   try {
@@ -55,22 +59,22 @@ export async function POST(request) {
     const llm = getLlmChatConfig();
 
     if (!llm) {
+      const placeholderSummary =
+        "## Current Status\n" +
+        "No LLM is configured. Set `GEMINI_API_KEY` (Google AI Studio) or `GOOGLE_API_KEY` in `.env.local` / Vercel.\n\n" +
+        "## Potential for Growth\n" +
+        "Once configured, you'll get plain-language guidance on ADUs, conversions, and other paths to add units at this address.\n\n" +
+        "## Regulatory Hurdles\n" +
+        "Confirm zoning, permits, and occupancy with your local planning office and licensed professionals.";
+
       return NextResponse.json(
         {
           ok: true,
           model: "none",
-          feasibilitySummary:
-            "## Current Status\n" +
-            "No LLM is configured. Set `OPENROUTER_API_KEY` (or alias `ZONING_CONSULTANT_API_KEY`) or `OPENAI_API_KEY` in `.env.local` / Vercel.\n\n" +
-            "## Potential for Growth\n" +
-            "Vercel hides env values after save (not copyable). Use **Reveal** or paste a new key from OpenRouter. Optional: `OPENROUTER_MODEL`, `OPENROUTER_SITE_URL` / `NEXT_PUBLIC_SITE_URL`.\n\n" +
-            "## Regulatory Hurdles\n" +
-            "Property JSON below is shown raw for development.\n\n" +
-            "```json\n" +
-            JSON.stringify(property, null, 2) +
-            "\n```",
+          feasibilitySummary: placeholderSummary,
+          cardDraft: buildFallbackCardDraft(address, property, exploreFocus),
           disclaimer:
-            "Placeholder output—not a zoning determination. Configure OpenRouter or OpenAI for full consultant formatting.",
+            "Placeholder output—not a zoning determination. Configure Google Gemini (GEMINI_API_KEY) for full consultant formatting.",
         },
         { headers: CORS_HEADERS }
       );
@@ -134,15 +138,20 @@ export async function POST(request) {
     }
 
     const data = await res.json();
-    const text =
+    const rawText =
       data?.choices?.[0]?.message?.content?.trim() ||
       "No content returned from model.";
+
+    const { displayText, cardDraft } = extractCardDraftFromFeasibility(rawText);
 
     return NextResponse.json(
       {
         ok: true,
         model: data?.model || llm.defaultModel,
-        feasibilitySummary: text,
+        feasibilitySummary: displayText || rawText,
+        cardDraft:
+          cardDraft ||
+          buildFallbackCardDraft(address, property, exploreFocus),
         disclaimer:
           "Informational only—not legal advice. Verify with your jurisdiction.",
       },

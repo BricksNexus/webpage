@@ -125,14 +125,14 @@
             .concat(app.getUserItems(app.KEYS.opportunities).map(function(item) {
                 item.__sourceKey = app.KEYS.opportunities;
                 item.__typeLabel = 'Opportunity';
-                item.__editHref = 'post-opportunity.html?edit=' + encodeURIComponent(item.id);
+                item.__editHref = '/post-opportunity?edit=' + encodeURIComponent(item.id);
                 item.__cardType = 'opportunity';
                 return item;
             }))
             .concat(app.getUserItems(app.KEYS.opportunityDrafts).map(function(item) {
                 item.__sourceKey = app.KEYS.opportunityDrafts;
                 item.__typeLabel = 'Opportunity Draft';
-                item.__editHref = 'post-opportunity.html?edit=' + encodeURIComponent(item.id) + '&draft=1';
+                item.__editHref = '/post-opportunity?edit=' + encodeURIComponent(item.id) + '&draft=1';
                 item.__cardType = 'opportunity';
                 return item;
             }))

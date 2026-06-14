@@ -4,7 +4,7 @@ import FeasibilityChat from "@/components/homeowner-feasibility/FeasibilityChat"
 export const metadata = {
   title: "Homeowner feasibility · BricksNexus",
   description:
-    "Chat assistant to explore ADUs and additional housing units using property data and an LLM via OpenRouter.",
+    "Chat assistant to explore ADUs and additional housing units using property data and Google Gemini.",
 };
 
 export default function HomeownerFeasibilityPage() {
@@ -24,11 +24,20 @@ export default function HomeownerFeasibilityPage() {
           This route uses <code className="rounded bg-slate-100 px-1">/api/property</code> for
           parcel-style fields and <code className="rounded bg-slate-100 px-1">/api/feasibility</code>{" "}
           for the zoning consultant summary via{" "}
-          <strong>OpenRouter</strong>. Set{" "}
-          <code className="rounded bg-slate-100 px-1">OPENROUTER_API_KEY</code> in{" "}
+          <strong>Google Gemini</strong>. Set{" "}
+          <code className="rounded bg-slate-100 px-1">GEMINI_API_KEY</code> in{" "}
           <code className="rounded bg-slate-100 px-1">.env.local</code> or Vercel environment
-          variables. Default model is <code className="rounded bg-slate-100 px-1">openrouter/free</code> (no credits); override with{" "}
-          <code className="rounded bg-slate-100 px-1">OPENROUTER_MODEL</code>.
+          variables (get a key at{" "}
+          <a
+            href="https://aistudio.google.com/apikey"
+            className="font-semibold text-[var(--construction-teal)] hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Google AI Studio
+          </a>
+          ). Default model is <code className="rounded bg-slate-100 px-1">gemini-2.0-flash</code>; override with{" "}
+          <code className="rounded bg-slate-100 px-1">GEMINI_MODEL</code>.
         </p>
         <div className="mt-8">
           <FeasibilityChat />
