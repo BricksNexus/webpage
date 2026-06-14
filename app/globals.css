@@ -26,7 +26,20 @@ video,
 canvas,
 iframe {
   max-width: 100%;
+}
+
+img:not(.site-logo):not(.card-image) {
   height: auto;
+}
+
+.site-logo,
+.site-chrome img.site-logo,
+.top-bar-left img,
+.top-bar-logo img {
+  height: 2rem;
+  width: auto;
+  max-width: 120px;
+  flex-shrink: 0;
 }
 
 input,

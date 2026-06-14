@@ -11,7 +11,24 @@ video,
 canvas,
 iframe {
     max-width: 100%;
+}
+
+/* Default responsive height for content images only — not header logos */
+img:not(.site-logo):not(.card-image) {
     height: auto;
+}
+
+.site-logo,
+.top-bar-left img,
+.top-bar-logo img,
+.about-brand img,
+.landing-brand img,
+.auth-top-bar img,
+.token-brand img {
+    height: 2rem;
+    width: auto;
+    max-width: 120px;
+    flex-shrink: 0;
 }
 
 input,
