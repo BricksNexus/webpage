@@ -23,6 +23,20 @@ Stack: Next.js, React, Tailwind CSS, `react-hook-form`, `lucide-react`, `@langch
 | [`COMPONENTS.md`](COMPONENTS.md) | Every component, its props, which page uses it | Before building or editing UI |
 | [`STATE.md`](STATE.md) | Build status, phase progress, open todos, known issues | Before starting any new work |
 
+## Deep Codebase Map — `.planning/codebase/`
+
+Seven structured documents produced by parallel analysis agents. Use when you need depth beyond the quick-reference files above.
+
+| Document | What's in it | When to read |
+|----------|-------------|--------------|
+| [`ARCHITECTURE.md`](.planning/codebase/ARCHITECTURE.md) | System overview, dual-surface design, data flow, API routes, key decisions | Before refactoring or adding a major feature |
+| [`STRUCTURE.md`](.planning/codebase/STRUCTURE.md) | Annotated directory tree, every page/component/route/module listed | When you need to locate a specific file or understand the project layout |
+| [`STACK.md`](.planning/codebase/STACK.md) | Framework, languages, dependencies, env vars | Before adding a dependency or changing build config |
+| [`INTEGRATIONS.md`](.planning/codebase/INTEGRATIONS.md) | All external APIs (PLUTO, AttomData, Gemini, Census, OSM), auth, data flow | Before touching any external service call |
+| [`CONVENTIONS.md`](.planning/codebase/CONVENTIONS.md) | Naming, component patterns, CSS approach, LLM prompt structure, frontend design rules | Before writing new code — match existing patterns |
+| [`TESTING.md`](.planning/codebase/TESTING.md) | Test coverage (none formal), manual testing approach, quality gates | Before claiming a feature is complete |
+| [`CONCERNS.md`](.planning/codebase/CONCERNS.md) | P0–P3 technical debt, security risks, orphaned files, architecture risks | Before making assumptions about code quality |
+
 ---
 
 ## Hard Rules
