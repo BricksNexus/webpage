@@ -10,7 +10,8 @@
     "verifier": true,
     "nyquist_validation": false,
     "auto_advance": false,
-    "discuss_mode": "discuss"
+    "discuss_mode": "discuss",
+    "_auto_chain_active": false
   },
   "project_code": "BNX",
   "project_title": "BricksNexus Property Intelligence"
