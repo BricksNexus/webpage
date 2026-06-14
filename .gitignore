@@ -1,6 +1,9 @@
 node_modules
 .next
 
+# Local KV dev cache — runtime data, not source
+.kv-store/
+
 # Secrets — never commit
 .env
 .env.local

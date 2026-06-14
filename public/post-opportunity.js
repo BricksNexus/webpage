@@ -763,6 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var sendBtn = getInput('opp-chat-send-btn');
         var messageInput = getInput('opp-chat-message-input');
         var applyBtn = getInput('opp-chat-apply-btn');
+        var reportBtn = getInput('opp-chat-report-btn');
         var chatLog = getInput('opp-chat-log');
         var optionsEl = getInput('opp-chat-options');
 
@@ -787,7 +788,8 @@ document.addEventListener('DOMContentLoaded', function() {
             sessionActive: false,
             loading: false,
             exploreKey: null,
-            exploreFocusText: ''
+            exploreFocusText: '',
+            reportId: null
         };
 
         function buildClientFallbackCardDraft() {
@@ -1051,8 +1053,10 @@ document.addEventListener('DOMContentLoaded', function() {
             CHAT.thread = [];
             CHAT.sessionActive = false;
             CHAT.loading = false;
+            CHAT.reportId = null;
             chatLog.innerHTML = '';
             applyBtn.disabled = true;
+            if (reportBtn) reportBtn.classList.add('hidden');
             messageInput.value = '';
             /* Keep exploreKey / exploreFocusText so a chosen topic survives a new Start */
             refreshChatControls();
@@ -1214,41 +1218,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
             resetChat();
             CHAT.addressText = addressText;
-            var userIntro = 'My property is at: ' + addressText;
-            if (CHAT.exploreFocusText) {
-                var shortLabel = '';
-                if (optionsEl && CHAT.exploreKey) {
-                    var sel = optionsEl.querySelector('.builder-explorer-option[data-explore-key="' + CHAT.exploreKey + '"]');
-                    if (sel) shortLabel = sel.getAttribute('data-explore-label') || '';
-                }
-                userIntro +=
-                    '\n\nI want to learn more about: **' +
-                    (shortLabel || 'this type of project') +
-                    '**.';
-            }
-            appendMsg('user', userIntro);
+            appendMsg('user', 'My property is at: ' + addressText);
+            appendMsg('bot', 'Fetching property data and generating your opportunity report… this takes about 15–20 seconds.');
 
             setLoading(true);
             try {
-                await ensurePropertyIntel();
-                var data = await callFeasibility([]);
-                CHAT.feasibilitySummary = data.feasibilitySummary || '';
-                CHAT.cardDraft = resolveCardDraft(data);
-                appendMsg('bot', CHAT.feasibilitySummary);
-                CHAT.thread.push({ role: 'assistant', content: CHAT.feasibilitySummary });
+                var base = getApiBase();
+                var url = (base || '') + '/api/opportunity-report';
+                var res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: addressText })
+                });
+                var data = await res.json().catch(function() { return {}; });
+
+                if (!res.ok) {
+                    var errParts = [data.error, 'HTTP ' + res.status].filter(Boolean);
+                    var fail = new Error(errParts[0] || 'Report request failed');
+                    fail.httpStatus = res.status;
+                    throw fail;
+                }
+
+                CHAT.reportId = data.reportId || null;
+                CHAT.propertyIntel = data.property || null;
+
+                // Build a short text summary for the chat log from the analysis
+                var analysis = data.analysis || {};
+                var opps = Array.isArray(analysis.opportunities) ? analysis.opportunities : [];
+                var summaryLines = [];
+                if (analysis.remainingCapacity && analysis.remainingCapacity.value != null) {
+                    summaryLines.push('**Remaining FAR capacity:** ' + analysis.remainingCapacity.value.toLocaleString() + ' sq ft');
+                }
+                if (analysis.potentialAdditionalUnits && analysis.potentialAdditionalUnits.value != null) {
+                    summaryLines.push('**Potential additional units:** ~' + analysis.potentialAdditionalUnits.value);
+                }
+                if (analysis.storyHeadroom && analysis.storyHeadroom.value != null) {
+                    summaryLines.push('**Story headroom:** ' + analysis.storyHeadroom.value + ' floor(s)');
+                }
+                if (opps.length) {
+                    summaryLines.push('\n**' + opps.length + ' investigate lead(s) identified.** Open the full report for details, math, and next steps.');
+                }
+
+                var chatSummary = summaryLines.length
+                    ? 'Report ready. Here\'s a quick snapshot:\n\n' + summaryLines.join('\n')
+                    : 'Report ready. Open the full report below to see property data, zoning rules, and opportunities.';
+
+                CHAT.feasibilitySummary = chatSummary;
+                appendMsg('bot', chatSummary);
+                CHAT.thread.push({ role: 'assistant', content: chatSummary });
                 CHAT.sessionActive = true;
                 applyBtn.disabled = false;
-                saveAnalyzedOpportunityToProfile(CHAT.cardDraft);
-                notifyProfileSaved(false);
+                if (reportBtn && CHAT.reportId) {
+                    reportBtn.classList.remove('hidden');
+                }
                 refreshChatControls();
                 messageInput.focus();
             } catch (err) {
-                var msg = '**Something went wrong:** ' + (err.message || err);
+                var errMsg = '**Something went wrong:** ' + (err.message || err);
                 if (err.httpStatus === 405 || err.httpStatus === 404) {
-                    msg +=
+                    errMsg +=
                         '\n\nThis page may be on **static hosting** (no AI server here). Ask your team to set **bricksnexus-api-base** in this page to your **Vercel** (or other) URL where the app runs, and add **GEMINI_API_KEY** (Google AI Studio) there.';
                 }
-                appendMsg('bot', msg);
+                appendMsg('bot', errMsg);
             } finally {
                 setLoading(false);
             }
@@ -1325,6 +1356,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        if (reportBtn) {
+            reportBtn.addEventListener('click', function() {
+                if (!CHAT.reportId) return;
+                window.dispatchEvent(new CustomEvent('opp:open-report', {
+                    detail: { reportId: CHAT.reportId }
+                }));
+            });
+        }
 
         if (optionsEl) {
             optionsEl.addEventListener('click', function(e) {
