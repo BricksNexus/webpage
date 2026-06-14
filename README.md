@@ -1,11 +1,40 @@
-# BricksNexus
-#### Video Demo: https://youtu.be/Ti-LWojM9dU
-#### Description:
+# BricksNexus Website
 
-BricksNexus is a construction and real estate marketplace platform that connects project owners, service providers, and professionals in one workflow. The project combines a static marketplace experience with a Next.js application layer for richer pages and APIs.
+- **Run locally:** `npm install` → `npm run dev` → open `http://localhost:3000/` (marketplace via `public/index.html`) and React routes e.g. `/about`, `/tokenization`, `/homeowner-feasibility`. APIs: `/api/property`, `/api/feasibility` (LLM via **OpenRouter** when `OPENROUTER_API_KEY` is set—see `.env.example`; use the same vars on **Vercel**).
+- **Static + Next migration plan:** see [`docs/MIGRATION_NEXT.md`](docs/MIGRATION_NEXT.md).
 
-The platform includes posting and discovery flows for opportunities, services, open-to-work profiles, and tokenization-related listings. It also includes an AI-powered "Explore Opportunities" assistant that helps users understand pathways to add housing units at an address using plain language.
+---
 
-On the backend/API side, BricksNexus provides property intelligence and feasibility endpoints. The property endpoint can combine open geocoding and mapping sources, while the feasibility endpoint uses OpenRouter/OpenAI-compatible chat completions to generate structured guidance. The About page includes founder profile content and a call-to-action flow for technical co-founder applications.
+# Open property intel (all cities)
 
-Overall, this project is focused on making construction and development workflows more transparent, easier to navigate, and more accessible for both technical and non-technical users.
+There is **no single worldwide API** that returns **legal zoning districts** and **certificate-of-occupancy** status for every municipality. This package uses **open sources** that scale globally, plus **optional** city-specific open-data connectors.
+
+## What runs everywhere (after geocoding)
+
+| Layer | Coverage | What you get |
+|--------|-----------|----------------|
+| **Geocoding** | Global (Mapbox / Google) | Normalized address, coordinates, city/region/country |
+| **OpenStreetMap (Overpass)** | Global where mapped | `building`, `landuse`, `amenity`, rare `zoning` tags — **hints only** |
+| **U.S. Census Geocoder** | United States | Incorporated place, county, state FIPS — **jurisdiction**, not zoning |
+
+## Optional local open data (env + location)
+
+| City | Connectors |
+|------|------------|
+| **NYC** | Geoclient → BBL; Socrata PLUTO/MapPLUTO → zoning district + building class |
+| **Boston** | CKAN Property Assessment text search → assessor fields (zoning may need separate GIS) |
+
+## Important limitations
+
+- **Zoning** is defined by **local law** and GIS layers; OSM is incomplete and not authoritative.
+- **Use & occupancy** for compliance usually comes from **building departments** or assessors, not from OSM alone.
+- For more cities, add **ArcGIS Hub** / **Socrata** / **CKAN** adapters keyed by **state + place GEOID** from Census.
+
+## Entry point
+
+- `fetchPropertyIntel(address, { metroOverride? })` in `fetch-property-intel.mjs`
+- Used by `POST /api/property` and `scripts/fetch-zoning-by-address.mjs`
+
+## Discovery links (for new city adapters)
+
+Returned on each response in `discoverMore` (ArcGIS Hub search, Open Data Network, OSM tag wikis).
