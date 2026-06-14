@@ -8,11 +8,11 @@
     "fetch-zoning": "node scripts/fetch-zoning-by-address.mjs"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-hook-form": "latest",
-    "lucide-react": "latest"
+    "lucide-react": "latest",
+    "next": "^15.5.19",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-hook-form": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
